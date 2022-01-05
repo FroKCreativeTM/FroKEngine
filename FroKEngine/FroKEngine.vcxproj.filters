@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="01. Engine">
+      <UniqueIdentifier>{6d15b0e0-aefd-4467-9cd2-e88044bf135f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\01. Error">
+      <UniqueIdentifier>{b03792d0-73c5-4bf6-9e24-dd077f4802fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\02. Timer">
+      <UniqueIdentifier>{02f4a1ce-2f9c-486c-8a43-5dcd5011d58a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\00. Header">
+      <UniqueIdentifier>{86a10883-f8b8-4bed-9a83-bff7f98e20b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\03. Input">
+      <UniqueIdentifier>{8a12cbf6-9651-4f12-b137-73625c97d949}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics">
+      <UniqueIdentifier>{b95fcd69-9b26-48b4-8eff-3390d2ef67e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics\01. UI">
+      <UniqueIdentifier>{6956c62a-3aa1-410a-9316-4adb2b6fd601}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics\02. Texture">
+      <UniqueIdentifier>{ed44251e-63b5-4ec5-9375-7565d4d1b6f5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Core.h">
+      <Filter>01. Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="StringConverter.h">
+      <Filter>01. Engine\01. Error</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>01. Engine\00. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FroKEngine.h">
+      <Filter>01. Engine\00. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>01. Engine\00. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>01. Engine\00. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Type.h">
+      <Filter>01. Engine\00. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>01. Engine\02. Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>01. Engine\03. Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imconfig.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imgui.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imgui_impl_dx11.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imgui_impl_win32.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imgui_internal.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imstb_rectpack.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imstb_textedit.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ImGui\imstb_truetype.h">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Texture\DDSTextureLoader.h">
+      <Filter>01. Engine\04. Graphics\02. Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\d3dx12.h">
+      <Filter>01. Engine\04. Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Macro.h">
+      <Filter>01. Engine\00. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorLogger.h">
+      <Filter>01. Engine\01. Error</Filter>
+    </ClInclude>
+    <ClInclude Include="DxException.h">
+      <Filter>01. Engine\01. Error</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FroKEngine.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Core.cpp">
+      <Filter>01. Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="StringConverter.cpp">
+      <Filter>01. Engine\01. Error</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>01. Engine\02. Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>01. Engine\03. Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ImGui\imgui.cpp">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ImGui\imgui_draw.cpp">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ImGui\imgui_impl_dx11.cpp">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ImGui\imgui_impl_win32.cpp">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ImGui\imgui_tables.cpp">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ImGui\imgui_widgets.cpp">
+      <Filter>01. Engine\04. Graphics\01. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp">
+      <Filter>01. Engine\04. Graphics\02. Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorLogger.cpp">
+      <Filter>01. Engine\01. Error</Filter>
+    </ClCompile>
+    <ClCompile Include="DxException.cpp">
+      <Filter>01. Engine\01. Error</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FroKEngine.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="FroKEngine.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
