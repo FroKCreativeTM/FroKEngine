@@ -69,47 +69,47 @@ void FroKEngine::Collision(float fDeltaTime)
 
 void FroKEngine::Render(float fDeltaTime)
 {
-	// Reuse the memory associated with command recording.
-	// We can only reset when the associated command lists have finished execution on the GPU.
+	// 커맨드 기록과 관련된 메모리를 재사용합니다.
+	// 연결된 커맨드 리스트가 GPU에서 실행을 완료한 경우에만 재설정할 수 있습니다.
 	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 
-	// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
-	// Reusing the command list reuses memory.
+	// 커맨드 리스트는 ExecuteCommandList를 통해 명령 대기열에 추가된 후 재설정할 수 있습니다.
+	// 커맨드 리스트를 재사용하면 메모리가 재사용됩니다.
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
-	// Indicate a state transition on the resource usage.
+	// 리소스 사용량에 대한 상태 전환을 나타냅니다.
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
+	// 뷰포트와 Scissor Rect를 설정합니다. 이것은 커맨드 리스트가 재설정될 때마다 재설정되어야 합니다.
 	m_CommandList->RSSetViewports(1, &m_ScreenViewport);
 	m_CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-	// Clear the back buffer and depth buffer.
+	// 백 버퍼와 깊이 버퍼를 지웁니다.
 	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	// Specify the buffers we are going to render to.
+	// 렌더링할 버퍼를 지정합니다.
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
-	// Indicate a state transition on the resource usage.
+	// 리소스 사용량에 대한 상태 전환을 나타냅니다.
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
-	// Done recording commands.
+	// 리코딩 커맨드를 합니다.
 	ThrowIfFailed(m_CommandList->Close());
 
-	// Add the command list to the queue for execution.
+	// 실행할 대기열에 커맨드 리스트를 추가합니다.
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	// swap the back and front buffers
+	// back/front 버퍼를 바꿉니다.
 	ThrowIfFailed(m_SwapChain->Present(0, 0));
 	m_CurrBackBuffer = (m_CurrBackBuffer + 1) % SwapChainBufferCount;
 
-	// Wait until frame commands are complete.  This waiting is inefficient and is
-	// done for simplicity.  Later we will show how to organize our rendering code
-	// so we do not have to wait per frame.
+	// 프레임 명령이 완료될 때까지 기다립니다. 
+	// 이 대기는 비효율적이며 단순성을 위해서 있는 코드입니다. 나중에 렌더링 코드를 구성하는 방법을 보여줍니다.
+	// 따라서 프레임당 기다릴 필요가 없습니다.
 	FlushCommandQueue();
 }
 
