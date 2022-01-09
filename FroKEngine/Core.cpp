@@ -7,8 +7,6 @@ using namespace DirectX;
 LRESULT CALLBACK
 MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    // Forward hwnd on because we can get messages (e.g., WM_CREATE)
-    // before CreateWindow returns, and thus before mhMainWnd is valid.
     return Core::GetInst()->WndProc(hwnd, msg, wParam, lParam);
 }
 
@@ -175,9 +173,9 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         return 0;
 
-        // WM_SIZE is sent when the user resizes the window.  
+        // 사용자가 창의 크기를 조정할 때 WM_SIZE가 전송됩니다.
     case WM_SIZE:
-        // Save the new client area dimensions.
+        // 새 클라이언트 영역 차원을 저장합니다.
         m_tRS.nWidth = LOWORD(lParam);
         m_tRS.nHeight = HIWORD(lParam);
         if (m_d3dDevice)
@@ -198,7 +196,7 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             else if (wParam == SIZE_RESTORED)
             {
 
-                // Restoring from minimized state?
+                // 최소화 상태로 복원?
                 if (m_Minimized)
                 {
                     m_AppPaused = false;
@@ -206,7 +204,7 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     OnResize();
                 }
 
-                // Restoring from maximized state?
+                // 최대화 상태로 복원?
                 else if (m_Maximized)
                 {
                     m_AppPaused = false;
@@ -215,14 +213,12 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
                 else if (m_Resizing)
                 {
-                    // If user is dragging the resize bars, we do not resize 
-                    // the buffers here because as the user continuously 
-                    // drags the resize bars, a stream of WM_SIZE messages are
-                    // sent to the window, and it would be pointless (and slow)
-                    // to resize for each WM_SIZE message received from dragging
-                    // the resize bars.  So instead, we reset after the user is 
-                    // done resizing the window and releases the resize bars, which 
-                    // sends a WM_EXITSIZEMOVE message.
+                    // 사용자가 크기 조정 막대를 드래그하는 경우
+                    // 사용자가 크기 조정 막대를 계속 끌면 WM_SIZE 메시지 스트림이 창으로 전송되고
+                    // 각 WM_SIZE에 대해 크기를 조정하는 것이 
+                    // 무의미하고 느려지기 때문에 여기에서 버퍼 크기를 조정하지 않습니다.
+                    // 따라서 대신 사용자가 창 크기 조정을 완료한 후 재설정하고 크기 조정 막대를 해제하여 
+                    // WM_EXITSIZEMOVE 메시지를 보냅니다.
                 }
                 else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
                 {
@@ -232,15 +228,15 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         return 0;
 
-    // WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
+    // WM_EXITSIZEMOVE 메시지는 사용자가 크기 조정 막대를 잡을 때 전송됩니다.
     case WM_ENTERSIZEMOVE:
         m_AppPaused = true;
         m_Resizing = true;
         GET_SINGLE(Timer)->Stop();
         return 0;
 
-    // WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-    // Here we reset everything based on the new window dimensions.
+    // WM_EXITSIZEMOVE 사용자가 크기 조정 막대를 놓을 때 전송됩니다.
+    // 여기서 우리는 새 창 크기를 기반으로 모든 것을 재설정합니다.
     case WM_EXITSIZEMOVE:
         m_AppPaused = false;
         m_Resizing = false;
@@ -253,13 +249,13 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         return 0;
 
-    // The WM_MENUCHAR message is sent when a menu is active and the user presses 
-    // a key that does not correspond to any mnemonic or accelerator key. 
+    // WM_MENUCHAR 메시지는 메뉴가 활성 상태이고 사용자가 mnemonic 또는
+    // 가속 키에 해당하지 않는 키를 눌렀을 때 전송됩니다.
     case WM_MENUCHAR:
         // Don't beep when we alt-enter.
         return MAKELRESULT(0, MNC_CLOSE);
 
-    // Catch this message so to prevent the window from becoming too small.
+    // 창이 너무 작아지지 않도록 이 메세지를 통해 잡습니다.
     case WM_GETMINMAXINFO:
         ((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
         ((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
@@ -467,19 +463,22 @@ void Core::OnResize()
     m_d3dDevice->CreateDepthStencilView(m_DepthStencilBuffer.Get(), nullptr, DepthStencilView());
 
     // 리소스가 초기화 된 상태에서 Depth 버퍼를 사용하도록 전환한다.
+    // CD3DX12_RESOURCE_BARRIER는 GPU가 자원을 다 기록하지 않았거나
+    // 기록조차 시작하지 않았을 때 이에 접근하는 것 즉 Resource Hazard를 방지한다.
     m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_DepthStencilBuffer.Get(),
         D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
     // 리사이즈 명령을 실행한다.
     ThrowIfFailed(m_CommandList->Close());
     ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
+    // _countof(cmdsLists) : 배열에 있는 명령 목록 수
+    // cmdsLists : 명령 목록들의 배열의 첫 원소를 가리키는 포인터
     m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
     // 리사이징이 완료될 때까지 기다린다.
     FlushCommandQueue();
 
-    // Update the viewport transform to cover the client area.
-    // 뷰포트의 설정을 클라이언트 영역에 맞게 업데이트 한다.
+    // 뷰포트 변환을 클라이언트 영역을 포함하도록  업데이트 한다.
     m_ScreenViewport.TopLeftX = 0;
     m_ScreenViewport.TopLeftY = 0;
     m_ScreenViewport.Width = static_cast<float>(m_tRS.nWidth);
@@ -489,33 +488,6 @@ void Core::OnResize()
 
     m_ScissorRect = { 0, 0, static_cast<long>(m_tRS.nWidth), static_cast<long>(m_tRS.nHeight) };
 }
-//
-//void Core::Input(float fDeltaTime)
-//{
-//    if (GET_SINGLE(Input)->IsKeyDown(VK_ESCAPE))
-//    {
-//        m_bLoop = false;
-//        PostQuitMessage(0);
-//    }
-//}
-//
-//int Core::Update(float fDeltaTime)
-//{
-//    return 0;
-//}
-//
-//int Core::LateUpdate(float fDeltaTime)
-//{
-//    return 0;
-//}
-//
-//void Core::Collision(float fDeltaTime)
-//{
-//}
-//
-//void Core::Render(float fDeltaTime)
-//{
-//}
 
 bool Core::InitDirect3D()
 {
@@ -604,10 +576,11 @@ void Core::CreateCommandObjects()
     ThrowIfFailed(m_d3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CommandQueue)));
 
     // 커맨드 할당자를 생성한다.
-    // 이 할당자를 이용해서 명령(커맨드)가 들어오면 이를 리스트에 넣는 역할을 수행한다.
+    // 이 할당자는 커맨드 리스트의 메모리를 할당하기 위해 존재한다.
+    // 명령 목록에 추가된 명령들은 이 할당자의 메모리에 저장된다.
     ThrowIfFailed(m_d3dDevice->CreateCommandAllocator(
-        D3D12_COMMAND_LIST_TYPE_DIRECT,
-        IID_PPV_ARGS(m_DirectCmdListAlloc.GetAddressOf())));
+        D3D12_COMMAND_LIST_TYPE_DIRECT, // GPU가 직접 실행하는 명령 목록
+        IID_PPV_ARGS(m_DirectCmdListAlloc.GetAddressOf())));    // RIID와 void** 타입의 커맨드 할당자 COM 객체를 넣어준다.
 
     // 커맨드 큐에 넣을 커맨드 리스트를 생성한다.
     ThrowIfFailed(m_d3dDevice->CreateCommandList(
@@ -659,22 +632,21 @@ void Core::CreateSwapChain()
 /// </summary>
 void Core::FlushCommandQueue()
 {
-    // Advance the fence value to mark commands up to this fence point.
+    // 이 펜스 포인트까지 명령을 표시하기 위해 펜스값을 증가시킨다.
     m_CurrentFence++;
 
-    // Add an instruction to the command queue to set a new fence point.  Because we 
-    // are on the GPU timeline, the new fence point won't be set until the GPU finishes
-    // processing all the commands prior to this Signal().
+    // 명령 대기열에 명령을 추가하여 새 펜스 포인트를 설정한다.
+    // 왜냐하면 우리는 GPU 타임라인에 있는 경우 GPU의 연산이 완료될 때까지 새 펜스 포인트가 설정되지 않습니다. (큐가 처리되는 동안!)
+    // 이 Signal() 이전의 모든 명령을 처리합니다. (큐 안의 연산이 전부 끝나야 GPU가 다음 명령 목록을 실행한다!)
     ThrowIfFailed(m_CommandQueue->Signal(m_Fence.Get(), m_CurrentFence));
 
-    // Wait until the GPU has completed commands up to this fence point.
+    // GPU가 이 울타리 지점까지 명령을 완료할 때까지 기다린다.
     if (m_Fence->GetCompletedValue() < m_CurrentFence)
     {
         // 이벤트를 핸들하기 위해 핸들 객체를 하나 생성한다.
         HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
 
-        // Fire event when GPU hits current fence.  
-        // GPU가 현재 펜스를 적중할 때 이벤트를 발생 시킨다.
+        // GPU가 현재 펜스에 도달하면 그에 맞는 이벤트를 발생시킨다.
         ThrowIfFailed(m_Fence->SetEventOnCompletion(m_CurrentFence, eventHandle));
 
         // CPU가 현재 펜스의 이벤트가 진행되는 동안 기다린다.
@@ -703,9 +675,9 @@ D3D12_CPU_DESCRIPTOR_HANDLE Core::DepthStencilView() const
 
 void Core::CalculateFrameStats()
 {
-    // Code computes the average frames per second, and also the 
-    // average time it takes to render one frame.  These stats 
-    // are appended to the window caption bar.
+    // 코드는 초당 평균 프레임을 계산하고
+    // 한 프레임을 렌더링하는 데 걸리는 평균 시간. 
+    // 이러한 통계는 윈도우 캡션 표시줄에 추가됩니다.
 
     static int frameCnt = 0;
     static float timeElapsed = 0.0f;
