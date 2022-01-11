@@ -270,6 +270,7 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PostQuitMessage(0);
         }
         else if ((int)wParam == VK_F2)
+            // 4X MSAA
             Set4xMsaaState(!m_4xMsaaState);
 
         GET_SINGLE(Input)->KeyUp(wParam);
@@ -317,6 +318,7 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
+    // 기본 값!
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
@@ -426,8 +428,11 @@ void Core::OnResize()
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(m_RtvHeap->GetCPUDescriptorHandleForHeapStart());
     for (UINT i = 0; i < SwapChainBufferCount; i++)
     {
+        // Swap chain의 i번째 버퍼를 가져온다.
         ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_SwapChainBuffer[i])));
+        // 그 버퍼에 대한 Render Target View를 생성한다.
         m_d3dDevice->CreateRenderTargetView(m_SwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+        // 힙의 다음 항목으로 넘어간다.
         rtvHeapHandle.Offset(1, m_RtvDescriptorSize);
     }
 
@@ -487,6 +492,7 @@ void Core::OnResize()
     m_ScreenViewport.MaxDepth = 1.0f;
 
     m_ScissorRect = { 0, 0, static_cast<long>(m_tRS.nWidth), static_cast<long>(m_tRS.nHeight) };
+    // m_CommandList->RSSetScissorRects(1, &m_ScissorRect);
 }
 
 bool Core::InitDirect3D()

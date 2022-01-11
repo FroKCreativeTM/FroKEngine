@@ -17,6 +17,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return -1;
     }
 
+    // return value
     int nRev;
     try 
     {
