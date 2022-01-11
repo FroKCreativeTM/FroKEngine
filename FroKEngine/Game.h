@@ -62,9 +62,9 @@
 
 // 매크로 선언된 헤더를 여기다가 넣는다.
 #include "Macro.h"
+#include "Util.h"
 // 직접 타입에 관련된 것을 선언합니다.
 #include "Type.h"
-
 #include "Resource.h"
 
 // 에러 핸들 

@@ -37,6 +37,9 @@
     <Filter Include="01. Engine\04. Graphics\02. Texture">
       <UniqueIdentifier>{ed44251e-63b5-4ec5-9375-7565d4d1b6f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\04. Graphics\00. Shader">
+      <UniqueIdentifier>{f8ab170f-05d1-49a1-bd11-4f725e299f09}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -105,6 +108,9 @@
     <ClInclude Include="DxException.h">
       <Filter>01. Engine\01. Error</Filter>
     </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>01. Engine\00. Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FroKEngine.cpp">
@@ -162,5 +168,10 @@
     <Image Include="FroKEngine.ico">
       <Filter>리소스 파일</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>01. Engine\04. Graphics\00. Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
