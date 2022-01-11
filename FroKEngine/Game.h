@@ -35,6 +35,9 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <cstdint>
+#include <float.h>
+#include <cmath>
 
 //////////////////////////////////////////////////////////////
 //					DirectX 12								//

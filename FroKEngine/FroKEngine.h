@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "resource.h"
+#include "Graphics/UploadBuffer.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -13,6 +14,12 @@ struct Vertex
 	XMFLOAT4 color;
 	// XMFLOAT2 tex0;
 	// XMFLOAT2 tex1;
+};
+
+struct ObjectConstants
+{
+	// 단위행렬을 저장한다.
+	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
 };
 
 // 위의 데이터는 D3D12_INPUT_ELEMENT_DESC 배열을 이용해서 입력 배치를 서술한다
@@ -127,6 +134,7 @@ inline void FroKEngine::BuildDescriptorHeaps()
 
 inline void FroKEngine::BuildConstantBuffers()
 {
+
 }
 
 inline void FroKEngine::BuildRootSignature()

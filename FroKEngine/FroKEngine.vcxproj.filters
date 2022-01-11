@@ -40,6 +40,12 @@
     <Filter Include="01. Engine\04. Graphics\00. Shader">
       <UniqueIdentifier>{f8ab170f-05d1-49a1-bd11-4f725e299f09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\05. Math">
+      <UniqueIdentifier>{536037ed-2832-403f-8d0f-52ab7f01cac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics\03. Buffer">
+      <UniqueIdentifier>{cdeefe4b-06fe-4f94-8180-5e7b4fbb2638}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -49,9 +55,6 @@
       <Filter>01. Engine\01. Error</Filter>
     </ClInclude>
     <ClInclude Include="Game.h">
-      <Filter>01. Engine\00. Header</Filter>
-    </ClInclude>
-    <ClInclude Include="FroKEngine.h">
       <Filter>01. Engine\00. Header</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
@@ -111,6 +114,15 @@
     <ClInclude Include="Util.h">
       <Filter>01. Engine\00. Header</Filter>
     </ClInclude>
+    <ClInclude Include="FroKEngine.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>01. Engine\05. Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\UploadBuffer.h">
+      <Filter>01. Engine\04. Graphics\03. Buffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FroKEngine.cpp">
@@ -154,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="DxException.cpp">
       <Filter>01. Engine\01. Error</Filter>
+    </ClCompile>
+    <ClCompile Include="MathHelper.cpp">
+      <Filter>01. Engine\05. Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

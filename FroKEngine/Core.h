@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Timer.h"
 #include "Input.h"
+#include "MathHelper.h"
 
 class Core
 {
@@ -95,6 +96,9 @@ protected :
 
 	static const int SwapChainBufferCount = 2;
 	int											m_CurrBackBuffer = 0;
+	// 이 안에는 버퍼가 두개 들어간다. 
+	// 그 이유는 RTV와 DSV를 생성해야하기 때문
+	// 렌더 타깃 뷰는 Swap chain에서 렌더링의 대상이 되는 버퍼 자원을 서술하고, Depth/Stencil view는 깊이 판정을 위한 버퍼 자원을 서술한다.
 	Microsoft::WRL::ComPtr<ID3D12Resource>		m_SwapChainBuffer[SwapChainBufferCount];
 	Microsoft::WRL::ComPtr<ID3D12Resource>		m_DepthStencilBuffer;
 
