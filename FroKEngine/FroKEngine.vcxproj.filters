@@ -46,6 +46,9 @@
     <Filter Include="01. Engine\04. Graphics\03. Buffer">
       <UniqueIdentifier>{cdeefe4b-06fe-4f94-8180-5e7b4fbb2638}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\06. Util">
+      <UniqueIdentifier>{bf138edb-ae57-4b53-8831-3fa0661b775e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -72,30 +75,6 @@
     <ClInclude Include="Input.h">
       <Filter>01. Engine\03. Input</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imconfig.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imgui.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imgui_impl_dx11.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imgui_impl_win32.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imgui_internal.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imstb_rectpack.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imstb_textedit.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\ImGui\imstb_truetype.h">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h">
       <Filter>01. Engine\04. Graphics\02. Texture</Filter>
     </ClInclude>
@@ -111,9 +90,6 @@
     <ClInclude Include="DxException.h">
       <Filter>01. Engine\01. Error</Filter>
     </ClInclude>
-    <ClInclude Include="Util.h">
-      <Filter>01. Engine\00. Header</Filter>
-    </ClInclude>
     <ClInclude Include="FroKEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -122,6 +98,9 @@
     </ClInclude>
     <ClInclude Include="Graphics\UploadBuffer.h">
       <Filter>01. Engine\04. Graphics\03. Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>01. Engine\06. Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -139,24 +118,6 @@
     </ClCompile>
     <ClCompile Include="Input.cpp">
       <Filter>01. Engine\03. Input</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\ImGui\imgui.cpp">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\ImGui\imgui_draw.cpp">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\ImGui\imgui_impl_dx11.cpp">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\ImGui\imgui_impl_win32.cpp">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\ImGui\imgui_tables.cpp">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\ImGui\imgui_widgets.cpp">
-      <Filter>01. Engine\04. Graphics\01. UI</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp">
       <Filter>01. Engine\04. Graphics\02. Texture</Filter>
@@ -185,7 +146,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
+    <FxCompile Include="Graphics\Shader\color.hlsl">
       <Filter>01. Engine\04. Graphics\00. Shader</Filter>
     </FxCompile>
   </ItemGroup>

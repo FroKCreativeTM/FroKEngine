@@ -1,19 +1,44 @@
 #pragma once
 
+using Microsoft::WRL::ComPtr;
+using namespace DirectX;
+
 // Direct3D 관련된 유틸 함수를 넣습니다.
 class D3DUtil
 {
 public : 
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
+	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
 		ID3D12Device* pDevice,
 		ID3D12GraphicsCommandList* pCmdList,
 		const void* pInitData,
 		UINT byteSize,
 		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
+
+	static Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
+		const std::wstring& filename,
+		const D3D_SHADER_MACRO* defines,
+		const std::string& entrypoint,
+		const std::string& target);
+
+	static UINT CalcConstantBufferByteSize(UINT byteSize)
+	{
+		// Constant buffers must be a multiple of the minimum hardware
+		// allocation size (usually 256 bytes).  So round up to nearest
+		// multiple of 256.  We do this by adding 255 and then masking off
+		// the lower 2 bytes which store all bits < 256.
+		// Example: Suppose byteSize = 300.
+		// (300 + 255) & ~255
+		// 555 & ~255
+		// 0x022B & ~0x00ff
+		// 0x022B & 0xff00
+		// 0x0200
+		// 512
+		return (byteSize + 255) & ~255;
+	}
 };
 
 // 기본 버퍼를 만들어주기 위한 편의 함수입니다.
-Microsoft::WRL::ComPtr<ID3D12Resource> D3DUtil::CreateDefaultBuffer(ID3D12Device* pDevice, 
+inline Microsoft::WRL::ComPtr<ID3D12Resource> D3DUtil::CreateDefaultBuffer(ID3D12Device* pDevice, 
 	ID3D12GraphicsCommandList* pCmdList, 
 	const void* pInitData, 
 	UINT byteSize, 
@@ -70,18 +95,27 @@ Microsoft::WRL::ComPtr<ID3D12Resource> D3DUtil::CreateDefaultBuffer(ID3D12Device
 	return defaultBuffer;
 }
 
-static UINT CalcConstantBufferByteSize(UINT byteSize)
+inline Microsoft::WRL::ComPtr<ID3DBlob> D3DUtil::CompileShader(const std::wstring& filename, 
+	const D3D_SHADER_MACRO* defines, 
+	const std::string& entrypoint, 
+	const std::string& target)
 {
-	// Constant buffers must be a multiple of the minimum hardware
-	// allocation size (usually 256 bytes).  So round up to nearest
-	// multiple of 256.  We do this by adding 255 and then masking off
-	// the lower 2 bytes which store all bits < 256.
-	// Example: Suppose byteSize = 300.
-	// (300 + 255) & ~255
-	// 555 & ~255
-	// 0x022B & ~0x00ff
-	// 0x022B & 0xff00
-	// 0x0200
-	// 512
-	return (byteSize + 255) & ~255;
+	UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)  
+	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+	HRESULT hr = S_OK;
+
+	ComPtr<ID3DBlob> byteCode = nullptr;
+	ComPtr<ID3DBlob> errors;
+	hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
+
+	if (errors != nullptr)
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+
+	ThrowIfFailed(hr);
+
+	return byteCode;
 }

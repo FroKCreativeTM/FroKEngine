@@ -15,6 +15,21 @@ typedef struct _tagResolution
 		nWidth(x), nHeight(y) {}
 }RESOLUTION, * PRESOLUTION;
 
+
+// MeshGeometry에서 지오메트리의 하위 범위를 정의합니다.
+// 하나의 정점과 인덱스 버퍼에 여러 도형을 저장할 때 사용합니다. 
+// 그림 6.3에서 설명한 기술을 구현할 수 있도록 
+// 꼭짓점 및 인덱스 버퍼에 있는 지오메트리 저장소의 하위 집합을 그리는 데 필요한 오프셋과 데이터를 제공합니다.
+struct SubmeshGeometry
+{
+	UINT IndexCount = 0;
+	UINT StartIndexLocation = 0;
+	INT BaseVertexLocation = 0;
+
+	// 이 서브메시에 의해 정의된 지오메트리의 경계 상자이다.
+	DirectX::BoundingBox Bounds;
+};
+
 struct MeshGeometry
 {
 	// Give it a name so we can look it up by name.
@@ -68,18 +83,4 @@ struct MeshGeometry
 		VertexBufferUploader = nullptr;
 		IndexBufferUploader = nullptr;
 	}
-};
-
-// MeshGeometry에서 지오메트리의 하위 범위를 정의합니다.
-// 하나의 정점과 인덱스 버퍼에 여러 도형을 저장할 때 사용합니다. 
-// 그림 6.3에서 설명한 기술을 구현할 수 있도록 
-// 꼭짓점 및 인덱스 버퍼에 있는 지오메트리 저장소의 하위 집합을 그리는 데 필요한 오프셋과 데이터를 제공합니다.
-struct SubmeshGeometry
-{
-	UINT IndexCount = 0;
-	UINT StartIndexLocation = 0;
-	INT BaseVertexLocation = 0;
-
-	// 이 서브메시에 의해 정의된 지오메트리의 경계 상자이다.
-	DirectX::BoundingBox Bounds;
 };

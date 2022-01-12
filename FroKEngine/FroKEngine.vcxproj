@@ -149,14 +149,6 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="FroKEngine.h" />
     <ClInclude Include="Graphics\d3dx12.h" />
-    <ClInclude Include="Graphics\ImGui\imconfig.h" />
-    <ClInclude Include="Graphics\ImGui\imgui.h" />
-    <ClInclude Include="Graphics\ImGui\imgui_impl_dx11.h" />
-    <ClInclude Include="Graphics\ImGui\imgui_impl_win32.h" />
-    <ClInclude Include="Graphics\ImGui\imgui_internal.h" />
-    <ClInclude Include="Graphics\ImGui\imstb_rectpack.h" />
-    <ClInclude Include="Graphics\ImGui\imstb_textedit.h" />
-    <ClInclude Include="Graphics\ImGui\imstb_truetype.h" />
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h" />
     <ClInclude Include="Graphics\UploadBuffer.h" />
     <ClInclude Include="Input.h" />
@@ -174,12 +166,6 @@
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="FroKEngine.cpp" />
-    <ClCompile Include="Graphics\ImGui\imgui.cpp" />
-    <ClCompile Include="Graphics\ImGui\imgui_draw.cpp" />
-    <ClCompile Include="Graphics\ImGui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="Graphics\ImGui\imgui_impl_win32.cpp" />
-    <ClCompile Include="Graphics\ImGui\imgui_tables.cpp" />
-    <ClCompile Include="Graphics\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MathHelper.cpp" />
@@ -194,11 +180,8 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    <FxCompile Include="Graphics\Shader\color.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

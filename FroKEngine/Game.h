@@ -65,7 +65,7 @@
 
 // 매크로 선언된 헤더를 여기다가 넣는다.
 #include "Macro.h"
-#include "Util.h"
+
 // 직접 타입에 관련된 것을 선언합니다.
 #include "Type.h"
 #include "Resource.h"
@@ -73,3 +73,6 @@
 // 에러 핸들 
 #include "ErrorLogger.h"
 #include "DxException.h"
+
+// 게임 개발에 전반적으로 필요한 유틸 관련 클래스
+#include "Util.h"
