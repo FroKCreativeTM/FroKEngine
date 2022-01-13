@@ -82,6 +82,7 @@ public:
 
     /* ============================ 마우스 관련 메서드 ============================ */
     void MouseIn(LPARAM lParam);
+    void MouseUp();
     void MouseRawIn(LPARAM lParam);
     void MouseWheelIn(WPARAM wParam);
     void SetMouseLButton(bool b) { m_mouseLButton = b; }

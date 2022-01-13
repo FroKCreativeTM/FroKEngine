@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstream>
+
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
@@ -35,6 +37,8 @@ public :
 		// 512
 		return (byteSize + 255) & ~255;
 	}
+
+	static ComPtr<ID3DBlob> LoadBinary(const std::wstring& filename);
 };
 
 // 기본 버퍼를 만들어주기 위한 편의 함수입니다.
@@ -118,4 +122,23 @@ inline Microsoft::WRL::ComPtr<ID3DBlob> D3DUtil::CompileShader(const std::wstrin
 	ThrowIfFailed(hr);
 
 	return byteCode;
+}
+
+// 오프라인 컴파일된 셰이더(보통 .cso로 끝난다.)를
+// 로딩하기 위한 함수이다.
+inline ComPtr<ID3DBlob> D3DUtil::LoadBinary(const std::wstring& filename)
+{
+	std::ifstream fin(filename, std::ios::binary);
+
+	fin.seekg(0, std::ios::end);
+	std::ifstream::pos_type size = static_cast<int>(fin.tellg());
+	fin.seekg(0, std::ios::beg);
+
+	ComPtr<ID3DBlob> blob;
+	ThrowIfFailed(D3DCreateBlob(size, blob.GetAddressOf()));
+
+	fin.read((char*)blob->GetBufferPointer(), size);
+	fin.close();
+
+	return blob;
 }

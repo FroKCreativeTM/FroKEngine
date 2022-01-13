@@ -68,8 +68,10 @@ private:
 	void BuildBoxGeometry();
 	void BuildPSO();
 
-private : 
-	void OnMouseMove(UCHAR btnState, int x, int y);
+private :
+	void OnMouseDown(int x, int y);
+	void OnMouseMove(int x, int y);
+	void OnMouseUp(int x, int y);
 
 private :
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
@@ -139,6 +141,7 @@ void FroKEngine::OnResize()
 }
 
 // 서술자 힙을 생성한다.
+// 이는 자원을 렌더링 파이프라인에 묶을 때 사용할 것입니다.
 // Input : void
 // Output : void
 inline void FroKEngine::BuildDescriptorHeaps()
@@ -152,13 +155,22 @@ inline void FroKEngine::BuildDescriptorHeaps()
 		IID_PPV_ARGS(&m_CbvHeap)));
 }
 
+// 상수 버퍼를 빌드합니다.
+// 
+// Input : void
+// Output : void
 inline void FroKEngine::BuildConstantBuffers()
 {
+	// 물체 n개의 상수 자료를 담을 수 있는 담을 수 있는 상수 버퍼입니다.
+	// 여기서는 하나의 자료만 넘기면 되니 1을 넣어줍니다.
 	m_ObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(m_d3dDevice.Get(), 1, true);
 
+	// 256바이트 배수로 맞춥니다.
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 
+	// 버퍼 자체의 시작 주소를 가져옵니다.
 	D3D12_GPU_VIRTUAL_ADDRESS cbAddress = m_ObjectCB->Resource()->GetGPUVirtualAddress();
+
 	// 버퍼에 있는 i번째 객체 상수 버퍼로 오프셋합니다.
 	int boxCBufIndex = 0;
 	cbAddress += boxCBufIndex * objCBByteSize;
@@ -172,6 +184,10 @@ inline void FroKEngine::BuildConstantBuffers()
 		m_CbvHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
+// 루트 서명과 서술자 테이블을 생성합니다.
+// 
+// Input : void
+// Output : void
 inline void FroKEngine::BuildRootSignature()
 {
 	// 셰이더 프로그램은 일반적으로 입력으로 리소스를 필요로 합니다(상수 버퍼, 텍스처, 샘플러).
@@ -184,14 +200,18 @@ inline void FroKEngine::BuildRootSignature()
 
 	// CBV의 단일 서술자 테이블을 만듭니다.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
-	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
+		1,	// 테이블의 서술자 갯수
+		0);	// 이 루트 매개변수에 묶일 셰이더 인수들의 기준 레지스터 번호( register (b0) )
+
+	slotRootParameter[0].InitAsDescriptorTable(1,	// 구간(range) 갯수
+		&cbvTable);	// 구간들의 배열을 가리키는 포인터
 
 	// 루트 서명은 루트 매개변수의 배열입니다.
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	// 단일 상수 버퍼로 구성된 설명자 범위를 가리키는 단일 슬롯으로 루트 서명을 만듭니다.
+	// 단일 상수 버퍼로 구성된 사술자 구간을 가리키는 단일 슬롯으로 루트 서명을 만듭니다.
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
@@ -210,10 +230,14 @@ inline void FroKEngine::BuildRootSignature()
 		IID_PPV_ARGS(&m_RootSignature)));
 }
 
+// 셰이더을 바이트코드로 컴파일하고
+// 입력 레이아웃을 만들어서 셰이더에 넘긴다.
 inline void FroKEngine::BuildShadersAndInputLayout()
 {
 	HRESULT hr = S_OK;
-
+	
+	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
+	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
 	m_vsByteCode = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "VS", "vs_5_0");
 	m_psByteCode = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "PS", "ps_5_0");
 
@@ -224,6 +248,7 @@ inline void FroKEngine::BuildShadersAndInputLayout()
 	};
 }
 
+// 박스 지오메트리를 생성한다.
 inline void FroKEngine::BuildBoxGeometry()
 {
 	std::array<Vertex, 8> vertices =
@@ -296,12 +321,20 @@ inline void FroKEngine::BuildBoxGeometry()
 	m_BoxGeo->DrawArgs["box"] = submesh;
 }
 
+// 파이프라인 상태 객체(Pipeline State Object)를 생성한다.
+// 여기서는 지금까지 입력 레이아웃, 정점/픽셀 셰이더를 만들고 래스터라이즈 상태를 설정한 것을
+// 렌더링 파이프라인에 묶어서 이 상태를 제어할 수 있는 PSO를 생성합니다.
 inline void FroKEngine::BuildPSO()
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
 	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	// 입력 레이아웃을 묶습니다.
 	psoDesc.InputLayout = { m_InputLayout.data(), (UINT)m_InputLayout.size() };
+
+	// 루트 서명을 묶습니다.
 	psoDesc.pRootSignature = m_RootSignature.Get();
+
+	// 정점/픽셀 셰이더를 묶습니다.
 	psoDesc.VS =
 	{
 		reinterpret_cast<BYTE*>(m_vsByteCode->GetBufferPointer()),
@@ -312,11 +345,15 @@ inline void FroKEngine::BuildPSO()
 		reinterpret_cast<BYTE*>(m_psByteCode->GetBufferPointer()),
 		m_psByteCode->GetBufferSize()
 	};
+
+	// 래스터라이즈 부분은 셰이더를 직접 프로그래밍할 수 없고
+	// 단순히 설정만 가능한 부분이다.
+	// 레스터나 그 외 설정들을 묶어줍니다.
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.SampleMask = UINT_MAX; // 다중표본화를 설정합니다.(여기서는 그 어떤 표본도 비활성화하지 않는 MAX를 넣습니다.)
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;	// 기본 도형은 삼각형입니다
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = m_BackBufferFormat;
 	psoDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
@@ -325,9 +362,14 @@ inline void FroKEngine::BuildPSO()
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PSO)));
 }
 
-inline void FroKEngine::OnMouseMove(UCHAR btnState, int x, int y)
+inline void FroKEngine::OnMouseDown(int x, int y)
 {
-	if ((btnState & VK_LBUTTON) != 0)
+
+}
+
+inline void FroKEngine::OnMouseMove(int x, int y)
+{
+	if (GET_SINGLE(Input)->GetMouseLButton())
 	{
 		// 각 픽셀이 4분의 1도에 해당하도록 합니다.
 		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_LastMousePos.x));
@@ -340,21 +382,26 @@ inline void FroKEngine::OnMouseMove(UCHAR btnState, int x, int y)
 		// 각도 mPhi를 제한합니다.
 		m_Phi = MathHelper::Clamp(m_Phi, 0.1f, MathHelper::Pi - 0.1f);
 	}
-	else if ((btnState & VK_RBUTTON) != 0)
+
+	if (GET_SINGLE(Input)->GetMouseRButton())
 	{
-		// Make each pixel correspond to 0.005 unit in the scene.
+		// 마우스 한 픽셀 이동을 장면의 0.005 단위에 대응시킨다.
 		float dx = 0.005f * static_cast<float>(x - m_LastMousePos.x);
 		float dy = 0.005f * static_cast<float>(y - m_LastMousePos.y);
 
-		// Update the camera radius based on input.
+		// 입력에 기초해서 카메라 반지름을 갱신한다.
 		m_Radius += dx - dy;
 
-		// Restrict the radius.
+		// 반지름을 제한한다.
 		m_Radius = MathHelper::Clamp(m_Radius, 3.0f, 15.0f);
 	}
 
 	m_LastMousePos.x = x;
 	m_LastMousePos.y = y;
+}
+
+inline void FroKEngine::OnMouseUp(int x, int y)
+{
 }
 
 void FroKEngine::Input(float fDeltaTime)
@@ -364,23 +411,16 @@ void FroKEngine::Input(float fDeltaTime)
 		m_bLoop = false;
 		PostQuitMessage(0);
 	}
-
-	// if (GET_SINGLE(Input)->IsKeyDown(VK_LBUTTON) || 
-	// 	GET_SINGLE(Input)->IsKeyDown(VK_MBUTTON) ||
-	// 	GET_SINGLE(Input)->IsKeyDown(VK_RBUTTON))
-	// {
-	// 	OnMouseMove();
-	// }
 }
 
 int FroKEngine::Update(float fDeltaTime)
 {
-	// Convert Spherical to Cartesian coordinates.
+	// 데카르트 좌표계로 변환한다.
 	float x = m_Radius * sinf(m_Phi) * cosf(m_Theta);
 	float z = m_Radius * sinf(m_Phi) * sinf(m_Theta);
 	float y = m_Radius * cosf(m_Phi);
 
-	// Build the view matrix.
+	// 뷰 매트릭스를 생성한다.
 	XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
 	XMVECTOR target = XMVectorZero();
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -392,7 +432,7 @@ int FroKEngine::Update(float fDeltaTime)
 	XMMATRIX proj = XMLoadFloat4x4(&m_Proj);
 	XMMATRIX worldViewProj = world * view * proj;
 
-	// Update the constant buffer with the latest worldViewProj matrix.
+	// 상수 버퍼를 최근 worldViewProj 행렬로 업데이트한다.
 	ObjectConstants objConstants;
 	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 	m_ObjectCB->CopyData(0, objConstants);
@@ -434,11 +474,13 @@ void FroKEngine::Render(float fDeltaTime)
 	// 렌더링할 버퍼를 지정합니다.
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
-	// 상수 버퍼 뷰 서술자 힙을 설정합니다.
+	// 상수 버퍼 뷰 서술자 힙을 가져옵니다.
+	// 이는 렌더링 파이프라인에 자원을 묶을 때 사용합니다.
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_CbvHeap.Get() };
 	m_CommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 	// 그래픽스 루트 서명을 설정합니다.
+	// SetGraphicsRootSignature을 이용하면 서술자 테이블을 가져와서 파이프라인에 묶을 수 있습니다.
 	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
 	// 박스를 그리기 위한 입력 조립기를 설정합니다.

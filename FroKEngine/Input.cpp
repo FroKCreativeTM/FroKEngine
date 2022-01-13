@@ -1,4 +1,5 @@
 #include "Input.h"
+#include "Core.h"
 
 DEFINITION_SINGLE(Input);
 
@@ -158,6 +159,13 @@ void Input::Clear(UCHAR what) {
 void Input::MouseIn(LPARAM lParam) {
 	m_mouseX = GET_X_LPARAM(lParam);
 	m_mouseY = GET_Y_LPARAM(lParam);
+
+	SetCapture(Core::GetInst()->GetMainWnd());
+}
+
+void Input::MouseUp()
+{
+	ReleaseCapture();
 }
 
 void Input::MouseRawIn(LPARAM lParam) {

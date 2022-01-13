@@ -280,6 +280,7 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return 0;
     case WM_MOUSEMOVE:
         GET_SINGLE(Input)->MouseIn(lParam);
+        OnMouseMove(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
         return 0;
     case WM_INPUT:
         GET_SINGLE(Input)->MouseRawIn(lParam);
@@ -287,30 +288,36 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDOWN:
         GET_SINGLE(Input)->SetMouseLButton(true);
         GET_SINGLE(Input)->MouseIn(lParam);
+        OnMouseDown(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
         return 0;
     case WM_LBUTTONUP:
         GET_SINGLE(Input)->SetMouseLButton(false);
-        GET_SINGLE(Input)->MouseIn(lParam);
+        GET_SINGLE(Input)->MouseUp();
+        OnMouseUp(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
         return 0;
     case WM_MBUTTONDOWN:
         GET_SINGLE(Input)->SetMouseMButton(true);
         GET_SINGLE(Input)->MouseIn(lParam);
+        OnMouseDown(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
         return 0;
     case WM_MBUTTONUP:
         GET_SINGLE(Input)->SetMouseMButton(false);
-        GET_SINGLE(Input)->MouseIn(lParam);
+        GET_SINGLE(Input)->MouseUp();
+        OnMouseUp(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
         return 0;
     case WM_RBUTTONDOWN:
         GET_SINGLE(Input)->SetMouseRButton(true);
         GET_SINGLE(Input)->MouseIn(lParam);
+        OnMouseDown(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
         return 0;
     case WM_RBUTTONUP:
         GET_SINGLE(Input)->SetMouseRButton(false);
-        GET_SINGLE(Input)->MouseIn(lParam);
+        GET_SINGLE(Input)->MouseUp();
+        OnMouseUp(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
         return 0;
     case WM_XBUTTONDOWN: case WM_XBUTTONUP:
         GET_SINGLE(Input)->SetMouseXButton(wParam);
-        GET_SINGLE(Input)->MouseIn(lParam);
+        GET_SINGLE(Input)->MouseUp();
         return 0;
     case WM_DEVICECHANGE:
         // 컨트롤러
