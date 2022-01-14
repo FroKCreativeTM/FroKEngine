@@ -39,6 +39,7 @@ struct ObjectConstants
 {
 	// 단위행렬을 저장한다.
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
+	// float gTime = 0.0f;
 };
 
 class FroKEngine : public Core
@@ -435,6 +436,7 @@ int FroKEngine::Update(float fDeltaTime)
 	// 상수 버퍼를 최근 worldViewProj 행렬로 업데이트한다.
 	ObjectConstants objConstants;
 	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+	// objConstants.gTime = GET_SINGLE(Timer)->GetTotalTime();
 	m_ObjectCB->CopyData(0, objConstants);
 
 	return 0;
