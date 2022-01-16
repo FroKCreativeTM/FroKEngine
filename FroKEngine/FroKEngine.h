@@ -3,44 +3,15 @@
 #include "Core.h"
 #include "resource.h"
 #include "Graphics/UploadBuffer.h"
+#include "Graphics/FrameResource.h"
+#include "Graphics/RenderItem.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-// 법선과 색상의 위치를 가진 구조체
-struct Vertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
-	// XMFLOAT2 tex0;
-	// XMFLOAT2 tex1;
-};
-
-// 위의 데이터는 D3D12_INPUT_ELEMENT_DESC 배열을 이용해서 입력 배치를 서술한다
-// 예로 들어 위의 경우는(주석까지 포함해서) 다음과 같이 표현한다.
-// D3D12_INPUT_ELEMENT_DESC vertexDesc[] = 
-// {
-//		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-//		{"COLOR", 0, DXGI_FORMAT_A32R32G32B32_FLOAT, 0, 12, // 12는 offset
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-//		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28,	// 12 + 16
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-//		{"TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 36,	// 12 + 16 + 8
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
-// };
-// 그리고 위 코드는 Vertex Shader 코드에서 다음과 같이 입력을 받는다.
-// VertexOut VS(float3 iPos : POSITION,
-//	float3 iNormal : NORMAL,
-//	float3 iTex0 : TEXCOORD0,
-//	float3 iTex1 : TEXCOORD1)
-
-struct ObjectConstants
-{
-	// 단위행렬을 저장한다.
-	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
-	// float gTime = 0.0f;
-};
+// 프레임 자원 3개를 담는 벡터를 생성하기 위한 도구
+// 이렇게 하면 n~n+2까지의 프레임을 미리 생성할 수 있다.
+static const int gNumFrameResource = 3;
 
 class FroKEngine : public Core
 {
@@ -62,12 +33,18 @@ private:
 
 	virtual void OnResize()override;
 
+	// 프레임 리소스를 빌드한다.
+	void BuildFrameResources();
+
 	void BuildDescriptorHeaps();
 	void BuildConstantBuffers();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	void BuildBoxGeometry();
 	void BuildPSO();
+
+	void UpdateObjectDBs(float fDeltaTime);
+	void UpdateMainPassCB(float fDeltaTime);
 
 private :
 	void OnMouseDown(int x, int y);
@@ -87,9 +64,22 @@ private :
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputLayout;
 
+	// 프레임 리소스를 저장하기 위한 vector
+	std::vector<std::unique_ptr<FrameResource>> m_frameResource;
+	FrameResource* m_curFrameResource = nullptr;
+	int m_nCurFrameResourceIdx = 0;
+
+	// 모든 렌더 아이템의 리스트.
+	std::vector<std::unique_ptr<RenderItem>> m_allRenderItem;
+
+	// 패스 상수들을 저장해둔 구조체
+	PassConstants m_tMainPassCB;
+
+
 	ComPtr<ID3D12PipelineState> m_PSO = nullptr;
 
 	XMFLOAT4X4	m_World	= MathHelper::Identity4x4();
+	XMFLOAT3 m_EyePos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4X4	m_View	= MathHelper::Identity4x4();
 	XMFLOAT4X4	m_Proj	= MathHelper::Identity4x4();
 
@@ -139,6 +129,15 @@ void FroKEngine::OnResize()
 	// 창 크기가 조정되었으므로 종횡비를 업데이트하고 투영 행렬을 다시 계산합니다
 	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 	XMStoreFloat4x4(&m_Proj, P);
+}
+
+inline void FroKEngine::BuildFrameResources()
+{
+	for (int i = 0; i < gNumFrameResource; ++i)
+	{
+		m_frameResource.push_back(std::make_unique<FrameResource>(
+			m_d3dDevice.Get(), 1, (UINT)m_allRenderItem.size()));
+	}
 }
 
 // 서술자 힙을 생성한다.
@@ -197,19 +196,25 @@ inline void FroKEngine::BuildRootSignature()
 	// 루트 서명은 함수 서명을 정의하는 것으로 생각할 수 있습니다.
 
 	// 루트 매개변수는 테이블, 루트 설명자 또는 루트 상수일 수 있습니다.
-	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
-
+	CD3DX12_ROOT_PARAMETER slotRootParameter[2];
 	// CBV의 단일 서술자 테이블을 만듭니다.
-	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
+	CD3DX12_DESCRIPTOR_RANGE cbvTable0;
+	cbvTable0.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
 		1,	// 테이블의 서술자 갯수
 		0);	// 이 루트 매개변수에 묶일 셰이더 인수들의 기준 레지스터 번호( register (b0) )
 
+	CD3DX12_DESCRIPTOR_RANGE cbvTable1;
+	cbvTable1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
+		1,	// 테이블의 서술자 갯수
+		1);	// 이 루트 매개변수에 묶일 셰이더 인수들의 기준 레지스터 번호( register (b1) )
+
 	slotRootParameter[0].InitAsDescriptorTable(1,	// 구간(range) 갯수
-		&cbvTable);	// 구간들의 배열을 가리키는 포인터
+		&cbvTable0);	// 구간들의 배열을 가리키는 포인터
+	slotRootParameter[1].InitAsDescriptorTable(1,	// 구간(range) 갯수
+		&cbvTable1);	// 구간들의 배열을 가리키는 포인터
 
 	// 루트 서명은 루트 매개변수의 배열입니다.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// 단일 상수 버퍼로 구성된 사술자 구간을 가리키는 단일 슬롯으로 루트 서명을 만듭니다.
@@ -414,31 +419,59 @@ void FroKEngine::Input(float fDeltaTime)
 	}
 }
 
+// 오브젝트의 상수 버퍼를 갱신한다.
+inline void FroKEngine::UpdateObjectDBs(float fDeltaTime)
+{
+	auto curObjectCB = m_curFrameResource->ObjectCB.get();
+
+	// 상수들이 바뀌었을 때에만 cbuffer 자료를 갱신해야 한다.
+	// 이러한 갱신을 프레임 자원마다 수행해야 한다.
+	for (auto & e : m_allRenderItem)
+	{
+		XMMATRIX world = XMLoadFloat4x4(&e->World);
+
+		ObjectConstants objConstants;
+		XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
+
+		curObjectCB->CopyData(e->objCBIdx, objConstants);
+
+		// 다음 프레임 자원으로 넘어간다.
+		e->nFramesDirty--;
+	}
+}
+
+inline void FroKEngine::UpdateMainPassCB(float fDeltaTime)
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_View);
+	XMMATRIX proj = XMLoadFloat4x4(&m_Proj);
+
+	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+
+	XMStoreFloat4x4(&m_tMainPassCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&m_tMainPassCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&m_tMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&m_tMainPassCB.InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&m_tMainPassCB.InvProj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&m_tMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
+	m_tMainPassCB.EyePosW = m_EyePos;
+
+	m_tMainPassCB.RenderTargetSize = XMFLOAT2((float)m_tRS.nWidth, (float)m_tRS.nHeight);
+	m_tMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / m_tRS.nWidth, 1.0f / m_tRS.nHeight);
+
+	m_tMainPassCB.NearZ = 1.0f;
+	m_tMainPassCB.FarZ = 1000.0f;
+	m_tMainPassCB.TotalTime = GET_SINGLE(Timer)->GetTotalTime();
+	m_tMainPassCB.DeltaTime = fDeltaTime;
+
+	auto curPassCB = m_curFrameResource->PassCB.get();
+	curPassCB->CopyData(0, m_tMainPassCB);
+}
+
 int FroKEngine::Update(float fDeltaTime)
 {
-	// 데카르트 좌표계로 변환한다.
-	float x = m_Radius * sinf(m_Phi) * cosf(m_Theta);
-	float z = m_Radius * sinf(m_Phi) * sinf(m_Theta);
-	float y = m_Radius * cosf(m_Phi);
-
-	// 뷰 매트릭스를 생성한다.
-	XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
-	XMVECTOR target = XMVectorZero();
-	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
-	XMStoreFloat4x4(&m_View, view);
-
-	XMMATRIX world = XMLoadFloat4x4(&m_World);
-	XMMATRIX proj = XMLoadFloat4x4(&m_Proj);
-	XMMATRIX worldViewProj = world * view * proj;
-
-	// 상수 버퍼를 최근 worldViewProj 행렬로 업데이트한다.
-	ObjectConstants objConstants;
-	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
-	// objConstants.gTime = GET_SINGLE(Timer)->GetTotalTime();
-	m_ObjectCB->CopyData(0, objConstants);
-
 	return 0;
 }
 

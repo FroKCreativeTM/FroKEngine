@@ -146,9 +146,12 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="ErrorLogger.h" />
-    <ClInclude Include="Game.h" />
     <ClInclude Include="FroKEngine.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics\d3dx12.h" />
+    <ClInclude Include="Graphics\FrameResource.h" />
+    <ClInclude Include="Graphics\GeometryGenerator.h" />
+    <ClInclude Include="Graphics\RenderItem.h" />
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h" />
     <ClInclude Include="Graphics\UploadBuffer.h" />
     <ClInclude Include="Input.h" />
@@ -166,6 +169,8 @@
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="FroKEngine.cpp" />
+    <ClCompile Include="Graphics\FrameResource.cpp" />
+    <ClCompile Include="Graphics\GeometryGenerator.cpp" />
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MathHelper.cpp" />

@@ -49,6 +49,12 @@
     <Filter Include="01. Engine\06. Util">
       <UniqueIdentifier>{bf138edb-ae57-4b53-8831-3fa0661b775e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\04. Graphics\04. Resource">
+      <UniqueIdentifier>{d328d9ce-2be8-4355-8e10-6d94e69eb2b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics\04. Resource\01. Geometry">
+      <UniqueIdentifier>{493e98dd-a9b6-443f-b408-076077785fb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -90,9 +96,6 @@
     <ClInclude Include="DxException.h">
       <Filter>01. Engine\01. Error</Filter>
     </ClInclude>
-    <ClInclude Include="FroKEngine.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="MathHelper.h">
       <Filter>01. Engine\05. Math</Filter>
     </ClInclude>
@@ -101,6 +104,18 @@
     </ClInclude>
     <ClInclude Include="Util.h">
       <Filter>01. Engine\06. Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\FrameResource.h">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RenderItem.h">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="FroKEngine.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\GeometryGenerator.h">
+      <Filter>01. Engine\04. Graphics\04. Resource\01. Geometry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +145,12 @@
     </ClCompile>
     <ClCompile Include="MathHelper.cpp">
       <Filter>01. Engine\05. Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\FrameResource.cpp">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\GeometryGenerator.cpp">
+      <Filter>01. Engine\04. Graphics\04. Resource\01. Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
