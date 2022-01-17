@@ -5,6 +5,7 @@
 #include "Graphics/UploadBuffer.h"
 #include "Graphics/FrameResource.h"
 #include "Graphics/RenderItem.h"
+#include "Graphics/GeometryGenerator.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -37,14 +38,18 @@ private:
 	void BuildFrameResources();
 
 	void BuildDescriptorHeaps();
-	void BuildConstantBuffers();
+	void BuildConstantBufferViews();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	void BuildBoxGeometry();
+	void BuildShapeGeometry();
+	void BuildRenderItems();
 	void BuildPSO();
 
 	void UpdateObjectDBs(float fDeltaTime);
 	void UpdateMainPassCB(float fDeltaTime);
+
+	void MakeRenderItem();
 
 private :
 	void OnMouseDown(int x, int y);
@@ -55,7 +60,10 @@ private :
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap>	m_CbvHeap = nullptr;
 
+	// 패스별 상수와 오브젝트 상수들을 저장하기 위한 버퍼
+	std::unique_ptr<UploadBuffer<PassConstants>> m_PassCB = nullptr;
 	std::unique_ptr<UploadBuffer<ObjectConstants>> m_ObjectCB = nullptr;
+	UINT m_passCbvOffset = 0;
 
 	std::unique_ptr<MeshGeometry> m_BoxGeo = nullptr;
 
@@ -65,16 +73,19 @@ private :
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputLayout;
 
 	// 프레임 리소스를 저장하기 위한 vector
-	std::vector<std::unique_ptr<FrameResource>> m_frameResource;
+	std::vector<std::unique_ptr<FrameResource>> m_frameResources;
 	FrameResource* m_curFrameResource = nullptr;
 	int m_nCurFrameResourceIdx = 0;
 
 	// 모든 렌더 아이템의 리스트.
-	std::vector<std::unique_ptr<RenderItem>> m_allRenderItem;
+	std::vector<std::unique_ptr<RenderItem>> m_allRenderItems;
+	std::vector<RenderItem*> m_OpaqueRenderItems;
 
 	// 패스 상수들을 저장해둔 구조체
 	PassConstants m_tMainPassCB;
 
+	// 지오메트리 정보를 저장하기 위한 map
+	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_Geometries;
 
 	ComPtr<ID3D12PipelineState> m_PSO = nullptr;
 
@@ -105,7 +116,7 @@ bool FroKEngine::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
 	BuildDescriptorHeaps();
-	BuildConstantBuffers();
+	BuildConstantBufferViews();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	BuildBoxGeometry();
@@ -135,8 +146,8 @@ inline void FroKEngine::BuildFrameResources()
 {
 	for (int i = 0; i < gNumFrameResource; ++i)
 	{
-		m_frameResource.push_back(std::make_unique<FrameResource>(
-			m_d3dDevice.Get(), 1, (UINT)m_allRenderItem.size()));
+		m_frameResources.push_back(std::make_unique<FrameResource>(
+			m_d3dDevice.Get(), 1, (UINT)m_allRenderItems.size()));
 	}
 }
 
@@ -146,8 +157,18 @@ inline void FroKEngine::BuildFrameResources()
 // Output : void
 inline void FroKEngine::BuildDescriptorHeaps()
 {
+	UINT objCnt = (UINT)m_OpaqueRenderItems.size();
+
+	// 각 프레임 자원의 물체마다 하나씩 CBV 서술자가 필요하다.
+	// +1은 각 프레임 자원에 필요한 패스별 CBV를 위한 것이다.
+	UINT nDescriptors = (objCnt + 1) * gNumFrameResource;
+
+	// 패스별 CBV의 시작 오프셋을 저장해둔다.
+	// 이들은 마지막 세 서술자이다.
+	m_passCbvOffset = objCnt * gNumFrameResource;
+
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	cbvHeapDesc.NumDescriptors = 1;
+	cbvHeapDesc.NumDescriptors = nDescriptors;
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	cbvHeapDesc.NodeMask = 0;
@@ -159,29 +180,27 @@ inline void FroKEngine::BuildDescriptorHeaps()
 // 
 // Input : void
 // Output : void
-inline void FroKEngine::BuildConstantBuffers()
+inline void FroKEngine::BuildConstantBufferViews()
 {
-	// 물체 n개의 상수 자료를 담을 수 있는 담을 수 있는 상수 버퍼입니다.
-	// 여기서는 하나의 자료만 넘기면 되니 1을 넣어줍니다.
-	m_ObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(m_d3dDevice.Get(), 1, true);
-
 	// 256바이트 배수로 맞춥니다.
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 
-	// 버퍼 자체의 시작 주소를 가져옵니다.
-	D3D12_GPU_VIRTUAL_ADDRESS cbAddress = m_ObjectCB->Resource()->GetGPUVirtualAddress();
+	UINT objCnt = (UINT)m_OpaqueRenderItems.size();
 
-	// 버퍼에 있는 i번째 객체 상수 버퍼로 오프셋합니다.
-	int boxCBufIndex = 0;
-	cbAddress += boxCBufIndex * objCBByteSize;
+	// 각 프레임 자원의 물체마다 하나씩 CBV 서술자가 필요하다.
+	for (int frameIdx = 0; frameIdx < gNumFrameResource; ++frameIdx)
+	{
+		auto objCB = m_frameResources[frameIdx]->ObjectCB->Resource();
 
-	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-	cbvDesc.BufferLocation = cbAddress;
-	cbvDesc.SizeInBytes = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+		for (UINT i = 0; i < objCnt; ++i)
+		{
+			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objCB->GetGPUVirtualAddress();
 
-	m_d3dDevice->CreateConstantBufferView(
-		&cbvDesc,
-		m_CbvHeap->GetCPUDescriptorHandleForHeapStart());
+			// 현재 버퍼에서 i번째 물체별 상수 버퍼의 오프셋
+			
+		}
+	}
+
 }
 
 // 루트 서명과 서술자 테이블을 생성합니다.
@@ -327,6 +346,209 @@ inline void FroKEngine::BuildBoxGeometry()
 	m_BoxGeo->DrawArgs["box"] = submesh;
 }
 
+inline void FroKEngine::BuildShapeGeometry()
+{
+	GeometryGenerator geoGenerator;
+	GeometryGenerator::MeshData box = geoGenerator.CreateBox(1.5f, 0.5f, 1.5f, 3);
+	GeometryGenerator::MeshData grid = geoGenerator.CreateGrid(20.0f, 30.0f, 60, 40);
+	GeometryGenerator::MeshData sphere = geoGenerator.CreateSphere(0.5f, 20, 20);
+	GeometryGenerator::MeshData cylinder = geoGenerator.CreateCylinder(0.5f, 0.3f, 3.0f, 20, 20);
+
+	// 이 코드는 모든 기하 구조를 하나의 커다란 정점/인덱스 버퍼에 담는다.
+	// 따라서 버퍼에서 각 부분 메시가 차지하는 영역들을 정의할 필요가 있다.
+
+	// 연결된 정점 버퍼에서의 각 물체의 시작 인덱스를 적절한 변수들에 보관합니다.
+	UINT boxVertexOffset = 0;
+	UINT gridVertexOffset = (UINT)box.Vertices.size();
+	UINT sphereVertexOffset = gridVertexOffset + (UINT)grid.Vertices.size();
+	UINT cylinderVertexOffset = sphereVertexOffset + (UINT)sphere.Vertices.size();
+
+	// 연결된 인덱스 버퍼에서의 각 물체의 시작 인덱스를 적절한 변수들에 저장해둡니다.
+	UINT boxIndexOffset = 0;
+	UINT gridIndexOffset = (UINT)box.Indices32.size();
+	UINT sphereIndexOffset = gridIndexOffset + (UINT)grid.Indices32.size();
+	UINT cylinderIndexOffset = sphereIndexOffset + (UINT)sphere.Indices32.size();
+
+	// 정점 / 인덱스 버퍼에서 각 물체가 차지하는 영역을 나타내는 SubmeshGeometry 객체를 정의한다.
+	SubmeshGeometry boxSubmesh;
+	boxSubmesh.IndexCount = (UINT)box.Indices32.size();
+	boxSubmesh.StartIndexLocation = boxIndexOffset;
+	boxSubmesh.BaseVertexLocation = boxVertexOffset;
+
+	SubmeshGeometry gridSubmesh;
+	gridSubmesh.IndexCount = (UINT)grid.Indices32.size();
+	gridSubmesh.StartIndexLocation = gridIndexOffset;
+	gridSubmesh.BaseVertexLocation = gridVertexOffset;
+
+	SubmeshGeometry sphereSubmesh;
+	sphereSubmesh.IndexCount = (UINT)sphere.Indices32.size();
+	sphereSubmesh.StartIndexLocation = sphereIndexOffset;
+	sphereSubmesh.BaseVertexLocation = sphereVertexOffset;
+
+	SubmeshGeometry cylinderSubmesh;
+	cylinderSubmesh.IndexCount = (UINT)cylinder.Indices32.size();
+	cylinderSubmesh.StartIndexLocation = cylinderIndexOffset;
+	cylinderSubmesh.BaseVertexLocation = cylinderVertexOffset;
+
+	// 필요한 정점 성분들을 추출하고, 모든 메시의 정점들을 하나의 정점 버퍼로 넣는다.
+
+	auto totalVertexCount = box.Vertices.size() + grid.Vertices.size() +
+		sphere.Vertices.size() + cylinder.Vertices.size();
+
+	std::vector<Vertex> vertices(totalVertexCount);
+
+	UINT k = 0;
+	for (size_t i = 0; i < box.Vertices.size(); ++i, ++k)
+	{
+		vertices[k].Pos = box.Vertices[i].Position;
+		vertices[k].Color = XMFLOAT4(DirectX::Colors::DarkGreen);
+	}
+
+	for (size_t i = 0; i < grid.Vertices.size(); ++i, ++k)
+	{
+		vertices[k].Pos = grid.Vertices[i].Position;
+		vertices[k].Color = XMFLOAT4(DirectX::Colors::ForestGreen);
+	}
+
+	for (size_t i = 0; i < sphere.Vertices.size(); ++i, ++k)
+	{
+		vertices[k].Pos = sphere.Vertices[i].Position;
+		vertices[k].Color = XMFLOAT4(DirectX::Colors::Crimson);
+	}
+
+	for (size_t i = 0; i < cylinder.Vertices.size(); ++i, ++k)
+	{
+		vertices[k].Pos = cylinder.Vertices[i].Position;
+		vertices[k].Color = XMFLOAT4(DirectX::Colors::SteelBlue);
+	}
+
+	std::vector<std::uint16_t> indices;
+	indices.insert(indices.end(),
+		std::begin(box.GetIndices16()),
+		std::end(box.GetIndices16()));
+	indices.insert(indices.end(),
+		std::begin(grid.GetIndices16()),
+		std::end(grid.GetIndices16()));
+	indices.insert(indices.end(),
+		std::begin(sphere.GetIndices16()),
+		std::end(sphere.GetIndices16()));
+	indices.insert(indices.end(),
+		std::begin(cylinder.GetIndices16()),
+		std::end(cylinder.GetIndices16()));
+
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "shapeGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	// GPU에서 사용할 버퍼를 만둔다.
+	geo->VertexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
+		m_CommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+	geo->IndexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
+		m_CommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	geo->DrawArgs["box"] = boxSubmesh;
+	geo->DrawArgs["grid"] = gridSubmesh;
+	geo->DrawArgs["sphere"] = sphereSubmesh;
+	geo->DrawArgs["cylinder"] = cylinderSubmesh;
+
+	m_Geometries[geo->Name] = std::move(geo);
+}
+
+inline void FroKEngine::BuildRenderItems()
+{
+	auto boxRenderItem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&boxRenderItem->World,
+		XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixTranslation(0.0f, 0.5f, 0.0f));
+	boxRenderItem->objCBIdx = 0;
+	boxRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+	boxRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	boxRenderItem->nIdxCnt = boxRenderItem->pGeometry->DrawArgs["box"].IndexCount;
+	boxRenderItem->nStartIdxLocation = boxRenderItem->pGeometry->DrawArgs["box"].StartIndexLocation;
+	boxRenderItem->nBaseVertexLocation = boxRenderItem->pGeometry->DrawArgs["box"].BaseVertexLocation;
+	m_allRenderItems.push_back(std::move(boxRenderItem));
+
+	auto gridRenderItem = std::make_unique<RenderItem>();
+	gridRenderItem->World = MathHelper::Identity4x4();
+	gridRenderItem->objCBIdx = 1;
+	gridRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+	gridRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	gridRenderItem->nIdxCnt = gridRenderItem->pGeometry->DrawArgs["grid"].IndexCount;
+	gridRenderItem->nStartIdxLocation = gridRenderItem->pGeometry->DrawArgs["grid"].StartIndexLocation;
+	gridRenderItem->nBaseVertexLocation = gridRenderItem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
+	m_allRenderItems.push_back(std::move(gridRenderItem));
+
+	// 기둥들과 구를 두 줄로 배치한다.
+	UINT objCBIdx = 2;
+	for (int i = 0; i < 5; i++)
+	{
+		auto leftCylRenderItem = std::make_unique<RenderItem>();
+		auto rightCylRenderItem = std::make_unique<RenderItem>();
+		auto leftSphereRenderItem = std::make_unique<RenderItem>();
+		auto rightSphereRenderItem = std::make_unique<RenderItem>();
+
+		XMMATRIX leftCylWorld = XMMatrixTranslation(-5.0f, 1.5f, -10.0f + i * 5.0f);
+		XMMATRIX rightCylWorld = XMMatrixTranslation(+5.0f, 1.5f, -10.0f + i * 5.0f);
+
+		XMMATRIX leftSphereWorld = XMMatrixTranslation(-5.0f, 3.5f, -10.0f + i * 5.0f);
+		XMMATRIX rightSphereWorld = XMMatrixTranslation(+5.0f, 3.5f, -10.0f + i * 5.0f);
+
+		XMStoreFloat4x4(&leftCylRenderItem->World, rightCylWorld);
+		leftCylRenderItem->objCBIdx = objCBIdx++;
+		leftCylRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		leftCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		leftCylRenderItem->nIdxCnt = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].IndexCount;
+		leftCylRenderItem->nStartIdxLocation = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].StartIndexLocation;
+		leftCylRenderItem->nBaseVertexLocation = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].BaseVertexLocation;
+		m_allRenderItems.push_back(std::move(leftCylRenderItem));
+
+		XMStoreFloat4x4(&rightCylRenderItem->World, leftCylWorld);
+		rightCylRenderItem->objCBIdx = objCBIdx++;
+		rightCylRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		rightCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		rightCylRenderItem->nIdxCnt = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].IndexCount;
+		rightCylRenderItem->nStartIdxLocation = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].StartIndexLocation;
+		rightCylRenderItem->nBaseVertexLocation = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].BaseVertexLocation;
+		m_allRenderItems.push_back(std::move(rightCylRenderItem));
+
+		XMStoreFloat4x4(&leftSphereRenderItem->World, rightSphereWorld);
+		leftSphereRenderItem->objCBIdx = objCBIdx++;
+		leftSphereRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		leftSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		leftSphereRenderItem->nIdxCnt = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].IndexCount;
+		leftSphereRenderItem->nStartIdxLocation = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].StartIndexLocation;
+		leftSphereRenderItem->nBaseVertexLocation = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].BaseVertexLocation;
+		m_allRenderItems.push_back(std::move(leftSphereRenderItem));
+
+		XMStoreFloat4x4(&rightSphereRenderItem->World, leftCylWorld);
+		rightSphereRenderItem->objCBIdx = objCBIdx++;
+		rightSphereRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		rightSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		rightSphereRenderItem->nIdxCnt = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].IndexCount;
+		rightSphereRenderItem->nStartIdxLocation = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].StartIndexLocation;
+		rightSphereRenderItem->nBaseVertexLocation = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].BaseVertexLocation;
+		m_allRenderItems.push_back(std::move(rightSphereRenderItem));
+	}
+
+	for (auto& e : m_allRenderItems)
+	{
+		m_OpaqueRenderItems.push_back(e.get());
+	}
+}
+
 // 파이프라인 상태 객체(Pipeline State Object)를 생성한다.
 // 여기서는 지금까지 입력 레이아웃, 정점/픽셀 셰이더를 만들고 래스터라이즈 상태를 설정한 것을
 // 렌더링 파이프라인에 묶어서 이 상태를 제어할 수 있는 PSO를 생성합니다.
@@ -426,7 +648,7 @@ inline void FroKEngine::UpdateObjectDBs(float fDeltaTime)
 
 	// 상수들이 바뀌었을 때에만 cbuffer 자료를 갱신해야 한다.
 	// 이러한 갱신을 프레임 자원마다 수행해야 한다.
-	for (auto & e : m_allRenderItem)
+	for (auto & e : m_allRenderItems)
 	{
 		XMMATRIX world = XMLoadFloat4x4(&e->World);
 
