@@ -67,8 +67,8 @@ private :
 
 	std::unique_ptr<MeshGeometry> m_BoxGeo = nullptr;
 
-	ComPtr<ID3DBlob> m_vsByteCode = nullptr;
-	ComPtr<ID3DBlob> m_psByteCode = nullptr;
+	// 셰이더들을 상수로 매핑해서 저장한다.
+	std::unordered_map<std::string, ComPtr<ID3DBlob>> m_shaders;
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputLayout;
 
@@ -81,13 +81,15 @@ private :
 	std::vector<std::unique_ptr<RenderItem>> m_allRenderItems;
 	std::vector<RenderItem*> m_OpaqueRenderItems;
 
+	bool m_IsWireframe = true;
+
 	// 패스 상수들을 저장해둔 구조체
 	PassConstants m_tMainPassCB;
 
 	// 지오메트리 정보를 저장하기 위한 map
 	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_Geometries;
 
-	ComPtr<ID3D12PipelineState> m_PSO = nullptr;
+	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
 
 	XMFLOAT4X4	m_World	= MathHelper::Identity4x4();
 	XMFLOAT3 m_EyePos = { 0.0f, 0.0f, 0.0f };
@@ -197,10 +199,41 @@ inline void FroKEngine::BuildConstantBufferViews()
 			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objCB->GetGPUVirtualAddress();
 
 			// 현재 버퍼에서 i번째 물체별 상수 버퍼의 오프셋
-			
+			cbAddress += i * objCBByteSize;
+
+			// 서술자 힙 안에서 cbv 오브젝트 오프셋을 구한다.
+			int heapIdx = frameIdx * objCnt + i;
+			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetCPUDescriptorHandleForHeapStart());
+			handle.Offset(heapIdx, m_CbvSrvUavDescriptorSize);
+
+			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+			cbvDesc.BufferLocation = cbAddress;
+			cbvDesc.SizeInBytes = objCBByteSize;
+
+			m_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
 		}
 	}
 
+	
+	UINT passCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
+
+	// 마지막 3개의 서술자는 각 프레임 리소스를 위한 패스 상수 버퍼 뷰가 된다.
+	for (int frameIndex = 0; frameIndex < gNumFrameResource; ++frameIndex)
+	{
+		auto passCB = m_frameResources[frameIndex]->PassCB->Resource();
+		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passCB->GetGPUVirtualAddress();
+
+		// 서술자 힙 안의 패스 상수 버퍼 뷰를 위한 오프셋을 계산한다.
+		int heapIndex = m_passCbvOffset + frameIndex;
+		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetCPUDescriptorHandleForHeapStart());
+		handle.Offset(heapIndex, m_CbvSrvUavDescriptorSize);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+		cbvDesc.BufferLocation = cbAddress;
+		cbvDesc.SizeInBytes = passCBByteSize;
+
+		m_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
+	}
 }
 
 // 루트 서명과 서술자 테이블을 생성합니다.
@@ -263,8 +296,8 @@ inline void FroKEngine::BuildShadersAndInputLayout()
 	
 	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
 	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
-	m_vsByteCode = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "VS", "vs_5_0");
-	m_psByteCode = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "PS", "ps_5_0");
+	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "VS", "vs_5_1");
+	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "PS", "ps_5_1");
 
 	m_InputLayout =
 	{
@@ -276,74 +309,7 @@ inline void FroKEngine::BuildShadersAndInputLayout()
 // 박스 지오메트리를 생성한다.
 inline void FroKEngine::BuildBoxGeometry()
 {
-	std::array<Vertex, 8> vertices =
-	{
-		Vertex({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White) }),
-		Vertex({ XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Black) }),
-		Vertex({ XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Red) }),
-		Vertex({ XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green) }),
-		Vertex({ XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Blue) }),
-		Vertex({ XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Yellow) }),
-		Vertex({ XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Cyan) }),
-		Vertex({ XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta) })
-	};
-
-	std::array<std::uint16_t, 36> indices =
-	{
-		// front face
-		0, 1, 2,
-		0, 2, 3,
-
-		// back face
-		4, 6, 5,
-		4, 7, 6,
-
-		// left face
-		4, 5, 1,
-		4, 1, 0,
-
-		// right face
-		3, 2, 6,
-		3, 6, 7,
-
-		// top face
-		1, 5, 6,
-		1, 6, 2,
-
-		// bottom face
-		4, 0, 3,
-		4, 3, 7
-	};
-
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
-	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
-
-	m_BoxGeo = std::make_unique<MeshGeometry>();
-	m_BoxGeo->Name = "boxGeo";
-
-	ThrowIfFailed(D3DCreateBlob(vbByteSize, &m_BoxGeo->VertexBufferCPU));
-	CopyMemory(m_BoxGeo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
-
-	ThrowIfFailed(D3DCreateBlob(ibByteSize, &m_BoxGeo->IndexBufferCPU));
-	CopyMemory(m_BoxGeo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
-
-	m_BoxGeo->VertexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
-		m_CommandList.Get(), vertices.data(), vbByteSize, m_BoxGeo->VertexBufferUploader);
-
-	m_BoxGeo->IndexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
-		m_CommandList.Get(), indices.data(), ibByteSize, m_BoxGeo->IndexBufferUploader);
-
-	m_BoxGeo->VertexByteStride = sizeof(Vertex);
-	m_BoxGeo->VertexBufferByteSize = vbByteSize;
-	m_BoxGeo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	m_BoxGeo->IndexBufferByteSize = ibByteSize;
-
-	SubmeshGeometry submesh;
-	submesh.IndexCount = (UINT)indices.size();
-	submesh.StartIndexLocation = 0;
-	submesh.BaseVertexLocation = 0;
-
-	m_BoxGeo->DrawArgs["box"] = submesh;
+	// 여긴 딱히 할 일 없으니 냄긴다.
 }
 
 inline void FroKEngine::BuildShapeGeometry()
@@ -565,19 +531,20 @@ inline void FroKEngine::BuildPSO()
 	// 정점/픽셀 셰이더를 묶습니다.
 	psoDesc.VS =
 	{
-		reinterpret_cast<BYTE*>(m_vsByteCode->GetBufferPointer()),
-		m_vsByteCode->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_shaders["standardVS"]->GetBufferPointer()),
+		m_shaders["standardVS"]->GetBufferSize()
 	};
 	psoDesc.PS =
 	{
-		reinterpret_cast<BYTE*>(m_psByteCode->GetBufferPointer()),
-		m_psByteCode->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_shaders["opaquePS"]->GetBufferPointer()),
+		m_shaders["opaquePS"]->GetBufferSize()
 	};
 
 	// 래스터라이즈 부분은 셰이더를 직접 프로그래밍할 수 없고
 	// 단순히 설정만 가능한 부분이다.
 	// 레스터나 그 외 설정들을 묶어줍니다.
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	psoDesc.SampleMask = UINT_MAX; // 다중표본화를 설정합니다.(여기서는 그 어떤 표본도 비활성화하지 않는 MAX를 넣습니다.)
@@ -587,7 +554,15 @@ inline void FroKEngine::BuildPSO()
 	psoDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
 	psoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
 	psoDesc.DSVFormat = m_DepthStencilFormat;
-	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PSO)));
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PSOs["opaque"])));
+
+	//
+	// PSO for opaque wireframe objects.
+	//
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = psoDesc;
+	opaqueWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
 }
 
 inline void FroKEngine::OnMouseDown(int x, int y)
@@ -708,13 +683,24 @@ void FroKEngine::Collision(float fDeltaTime)
 
 void FroKEngine::Render(float fDeltaTime)
 {
+	// 먼저 커맨드 리스트 할당자를 가져온다.
+	auto cmdListAlloc = m_curFrameResource->pCmdListAlloc;
+
 	// 커맨드 기록과 관련된 메모리를 재사용합니다.
 	// 연결된 커맨드 리스트가 GPU에서 실행을 완료한 경우에만 재설정할 수 있습니다.
-	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
+	ThrowIfFailed(cmdListAlloc->Reset());
 
 	// 커맨드 리스트는 ExecuteCommandList를 통해 명령 대기열에 추가된 후 재설정할 수 있습니다.
 	// 커맨드 리스트를 재사용하면 메모리가 재사용됩니다.
-	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), m_PSO.Get()));
+	// 기본값으로 와이어 프레임이 켜져 있습니다.
+	if (m_IsWireframe)
+	{
+		ThrowIfFailed(m_CommandList->Reset(cmdListAlloc.Get(), m_PSOs["opaque_wireframe"].Get()));
+	}
+	else
+	{
+		ThrowIfFailed(m_CommandList->Reset(cmdListAlloc.Get(), m_PSOs["opaque"].Get()));
+	}
 
 	// 뷰포트와 Scissor Rect를 설정합니다. 이것은 커맨드 리스트가 재설정될 때마다 재설정되어야 합니다.
 	m_CommandList->RSSetViewports(1, &m_ScreenViewport);
@@ -740,33 +726,10 @@ void FroKEngine::Render(float fDeltaTime)
 	// SetGraphicsRootSignature을 이용하면 서술자 테이블을 가져와서 파이프라인에 묶을 수 있습니다.
 	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
-	// 박스를 그리기 위한 입력 조립기를 설정합니다.
-	m_CommandList->IASetVertexBuffers(0, 1, &m_BoxGeo->VertexBufferView());
-	m_CommandList->IASetIndexBuffer(&m_BoxGeo->IndexBufferView());
-	m_CommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// 그래픽스 루트 서명 테이블의 대한 서술자를 설정합니다.
-	m_CommandList->SetGraphicsRootDescriptorTable(0, m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
-
-	// 인덱스에 맞춰서 커맨드 리스트에 이 인스턴스를 넘깁니다.
-	m_CommandList->DrawIndexedInstanced(
-		m_BoxGeo->DrawArgs["box"].IndexCount,
-		1, 0, 0, 0);
-
-	// 리소스 사용량에 대한 상태 전환을 나타냅니다.
-	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
-	// 리코딩 커맨드를 합니다.
-	ThrowIfFailed(m_CommandList->Close());
-
-	// 실행할 대기열에 커맨드 리스트를 추가합니다.
-	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
-	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
-
-	// back/front 버퍼를 바꿉니다.
-	ThrowIfFailed(m_SwapChain->Present(0, 0));
-	m_CurrBackBuffer = (m_CurrBackBuffer + 1) % SwapChainBufferCount;
+	int passCbvIndex = m_PassCbvOffset + m_nCurFrameResourceIdx;
+	auto passCbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+	passCbvHandle.Offset(passCbvIndex, mCbvSrvUavDescriptorSize);
+	mCommandList->SetGraphicsRootDescriptorTable(1, passCbvHandle);
 
 	// 프레임 명령이 완료될 때까지 기다립니다. 
 	// 이 대기는 비효율적이며 단순성을 위해서 있는 코드입니다. 나중에 렌더링 코드를 구성하는 방법을 보여줍니다.
