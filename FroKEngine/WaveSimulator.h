@@ -1,3 +1,9 @@
+/*
+* 
+* 이 코드는 파도 치는 산을 시뮬레이션하는 코드입니다.
+* 
+*/
+
 #pragma once
 
 #include "Core.h"
@@ -11,11 +17,11 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 
-class FroKEngine : public Core
+class WaveSimulator : public Core
 {
 public:
-	FroKEngine();
-	~FroKEngine();
+	WaveSimulator();
+	~WaveSimulator();
 
 	virtual bool Init(HINSTANCE hInstance, int nWidth = 1280, int nHeight = 720) override;
 
@@ -38,8 +44,9 @@ private:
 	void BuildConstantBufferViews();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
-	void BuildBoxGeometry();
-	void BuildShapeGeometry();
+	float GetHillsHeight(float x, float z) const;
+	void BuildlandGeometry();
+	void BuildWavesGeometryBuffers();
 	void BuildRenderItems();
 	void BuildPSO();
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
@@ -103,11 +110,11 @@ private :
 	POINT m_LastMousePos;
 };
 
-FroKEngine::FroKEngine() : 
+WaveSimulator::WaveSimulator() : 
 	Core() { }
-FroKEngine::~FroKEngine() { }
+WaveSimulator::~WaveSimulator() { }
 
-bool FroKEngine::Init(HINSTANCE hInstance, int nWidth, int nHeight)
+bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 {
 	if (!Core::Init(hInstance, nWidth, nHeight))
 	{
@@ -119,7 +126,7 @@ bool FroKEngine::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	BuildShapeGeometry();
+	BuildlandGeometry();
 	BuildRenderItems();
 	BuildFrameResources();
 	BuildDescriptorHeaps();
@@ -137,7 +144,7 @@ bool FroKEngine::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 	return true;
 }
 
-void FroKEngine::OnResize()
+void WaveSimulator::OnResize()
 {
 	Core::OnResize();
 
@@ -146,7 +153,7 @@ void FroKEngine::OnResize()
 	XMStoreFloat4x4(&m_Proj, P);
 }
 
-inline void FroKEngine::BuildFrameResources()
+inline void WaveSimulator::BuildFrameResources()
 {
 	for (int i = 0; i < gNumFrameResource; ++i)
 	{
@@ -159,7 +166,7 @@ inline void FroKEngine::BuildFrameResources()
 // 이는 자원을 렌더링 파이프라인에 묶을 때 사용할 것입니다.
 // Input : void
 // Output : void
-inline void FroKEngine::BuildDescriptorHeaps()
+inline void WaveSimulator::BuildDescriptorHeaps()
 {
 	UINT objCnt = (UINT)m_OpaqueRenderItems.size();
 
@@ -184,7 +191,7 @@ inline void FroKEngine::BuildDescriptorHeaps()
 // 
 // Input : void
 // Output : void
-inline void FroKEngine::BuildConstantBufferViews()
+inline void WaveSimulator::BuildConstantBufferViews()
 {
 	// 256바이트 배수로 맞춥니다.
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
@@ -242,7 +249,7 @@ inline void FroKEngine::BuildConstantBufferViews()
 // 
 // Input : void
 // Output : void
-inline void FroKEngine::BuildRootSignature()
+inline void WaveSimulator::BuildRootSignature()
 {
 	// 셰이더 프로그램은 일반적으로 입력으로 리소스를 필요로 합니다(상수 버퍼, 텍스처, 샘플러).
 	// 루트 서명은 셰이더 프로그램이 기대하는 리소스를 정의합니다.
@@ -292,7 +299,7 @@ inline void FroKEngine::BuildRootSignature()
 
 // 셰이더을 바이트코드로 컴파일하고
 // 입력 레이아웃을 만들어서 셰이더에 넘긴다.
-inline void FroKEngine::BuildShadersAndInputLayout()
+inline void WaveSimulator::BuildShadersAndInputLayout()
 {
 	HRESULT hr = S_OK;
 	
@@ -308,107 +315,64 @@ inline void FroKEngine::BuildShadersAndInputLayout()
 	};
 }
 
-// 박스 지오메트리를 생성한다.
-inline void FroKEngine::BuildBoxGeometry()
+inline float WaveSimulator::GetHillsHeight(float x, float z) const
 {
-	// 여긴 딱히 할 일 없으니 냄긴다.
+	return 0.3f * (z * sinf(0.1 * x) + x * cosf(0.1f * z));
 }
 
-inline void FroKEngine::BuildShapeGeometry()
+inline void WaveSimulator::BuildlandGeometry()
 {
-	GeometryGenerator geoGenerator;
-	GeometryGenerator::MeshData box = geoGenerator.CreateBox(1.5f, 0.5f, 1.5f, 3);
-	GeometryGenerator::MeshData grid = geoGenerator.CreateGrid(20.0f, 30.0f, 60, 40);
-	GeometryGenerator::MeshData sphere = geoGenerator.CreateSphere(0.5f, 20, 20);
-	GeometryGenerator::MeshData cylinder = geoGenerator.CreateCylinder(0.5f, 0.3f, 3.0f, 20, 20);
+	GeometryGenerator geoGen;
+	GeometryGenerator::MeshData grid = geoGen.CreateGrid(160.0f, 160.0f, 50, 50);
 
-	// 이 코드는 모든 기하 구조를 하나의 커다란 정점/인덱스 버퍼에 담는다.
-	// 따라서 버퍼에서 각 부분 메시가 차지하는 영역들을 정의할 필요가 있다.
+	//
+	// Extract the vertex elements we are interested and apply the height function to
+	// each vertex.  In addition, color the vertices based on their height so we have
+	// sandy looking beaches, grassy low hills, and snow mountain peaks.
+	//
 
-	// 연결된 정점 버퍼에서의 각 물체의 시작 인덱스를 적절한 변수들에 보관합니다.
-	UINT boxVertexOffset = 0;
-	UINT gridVertexOffset = (UINT)box.Vertices.size();
-	UINT sphereVertexOffset = gridVertexOffset + (UINT)grid.Vertices.size();
-	UINT cylinderVertexOffset = sphereVertexOffset + (UINT)sphere.Vertices.size();
-
-	// 연결된 인덱스 버퍼에서의 각 물체의 시작 인덱스를 적절한 변수들에 저장해둡니다.
-	UINT boxIndexOffset = 0;
-	UINT gridIndexOffset = (UINT)box.Indices32.size();
-	UINT sphereIndexOffset = gridIndexOffset + (UINT)grid.Indices32.size();
-	UINT cylinderIndexOffset = sphereIndexOffset + (UINT)sphere.Indices32.size();
-
-	// 정점 / 인덱스 버퍼에서 각 물체가 차지하는 영역을 나타내는 SubmeshGeometry 객체를 정의한다.
-	SubmeshGeometry boxSubmesh;
-	boxSubmesh.IndexCount = (UINT)box.Indices32.size();
-	boxSubmesh.StartIndexLocation = boxIndexOffset;
-	boxSubmesh.BaseVertexLocation = boxVertexOffset;
-
-	SubmeshGeometry gridSubmesh;
-	gridSubmesh.IndexCount = (UINT)grid.Indices32.size();
-	gridSubmesh.StartIndexLocation = gridIndexOffset;
-	gridSubmesh.BaseVertexLocation = gridVertexOffset;
-
-	SubmeshGeometry sphereSubmesh;
-	sphereSubmesh.IndexCount = (UINT)sphere.Indices32.size();
-	sphereSubmesh.StartIndexLocation = sphereIndexOffset;
-	sphereSubmesh.BaseVertexLocation = sphereVertexOffset;
-
-	SubmeshGeometry cylinderSubmesh;
-	cylinderSubmesh.IndexCount = (UINT)cylinder.Indices32.size();
-	cylinderSubmesh.StartIndexLocation = cylinderIndexOffset;
-	cylinderSubmesh.BaseVertexLocation = cylinderVertexOffset;
-
-	// 필요한 정점 성분들을 추출하고, 모든 메시의 정점들을 하나의 정점 버퍼로 넣는다.
-
-	auto totalVertexCount = box.Vertices.size() + grid.Vertices.size() +
-		sphere.Vertices.size() + cylinder.Vertices.size();
-
-	std::vector<Vertex> vertices(totalVertexCount);
-
-	UINT k = 0;
-	for (size_t i = 0; i < box.Vertices.size(); ++i, ++k)
+	std::vector<Vertex> vertices(grid.Vertices.size());
+	for (size_t i = 0; i < grid.Vertices.size(); ++i)
 	{
-		vertices[k].Pos = box.Vertices[i].Position;
-		vertices[k].Color = XMFLOAT4(DirectX::Colors::DarkGreen);
-	}
+		auto& p = grid.Vertices[i].Position;
+		vertices[i].Pos = p;
+		vertices[i].Pos.y = GetHillsHeight(p.x, p.z);
 
-	for (size_t i = 0; i < grid.Vertices.size(); ++i, ++k)
-	{
-		vertices[k].Pos = grid.Vertices[i].Position;
-		vertices[k].Color = XMFLOAT4(DirectX::Colors::ForestGreen);
+		// Color the vertex based on its height.
+		if (vertices[i].Pos.y < -10.0f)
+		{
+			// Sandy beach color.
+			vertices[i].Color = XMFLOAT4(1.0f, 0.96f, 0.62f, 1.0f);
+		}
+		else if (vertices[i].Pos.y < 5.0f)
+		{
+			// Light yellow-green.
+			vertices[i].Color = XMFLOAT4(0.48f, 0.77f, 0.46f, 1.0f);
+		}
+		else if (vertices[i].Pos.y < 12.0f)
+		{
+			// Dark yellow-green.
+			vertices[i].Color = XMFLOAT4(0.1f, 0.48f, 0.19f, 1.0f);
+		}
+		else if (vertices[i].Pos.y < 20.0f)
+		{
+			// Dark brown.
+			vertices[i].Color = XMFLOAT4(0.45f, 0.39f, 0.34f, 1.0f);
+		}
+		else
+		{
+			// White snow.
+			vertices[i].Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		}
 	}
-
-	for (size_t i = 0; i < sphere.Vertices.size(); ++i, ++k)
-	{
-		vertices[k].Pos = sphere.Vertices[i].Position;
-		vertices[k].Color = XMFLOAT4(DirectX::Colors::Crimson);
-	}
-
-	for (size_t i = 0; i < cylinder.Vertices.size(); ++i, ++k)
-	{
-		vertices[k].Pos = cylinder.Vertices[i].Position;
-		vertices[k].Color = XMFLOAT4(DirectX::Colors::SteelBlue);
-	}
-
-	std::vector<std::uint16_t> indices;
-	indices.insert(indices.end(),
-		std::begin(box.GetIndices16()),
-		std::end(box.GetIndices16()));
-	indices.insert(indices.end(),
-		std::begin(grid.GetIndices16()),
-		std::end(grid.GetIndices16()));
-	indices.insert(indices.end(),
-		std::begin(sphere.GetIndices16()),
-		std::end(sphere.GetIndices16()));
-	indices.insert(indices.end(),
-		std::begin(cylinder.GetIndices16()),
-		std::end(cylinder.GetIndices16()));
 
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+
+	std::vector<std::uint16_t> indices = grid.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
 	auto geo = std::make_unique<MeshGeometry>();
-	geo->Name = "shapeGeo";
+	geo->Name = "landGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
@@ -416,7 +380,6 @@ inline void FroKEngine::BuildShapeGeometry()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	// GPU에서 사용할 버퍼를 만둔다.
 	geo->VertexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
 		m_CommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
@@ -428,21 +391,79 @@ inline void FroKEngine::BuildShapeGeometry()
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
 
-	geo->DrawArgs["box"] = boxSubmesh;
-	geo->DrawArgs["grid"] = gridSubmesh;
-	geo->DrawArgs["sphere"] = sphereSubmesh;
-	geo->DrawArgs["cylinder"] = cylinderSubmesh;
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
 
-	m_Geometries[geo->Name] = std::move(geo);
+	geo->DrawArgs["grid"] = submesh;
+
+	m_Geometries["landGeo"] = std::move(geo);
 }
 
-inline void FroKEngine::BuildRenderItems()
+inline void WaveSimulator::BuildWavesGeometryBuffers()
+{
+	std::vector<std::uint16_t> indices(3 * m_Waves->TriangleCount()); // 3 indices per face
+	assert(mWaves->VertexCount() < 0x0000ffff);
+
+	// Iterate over each quad.
+	int m = mWaves->RowCount();
+	int n = mWaves->ColumnCount();
+	int k = 0;
+	for (int i = 0; i < m - 1; ++i)
+	{
+		for (int j = 0; j < n - 1; ++j)
+		{
+			indices[k] = i * n + j;
+			indices[k + 1] = i * n + j + 1;
+			indices[k + 2] = (i + 1) * n + j;
+
+			indices[k + 3] = (i + 1) * n + j;
+			indices[k + 4] = i * n + j + 1;
+			indices[k + 5] = (i + 1) * n + j + 1;
+
+			k += 6; // next quad
+		}
+	}
+
+	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertex);
+	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "waterGeo";
+
+	// Set dynamically.
+	geo->VertexBufferCPU = nullptr;
+	geo->VertexBufferGPU = nullptr;
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["grid"] = submesh;
+
+	mGeometries["waterGeo"] = std::move(geo);
+}
+
+inline void WaveSimulator::BuildRenderItems()
 {
 	auto boxRenderItem = std::make_unique<RenderItem>();
 	XMStoreFloat4x4(&boxRenderItem->World,
 		XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixTranslation(0.0f, 0.5f, 0.0f));
 	boxRenderItem->objCBIdx = 0;
-	boxRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+	boxRenderItem->pGeometry = m_Geometries["landGeo"].get();
 	boxRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	boxRenderItem->nIdxCnt = boxRenderItem->pGeometry->DrawArgs["box"].IndexCount;
 	boxRenderItem->nStartIdxLocation = boxRenderItem->pGeometry->DrawArgs["box"].StartIndexLocation;
@@ -452,7 +473,7 @@ inline void FroKEngine::BuildRenderItems()
 	auto gridRenderItem = std::make_unique<RenderItem>();
 	gridRenderItem->World = MathHelper::Identity4x4();
 	gridRenderItem->objCBIdx = 1;
-	gridRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+	gridRenderItem->pGeometry = m_Geometries["landGeo"].get();
 	gridRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	gridRenderItem->nIdxCnt = gridRenderItem->pGeometry->DrawArgs["grid"].IndexCount;
 	gridRenderItem->nStartIdxLocation = gridRenderItem->pGeometry->DrawArgs["grid"].StartIndexLocation;
@@ -476,7 +497,7 @@ inline void FroKEngine::BuildRenderItems()
 
 		XMStoreFloat4x4(&leftCylRenderItem->World, leftCylWorld);
 		leftCylRenderItem->objCBIdx = objCBIdx++;
-		leftCylRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		leftCylRenderItem->pGeometry = m_Geometries["landGeo"].get();
 		leftCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		leftCylRenderItem->nIdxCnt = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].IndexCount;
 		leftCylRenderItem->nStartIdxLocation = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].StartIndexLocation;
@@ -485,7 +506,7 @@ inline void FroKEngine::BuildRenderItems()
 
 		XMStoreFloat4x4(&rightCylRenderItem->World, rightCylWorld);
 		rightCylRenderItem->objCBIdx = objCBIdx++;
-		rightCylRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		rightCylRenderItem->pGeometry = m_Geometries["landGeo"].get();
 		rightCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		rightCylRenderItem->nIdxCnt = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].IndexCount;
 		rightCylRenderItem->nStartIdxLocation = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].StartIndexLocation;
@@ -494,7 +515,7 @@ inline void FroKEngine::BuildRenderItems()
 
 		XMStoreFloat4x4(&leftSphereRenderItem->World, leftSphereWorld);
 		leftSphereRenderItem->objCBIdx = objCBIdx++;
-		leftSphereRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		leftSphereRenderItem->pGeometry = m_Geometries["landGeo"].get();
 		leftSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		leftSphereRenderItem->nIdxCnt = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].IndexCount;
 		leftSphereRenderItem->nStartIdxLocation = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].StartIndexLocation;
@@ -503,7 +524,7 @@ inline void FroKEngine::BuildRenderItems()
 
 		XMStoreFloat4x4(&rightSphereRenderItem->World, rightSphereWorld);
 		rightSphereRenderItem->objCBIdx = objCBIdx++;
-		rightSphereRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
+		rightSphereRenderItem->pGeometry = m_Geometries["landGeo"].get();
 		rightSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		rightSphereRenderItem->nIdxCnt = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].IndexCount;
 		rightSphereRenderItem->nStartIdxLocation = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].StartIndexLocation;
@@ -520,7 +541,7 @@ inline void FroKEngine::BuildRenderItems()
 // 파이프라인 상태 객체(Pipeline State Object)를 생성한다.
 // 여기서는 지금까지 입력 레이아웃, 정점/픽셀 셰이더를 만들고 래스터라이즈 상태를 설정한 것을
 // 렌더링 파이프라인에 묶어서 이 상태를 제어할 수 있는 PSO를 생성합니다.
-inline void FroKEngine::BuildPSO()
+inline void WaveSimulator::BuildPSO()
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
 	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
@@ -567,7 +588,7 @@ inline void FroKEngine::BuildPSO()
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
 }
 
-inline void FroKEngine::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
+inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 
@@ -593,13 +614,13 @@ inline void FroKEngine::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, cons
 	}
 }
 
-inline void FroKEngine::OnMouseDown(int x, int y)
+inline void WaveSimulator::OnMouseDown(int x, int y)
 {
 	m_LastMousePos.x = x;
 	m_LastMousePos.y = y;
 }
 
-inline void FroKEngine::OnMouseMove(int x, int y)
+inline void WaveSimulator::OnMouseMove(int x, int y)
 {
 	if (GET_SINGLE(Input)->GetMouseLButton())
 	{
@@ -632,11 +653,11 @@ inline void FroKEngine::OnMouseMove(int x, int y)
 	m_LastMousePos.y = y;
 }
 
-inline void FroKEngine::OnMouseUp(int x, int y)
+inline void WaveSimulator::OnMouseUp(int x, int y)
 {
 }
 
-void FroKEngine::Input(float fDeltaTime)
+void WaveSimulator::Input(float fDeltaTime)
 {
 	if (GET_SINGLE(Input)->IsKeyDown(VK_ESCAPE))
 	{
@@ -650,7 +671,7 @@ void FroKEngine::Input(float fDeltaTime)
 	}
 }
 
-inline void FroKEngine::UpdateCamera(float fDeltaTime)
+inline void WaveSimulator::UpdateCamera(float fDeltaTime)
 {
 	// Convert Spherical to Cartesian coordinates.
 	m_EyePos.x = m_Radius * sinf(m_Phi) * cosf(m_Theta);
@@ -667,7 +688,7 @@ inline void FroKEngine::UpdateCamera(float fDeltaTime)
 }
 
 // 오브젝트의 상수 버퍼를 갱신한다.
-inline void FroKEngine::UpdateObjectCBs(float fDeltaTime)
+inline void WaveSimulator::UpdateObjectCBs(float fDeltaTime)
 {
 	auto curObjectCB = m_curFrameResource->ObjectCB.get();
 
@@ -687,7 +708,7 @@ inline void FroKEngine::UpdateObjectCBs(float fDeltaTime)
 	}
 }
 
-inline void FroKEngine::UpdateMainPassCB(float fDeltaTime)
+inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 {
 	XMMATRIX view = XMLoadFloat4x4(&m_View);
 	XMMATRIX proj = XMLoadFloat4x4(&m_Proj);
@@ -717,7 +738,7 @@ inline void FroKEngine::UpdateMainPassCB(float fDeltaTime)
 	curPassCB->CopyData(0, m_tMainPassCB);
 }
 
-int FroKEngine::Update(float fDeltaTime)
+int WaveSimulator::Update(float fDeltaTime)
 {
 	UpdateCamera(fDeltaTime);
 
@@ -741,16 +762,16 @@ int FroKEngine::Update(float fDeltaTime)
 	return 0;
 }
 
-int FroKEngine::LateUpdate(float fDeltaTime)
+int WaveSimulator::LateUpdate(float fDeltaTime)
 {
 	return 0;
 }
 
-void FroKEngine::Collision(float fDeltaTime)
+void WaveSimulator::Collision(float fDeltaTime)
 {
 }
 
-void FroKEngine::Render(float fDeltaTime)
+void WaveSimulator::Render(float fDeltaTime)
 {
 	// 먼저 커맨드 리스트 할당자를 가져온다.
 	auto cmdListAlloc = m_curFrameResource->pCmdListAlloc;

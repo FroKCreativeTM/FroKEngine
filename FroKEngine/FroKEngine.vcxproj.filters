@@ -117,6 +117,9 @@
     <ClInclude Include="Graphics\GeometryGenerator.h">
       <Filter>01. Engine\04. Graphics\04. Resource\01. Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="WaveSimulator.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FroKEngine.cpp">

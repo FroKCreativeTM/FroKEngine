@@ -163,6 +163,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="Util.h" />
+    <ClInclude Include="WaveSimulator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp" />
