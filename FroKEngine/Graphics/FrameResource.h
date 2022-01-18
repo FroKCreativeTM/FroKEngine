@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Util.h"
 #include "../MathHelper.h"
 #include "UploadBuffer.h"
 

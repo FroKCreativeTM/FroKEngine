@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../Game.h"
+
 using namespace DirectX;
 
 // 하나의 물체를 그리는 데 필요한 매개변수들을 담는 클래스이다.

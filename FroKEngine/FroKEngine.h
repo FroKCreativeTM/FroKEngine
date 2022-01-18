@@ -10,9 +10,6 @@
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-// 프레임 자원 3개를 담는 벡터를 생성하기 위한 도구
-// 이렇게 하면 n~n+2까지의 프레임을 미리 생성할 수 있다.
-static const int gNumFrameResource = 3;
 
 class FroKEngine : public Core
 {
@@ -45,11 +42,13 @@ private:
 	void BuildShapeGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
-	void UpdateObjectDBs(float fDeltaTime);
+	void UpdateCamera(float fDeltaTime);
+	void UpdateObjectCBs(float fDeltaTime);
 	void UpdateMainPassCB(float fDeltaTime);
 
-	void MakeRenderItem();
+	// void MakeRenderItem();
 
 private :
 	void OnMouseDown(int x, int y);
@@ -97,8 +96,9 @@ private :
 	XMFLOAT4X4	m_Proj	= MathHelper::Identity4x4();
 
 	float		m_Theta = 1.5f * XM_PI;
-	float		m_Phi = XM_PIDIV4;
-	float		m_Radius = 5.0f;
+	// float		m_Phi = XM_PIDIV4;
+	float		m_Phi = 0.2f * XM_PI;
+	float		m_Radius = 15.0f;
 
 	POINT m_LastMousePos;
 };
@@ -117,11 +117,13 @@ bool FroKEngine::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 	// 먼저 커맨드 리스트를 초기화 한다.
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
-	BuildDescriptorHeaps();
-	BuildConstantBufferViews();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	BuildBoxGeometry();
+	BuildShapeGeometry();
+	BuildRenderItems();
+	BuildFrameResources();
+	BuildDescriptorHeaps();
+	BuildConstantBufferViews();
 	BuildPSO();
 
 	// 초기화 명령을 실행합니다.
@@ -411,7 +413,7 @@ inline void FroKEngine::BuildShapeGeometry()
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
 
-	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->VertexBufferCPU));
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
 	// GPU에서 사용할 버퍼를 만둔다.
@@ -472,7 +474,7 @@ inline void FroKEngine::BuildRenderItems()
 		XMMATRIX leftSphereWorld = XMMatrixTranslation(-5.0f, 3.5f, -10.0f + i * 5.0f);
 		XMMATRIX rightSphereWorld = XMMatrixTranslation(+5.0f, 3.5f, -10.0f + i * 5.0f);
 
-		XMStoreFloat4x4(&leftCylRenderItem->World, rightCylWorld);
+		XMStoreFloat4x4(&leftCylRenderItem->World, leftCylWorld);
 		leftCylRenderItem->objCBIdx = objCBIdx++;
 		leftCylRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
 		leftCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -481,7 +483,7 @@ inline void FroKEngine::BuildRenderItems()
 		leftCylRenderItem->nBaseVertexLocation = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].BaseVertexLocation;
 		m_allRenderItems.push_back(std::move(leftCylRenderItem));
 
-		XMStoreFloat4x4(&rightCylRenderItem->World, leftCylWorld);
+		XMStoreFloat4x4(&rightCylRenderItem->World, rightCylWorld);
 		rightCylRenderItem->objCBIdx = objCBIdx++;
 		rightCylRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
 		rightCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -490,7 +492,7 @@ inline void FroKEngine::BuildRenderItems()
 		rightCylRenderItem->nBaseVertexLocation = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].BaseVertexLocation;
 		m_allRenderItems.push_back(std::move(rightCylRenderItem));
 
-		XMStoreFloat4x4(&leftSphereRenderItem->World, rightSphereWorld);
+		XMStoreFloat4x4(&leftSphereRenderItem->World, leftSphereWorld);
 		leftSphereRenderItem->objCBIdx = objCBIdx++;
 		leftSphereRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
 		leftSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -499,7 +501,7 @@ inline void FroKEngine::BuildRenderItems()
 		leftSphereRenderItem->nBaseVertexLocation = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].BaseVertexLocation;
 		m_allRenderItems.push_back(std::move(leftSphereRenderItem));
 
-		XMStoreFloat4x4(&rightSphereRenderItem->World, leftCylWorld);
+		XMStoreFloat4x4(&rightSphereRenderItem->World, rightSphereWorld);
 		rightSphereRenderItem->objCBIdx = objCBIdx++;
 		rightSphereRenderItem->pGeometry = m_Geometries["shapeGeo"].get();
 		rightSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -565,6 +567,32 @@ inline void FroKEngine::BuildPSO()
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
 }
 
+inline void FroKEngine::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
+{
+	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+
+	auto objectCB = m_curFrameResource->ObjectCB->Resource();
+
+	// 각 렌더링할 아이템마다
+	for (size_t i = 0; i < ritems.size(); ++i)
+	{
+		auto ri = ritems[i];
+
+		cmdList->IASetVertexBuffers(0, 1, &ri->pGeometry->VertexBufferView());
+		cmdList->IASetIndexBuffer(&ri->pGeometry->IndexBufferView());
+		cmdList->IASetPrimitiveTopology(ri->primitiveType);
+
+		// 이 개체 및 이 프레임 리소스에 대한 설명자 힙의 CBV에 대한 오프셋.
+		UINT cbvIndex = m_nCurFrameResourceIdx * (UINT)m_OpaqueRenderItems.size() + ri->objCBIdx;
+		auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
+		cbvHandle.Offset(cbvIndex, m_CbvSrvUavDescriptorSize);
+
+		cmdList->SetGraphicsRootDescriptorTable(0, cbvHandle);
+
+		cmdList->DrawIndexedInstanced(ri->nIdxCnt, 1, ri->nStartIdxLocation, ri->nBaseVertexLocation, 0);
+	}
+}
+
 inline void FroKEngine::OnMouseDown(int x, int y)
 {
 
@@ -596,7 +624,7 @@ inline void FroKEngine::OnMouseMove(int x, int y)
 		m_Radius += dx - dy;
 
 		// 반지름을 제한한다.
-		m_Radius = MathHelper::Clamp(m_Radius, 3.0f, 15.0f);
+		m_Radius = MathHelper::Clamp(m_Radius, 5.0f, 150.0f);
 	}
 
 	m_LastMousePos.x = x;
@@ -614,10 +642,31 @@ void FroKEngine::Input(float fDeltaTime)
 		m_bLoop = false;
 		PostQuitMessage(0);
 	}
+
+	if (GET_SINGLE(Input)->IsKeyDown('1'))
+	{
+		m_IsWireframe != m_IsWireframe;
+	}
+}
+
+inline void FroKEngine::UpdateCamera(float fDeltaTime)
+{
+	// Convert Spherical to Cartesian coordinates.
+	m_EyePos.x = m_Radius * sinf(m_Phi) * cosf(m_Theta);
+	m_EyePos.z = m_Radius * sinf(m_Phi) * sinf(m_Theta);
+	m_EyePos.y = m_Radius * cosf(m_Phi);
+
+	// Build the view matrix.
+	XMVECTOR pos = XMVectorSet(m_EyePos.x, m_EyePos.y, m_EyePos.z, 1.0f);
+	XMVECTOR target = XMVectorZero();
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+	XMStoreFloat4x4(&m_View, view);
 }
 
 // 오브젝트의 상수 버퍼를 갱신한다.
-inline void FroKEngine::UpdateObjectDBs(float fDeltaTime)
+inline void FroKEngine::UpdateObjectCBs(float fDeltaTime)
 {
 	auto curObjectCB = m_curFrameResource->ObjectCB.get();
 
@@ -669,6 +718,25 @@ inline void FroKEngine::UpdateMainPassCB(float fDeltaTime)
 
 int FroKEngine::Update(float fDeltaTime)
 {
+	UpdateCamera(fDeltaTime);
+
+	// 원형 프레임 리소스 배열을 순환한다.
+	m_nCurFrameResourceIdx = (m_nCurFrameResourceIdx + 1) % gNumFrameResource;
+	m_curFrameResource = m_frameResources[m_nCurFrameResourceIdx].get();
+
+	// GPU가 현재 프레임 리소스의 명령 처리를 완료했는가를 판별한다
+	// 렇지 않은 경우 GPU가 이 울타리 지점까지 명령을 완료할 때까지 기다린다.
+	if (m_curFrameResource->nFence != 0 && m_Fence->GetCompletedValue() < m_curFrameResource->nFence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(m_Fence->SetEventOnCompletion(m_curFrameResource->nFence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+
+	UpdateObjectCBs(fDeltaTime);
+	UpdateMainPassCB(fDeltaTime);
+
 	return 0;
 }
 
@@ -726,14 +794,39 @@ void FroKEngine::Render(float fDeltaTime)
 	// SetGraphicsRootSignature을 이용하면 서술자 테이블을 가져와서 파이프라인에 묶을 수 있습니다.
 	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
-	int passCbvIndex = m_PassCbvOffset + m_nCurFrameResourceIdx;
-	auto passCbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
-	passCbvHandle.Offset(passCbvIndex, mCbvSrvUavDescriptorSize);
-	mCommandList->SetGraphicsRootDescriptorTable(1, passCbvHandle);
+	int passCbvIndex = m_passCbvOffset + m_nCurFrameResourceIdx;
+	auto passCbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
+	passCbvHandle.Offset(passCbvIndex, m_CbvSrvUavDescriptorSize);
+	m_CommandList->SetGraphicsRootDescriptorTable(1, passCbvHandle);
+
+	DrawRenderItems(m_CommandList.Get(), m_OpaqueRenderItems);
+
+	// Indicate a state transition on the resource usage.
+	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	// Done recording commands.
+	ThrowIfFailed(m_CommandList->Close());
+
+	// Add the command list to the queue for execution.
+	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	// Swap the back and front buffers
+	ThrowIfFailed(m_SwapChain->Present(0, 0));
+	m_CurrBackBuffer = (m_CurrBackBuffer + 1) % SwapChainBufferCount;
+
+	// Advance the fence value to mark commands up to this fence point.
+	m_curFrameResource->nFence = ++m_CurrentFence;
+
+	// Add an instruction to the command queue to set a new fence point. 
+	// Because we are on the GPU timeline, the new fence point won't be 
+	// set until the GPU finishes processing all the commands prior to this Signal().
+	m_CommandQueue->Signal(m_Fence.Get(), m_CurrentFence);
 
 	// 프레임 명령이 완료될 때까지 기다립니다. 
 	// 이 대기는 비효율적이며 단순성을 위해서 있는 코드입니다. 나중에 렌더링 코드를 구성하는 방법을 보여줍니다.
 	// 따라서 프레임당 기다릴 필요가 없습니다.
-	FlushCommandQueue();
+	// FlushCommandQueue();
 }
 
