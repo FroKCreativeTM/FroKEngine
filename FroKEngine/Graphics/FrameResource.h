@@ -7,6 +7,8 @@
 using namespace std;
 using namespace DirectX;
 
+const int MAX_LIGHTS = 16;
+
 // Vertex 설명
 /*// 법선과 색상의 위치를 가진 구조체
 struct Vertex
@@ -39,7 +41,7 @@ struct Vertex
 struct Vertex
 {
 	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
+	XMFLOAT3 Normal;
 };
 
 struct ObjectConstants
@@ -67,6 +69,14 @@ struct PassConstants
 	float FarZ = 0.0f;
 	float TotalTime = 0.0f;
 	float DeltaTime = 0.0f;
+
+	DirectX::XMFLOAT4 AmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	// Indices [0, NUM_DIR_LIGHTS) are directional lights;
+	// indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are point lights;
+	// indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
+	// are spot lights for a maximum of MaxLights per object.
+	Light Lights[MAX_LIGHTS];
 };
 
 // CPU가 한 프레임의 커맨드 리스트들을 구축하는데 필요한 자원들을 대표하는 클래스이다.
@@ -77,6 +87,7 @@ class FrameResource
 public :
 	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt);
 	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt, UINT waveVertCount);
+	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt, UINT nMaterialCount, UINT waveVertCount);
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
 	~FrameResource();

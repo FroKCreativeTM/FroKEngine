@@ -19,7 +19,7 @@ public :
 	bool Get4xMsaaState()const;
 	void Set4xMsaaState(bool value);
 
-	virtual bool Init(HINSTANCE hInstance, int nWidth = 1280, int nHeight = 720);
+	virtual bool Init(HINSTANCE hInstance, int nWidth = 800, int nHeight = 600);
 	int Run();
 
 public :

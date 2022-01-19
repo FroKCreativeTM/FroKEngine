@@ -31,8 +31,9 @@ public :
 	// 이 렌더 아이템의 물체 상수 버퍼에 해당하는 GPU 상수 버퍼의 색인
 	UINT objCBIdx = -1;
 
-	// 이 렌더 항목에 연관된 기하 구조를 연결한다. 
+	// 이 렌더 항목에 연관된 기하 구조및 마테리얼을 연결한다. 
 	// 여러 렌더가 항목이 같은 기하 구조를 참조할 수 있음을 주의하라.
+	Material* Mat = nullptr;
 	MeshGeometry* pGeometry = nullptr;
 
 	// 기본 도형 위상 구조

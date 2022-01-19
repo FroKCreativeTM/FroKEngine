@@ -3,7 +3,7 @@
 struct Material
 {
 	// 고유한 재질 이름
-	std::string name;
+	std::string Name;
 
 	// 이 재질에 해당하는 상수 버퍼의 색인
 	int nMatCBIdx = -1;

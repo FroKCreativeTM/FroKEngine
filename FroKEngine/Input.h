@@ -28,7 +28,7 @@ const short GAMEPAD_THUMBSTICK_DEADZONE = (short)(0.20f * 0X7FFF);
 const short GAMEPAD_TRIGGER_DEADZONE = 20;
 const DWORD MAX_CONTROLLERS = 4;
 
-// Bit corresponding to gamepad button in state.Gamepad.wButtons
+// state.Gamepad.wButtons의 게임패드 버튼에 해당하는 비트
 const DWORD GAMEPAD_DPAD_UP = 0x0001;
 const DWORD GAMEPAD_DPAD_DOWN = 0x0002;
 const DWORD GAMEPAD_DPAD_LEFT = 0x0004;

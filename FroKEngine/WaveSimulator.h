@@ -12,10 +12,9 @@
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-float GetHillsHeight(float x, float z) 
-{
-	return 0.3f * (z * sinf(0.1f * x) + x * cosf(0.1f * z));
-}
+
+float mouseSensorForce[7] = { 1.0f, 0.5f, 0.1f, 0.05f, 0.01f, 0.005f, 0.001f };
+int idxMouseSensor = 4;
 
 class WaveSimulator : public Core
 {
@@ -23,7 +22,7 @@ public:
 	WaveSimulator();
 	~WaveSimulator();
 
-	virtual bool Init(HINSTANCE hInstance, int nWidth = 1280, int nHeight = 720) override;
+	virtual bool Init(HINSTANCE hInstance, int nWidth = 800, int nHeight = 600) override;
 
 private:
 
@@ -45,6 +44,7 @@ private:
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	void BuildWavesGeometryBuffers();
+	void BuildMaterials();
 	void BuildLandGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
@@ -59,6 +59,25 @@ private:
 
 	// void MakeRenderItem();
 
+	float GetHillsHeight(float x, float z) const
+	{
+		return 0.3f * (z * sinf(0.1f * x) + x * cosf(0.1f * z));
+	}
+
+	XMFLOAT3 GetHillsNormal(float x, float z) const
+	{
+		// n = (-df/dx, 1, -df/dz)
+		XMFLOAT3 n(
+			-0.03f * z * cosf(0.1f * x) - 0.3f * cosf(0.1f * z),
+			1.0f,
+			-0.3f * sinf(0.1f * x) + 0.03f * x * sinf(0.1f * z));
+
+		XMVECTOR unitNormal = XMVector3Normalize(XMLoadFloat3(&n));
+		XMStoreFloat3(&n, unitNormal);
+
+		return n;
+	}
+
 private:
 	void OnMouseDown(int x, int y);
 	void OnMouseMove(int x, int y);
@@ -68,9 +87,6 @@ private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap>	m_CbvHeap = nullptr;
 
-	// 패스별 상수와 오브젝트 상수들을 저장하기 위한 버퍼
-	std::unique_ptr<UploadBuffer<PassConstants>> m_PassCB = nullptr;
-	std::unique_ptr<UploadBuffer<ObjectConstants>> m_ObjectCB = nullptr;
 	UINT m_passCbvOffset = 0;
 
 	std::unique_ptr<MeshGeometry> m_BoxGeo = nullptr;
@@ -85,6 +101,8 @@ private:
 	FrameResource* m_curFrameResource = nullptr;
 	int m_nCurFrameResourceIdx = 0;
 
+	UINT m_CbvSrvDescriptorSize = 0;
+
 	// 모든 렌더 아이템의 리스트.
 	std::vector<std::unique_ptr<RenderItem>> m_allRenderItems;
 	std::vector<RenderItem*> m_OpaqueRenderItems;
@@ -93,11 +111,11 @@ private:
 	std::unique_ptr<Waves> m_Waves;
 	RenderItem* m_WaveRenderItem;
 
+	// 마테리얼을 저장하기 위한 맵
+	std::unordered_map<std::string, std::unique_ptr<Material>> m_Materials;
+
 	// PSO 상태에 따라 달라지는 렌더링 아이템들이다.
 	std::vector<RenderItem*> m_RenderitemLayer[(int)RenderLayer::Count];
-
-	// 모든 마테리얼 정보
-	std::unordered_map<std::string, std::unique_ptr<Material>> m_Material;
 
 	bool m_IsWireframe = false;
 
@@ -113,6 +131,10 @@ private:
 	XMFLOAT3 m_EyePos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4X4	m_View = MathHelper::Identity4x4();
 	XMFLOAT4X4	m_Proj = MathHelper::Identity4x4();
+
+	// 태양(빛의 근원)을 컨트롤할 변수
+	float m_fSunTheta = 1.25f * XM_PI;
+	float m_fSunPhi = XM_PIDIV4;
 
 	float		m_Theta = 1.5f * XM_PI;
 	// float		m_Phi = XM_PIDIV4;
@@ -140,7 +162,10 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 
 	// 먼저 커맨드 리스트를 초기화 한다.
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
-	
+
+	// Get the increment size of a descriptor in this heap type.  This is hardware specific, so we have
+	// to query this information.
+	m_CbvSrvDescriptorSize = m_d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// 파도에 대한 설정을 한다.
 	m_Waves = std::make_unique<Waves>(128, 128, 1.0f, 0.03f, 4.0f, 0.2f);
@@ -149,6 +174,7 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 	BuildShadersAndInputLayout();
 	BuildLandGeometry();
 	BuildWavesGeometryBuffers();
+	BuildMaterials();
 	BuildRenderItems();
 	BuildFrameResources();
 	BuildPSO();
@@ -178,7 +204,7 @@ inline void WaveSimulator::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResource; ++i)
 	{
 		m_frameResources.push_back(std::make_unique<FrameResource>(
-			m_d3dDevice.Get(), 1, (UINT)m_allRenderItems.size(), m_Waves->VertexCount()));
+			m_d3dDevice.Get(), 1, (UINT)m_allRenderItems.size(), (UINT)m_Materials.size(), m_Waves->VertexCount()));
 	}
 }
 
@@ -271,17 +297,18 @@ inline void WaveSimulator::BuildConstantBufferViews()
 // Output : void
 inline void WaveSimulator::BuildRootSignature()
 {
-	// Root parameter can be a table, root descriptor or root constants.
-	CD3DX12_ROOT_PARAMETER slotRootParameter[2];
+	// 루트 매개변수는 테이블, 루트 설명자 또는 루트 상수일 수 있습니다.
+	CD3DX12_ROOT_PARAMETER slotRootParameter[3];
 
 	// Create root CBV.
 	slotRootParameter[0].InitAsConstantBufferView(0);
 	slotRootParameter[1].InitAsConstantBufferView(1);
+	slotRootParameter[2].InitAsConstantBufferView(2);
 
-	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	// 루트 서명은 루트 매개변수의 배열입니다.
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+	// 단일 상수 버퍼로 구성된 설명자 범위를 가리키는 단일 슬롯으로 루트 서명을 만듭니다.
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
@@ -308,13 +335,13 @@ inline void WaveSimulator::BuildShadersAndInputLayout()
 
 	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
 	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
-	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "VS", "vs_5_1");
-	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "PS", "ps_5_1");
+	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\Default.hlsl", nullptr, "VS", "vs_5_0");
+	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\Default.hlsl", nullptr, "PS", "ps_5_0");
 
 	m_InputLayout =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
@@ -374,6 +401,28 @@ inline void WaveSimulator::BuildWavesGeometryBuffers()
 	m_Geometries["waterGeo"] = std::move(geo);
 }
 
+inline void WaveSimulator::BuildMaterials()
+{
+	auto grass = std::make_unique<Material>();
+	grass->Name = "grass";
+	grass->nMatCBIdx = 0;
+	grass->DiffuseAlbedo = XMFLOAT4(0.2f, 0.6f, 0.2f, 1.0f);
+	grass->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
+	grass->fRoughness = 0.125f;
+
+	// This is not a good water material definition, but we do not have all the rendering
+	// tools we need (transparency, environment reflection), so we fake it for now.
+	auto water = std::make_unique<Material>();
+	water->Name = "water";
+	water->nMatCBIdx = 1;
+	water->DiffuseAlbedo = XMFLOAT4(0.0f, 0.2f, 0.6f, 1.0f);
+	water->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	water->fRoughness = 0.0f;
+
+	m_Materials["grass"] = std::move(grass);
+	m_Materials["water"] = std::move(water);
+}
+
 inline void WaveSimulator::BuildLandGeometry()
 {
 	GeometryGenerator geoGen;
@@ -391,32 +440,33 @@ inline void WaveSimulator::BuildLandGeometry()
 		auto& p = grid.Vertices[i].Position;
 		vertices[i].Pos = p;
 		vertices[i].Pos.y = GetHillsHeight(p.x, p.z);
+		// vertices[i].Normal = GetHillsNormal(p.x, p.z);
 
 		// 색상은 각 높이에 맞춰서 렌더링합니다.
 		if (vertices[i].Pos.y < -10.0f)
 		{
 			// 해변의 컬리
-			vertices[i].Color = XMFLOAT4(1.0f, 0.96f, 0.62f, 1.0f);
+			vertices[i].Normal = XMFLOAT3(1.0f, 0.96f, 0.62f);
 		}
 		else if (vertices[i].Pos.y < 5.0f)
 		{
 			// 연노초록 색
-			vertices[i].Color = XMFLOAT4(0.48f, 0.77f, 0.46f, 1.0f);
+			vertices[i].Normal = XMFLOAT3(0.48f, 0.77f, 0.46f);
 		}
 		else if (vertices[i].Pos.y < 12.0f)
 		{
 			// 노랑-초록 혼합색
-			vertices[i].Color = XMFLOAT4(0.1f, 0.48f, 0.19f, 1.0f);
+			vertices[i].Normal = XMFLOAT3(0.1f, 0.48f, 0.19f);
 		}
 		else if (vertices[i].Pos.y < 20.0f)
 		{
 			// 갈색
-			vertices[i].Color = XMFLOAT4(0.45f, 0.39f, 0.34f, 1.0f);
+			vertices[i].Normal = XMFLOAT3(0.45f, 0.39f, 0.34f);
 		}
 		else
 		{
 			// 눈색(흰색)
-			vertices[i].Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+			vertices[i].Normal = XMFLOAT3(1.0f, 1.0f, 1.0f);
 		}
 	}
 
@@ -460,6 +510,7 @@ inline void WaveSimulator::BuildRenderItems()
 	auto wavesRitem = std::make_unique<RenderItem>();
 	wavesRitem->World = MathHelper::Identity4x4();
 	wavesRitem->objCBIdx = 0;
+	wavesRitem->Mat = m_Materials["water"].get();
 	wavesRitem->pGeometry = m_Geometries["waterGeo"].get();
 	wavesRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	wavesRitem->nIdxCnt = wavesRitem->pGeometry->DrawArgs["grid"].IndexCount;
@@ -473,6 +524,7 @@ inline void WaveSimulator::BuildRenderItems()
 	auto gridRitem = std::make_unique<RenderItem>();
 	gridRitem->World = MathHelper::Identity4x4();
 	gridRitem->objCBIdx = 1;
+	gridRitem->Mat = m_Materials["grass"].get();
 	gridRitem->pGeometry = m_Geometries["landGeo"].get();
 	gridRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	gridRitem->nIdxCnt = gridRitem->pGeometry->DrawArgs["grid"].IndexCount;
@@ -532,8 +584,10 @@ inline void WaveSimulator::BuildPSO()
 inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT matCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
 
 	auto objectCB = m_curFrameResource->ObjectCB->Resource();
+	auto matCB = m_curFrameResource->MaterialCB->Resource();
 
 	for (size_t i = 0; i < ritems.size(); ++i)
 	{
@@ -543,10 +597,13 @@ inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, c
 		cmdList->IASetIndexBuffer(&ri->pGeometry->IndexBufferView());
 		cmdList->IASetPrimitiveTopology(ri->primitiveType);
 
-		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress();
-		objCBAddress += ri->objCBIdx * objCBByteSize;
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() +
+			ri->objCBIdx * objCBByteSize;
+		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + 
+			ri->Mat->nMatCBIdx * matCBByteSize;
 
 		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(1, matCBAddress);
 
 		cmdList->DrawIndexedInstanced(ri->nIdxCnt, 1, ri->nStartIdxLocation, ri->nBaseVertexLocation, 0);
 	}
@@ -577,8 +634,8 @@ inline void WaveSimulator::OnMouseMove(int x, int y)
 	if (GET_SINGLE(Input)->GetMouseRButton())
 	{
 		// 마우스 한 픽셀 이동을 장면의 0.005 단위에 대응시킨다.
-		float dx = 0.005f * static_cast<float>(x - m_LastMousePos.x);
-		float dy = 0.005f * static_cast<float>(y - m_LastMousePos.y);
+		float dx = mouseSensorForce[idxMouseSensor] * static_cast<float>(x - m_LastMousePos.x);
+		float dy = mouseSensorForce[idxMouseSensor] * static_cast<float>(y - m_LastMousePos.y);
 
 		// 입력에 기초해서 카메라 반지름을 갱신한다.
 		m_Radius += dx - dy;
@@ -605,11 +662,46 @@ void WaveSimulator::Input(float fDeltaTime)
 
 	if (GET_SINGLE(Input)->IsKeyDown('1'))
 	{
+		cout << "1 pressed" << endl;
 		m_IsWireframe = true;
 	}
 	else 
 	{
 		m_IsWireframe = false;
+	}
+
+	if (GET_SINGLE(Input)->IsKeyDown('6'))
+	{
+		idxMouseSensor--;
+		if (idxMouseSensor < 0)
+		{
+			idxMouseSensor = 6;
+		}
+	}
+	if (GET_SINGLE(Input)->IsKeyDown('7'))
+	{
+		idxMouseSensor++;
+		if (idxMouseSensor >= 7)
+		{
+			idxMouseSensor = 0;
+		}
+	}
+
+	if (GET_SINGLE(Input)->IsKeyDown(VK_LEFT))
+	{
+		m_fSunTheta -= 1.0f * fDeltaTime;
+	}
+	if (GET_SINGLE(Input)->IsKeyDown(VK_RIGHT))
+	{
+		m_fSunTheta += 1.0f * fDeltaTime;
+	}
+	if (GET_SINGLE(Input)->IsKeyDown(VK_UP))
+	{
+		m_fSunPhi -= 1.0f * fDeltaTime;
+	}
+	if (GET_SINGLE(Input)->IsKeyDown(VK_DOWN))
+	{
+		m_fSunPhi += 1.0f * fDeltaTime;
 	}
 }
 
@@ -652,7 +744,7 @@ inline void WaveSimulator::UpdateMaterialCBs(float fDeltaTime)
 {
 	auto curMaterialCB = m_curFrameResource->MaterialCB.get();
 
-	for (auto& e : m_Material)
+	for (auto& e : m_Materials)
 	{
 		// 상수들이 변했을 때만 cbuffer를 갱신한다.
 		// 이러한 갱신을 프레임 자원마다 수행해야 한다.
@@ -666,6 +758,7 @@ inline void WaveSimulator::UpdateMaterialCBs(float fDeltaTime)
 			matConst.DiffuseAlbedo = mat->DiffuseAlbedo;
 			matConst.FresnelR0 = mat->FresnelR0;
 			matConst.fRoughness = mat->fRoughness;
+
 			curMaterialCB->CopyData(mat->nMatCBIdx, matConst);
 
 			// 다음 프레임 자원으로 넘어간다.
@@ -700,6 +793,13 @@ inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 	m_tMainPassCB.TotalTime = GET_SINGLE(Timer)->GetTotalTime();
 	m_tMainPassCB.DeltaTime = fDeltaTime;
 
+	m_tMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+
+	XMVECTOR lightDir = -MathHelper::SphericalToCartesian(1.0f, m_fSunTheta, m_fSunPhi);
+
+	XMStoreFloat3(&m_tMainPassCB.Lights[0].Direction, lightDir);
+	m_tMainPassCB.Lights[0].Strength = { 1.0f, 1.0f, 0.9f };
+
 	auto curPassCB = m_curFrameResource->PassCB.get();
 	curPassCB->CopyData(0, m_tMainPassCB);
 }
@@ -730,7 +830,7 @@ inline void WaveSimulator::UpdateWaves(float fDeltaTime)
 		Vertex v;
 
 		v.Pos = m_Waves->Position(i);
-		v.Color = XMFLOAT4(DirectX::Colors::Blue);
+		v.Normal = XMFLOAT3(DirectX::Colors::Blue);
 
 		currWavesVB->CopyData(i, v);
 	}
@@ -742,6 +842,8 @@ inline void WaveSimulator::UpdateWaves(float fDeltaTime)
 int WaveSimulator::Update(float fDeltaTime)
 {
 	UpdateCamera(fDeltaTime);
+
+	m_fSunPhi = MathHelper::Clamp(m_fSunPhi, 1.0f, XM_PIDIV2);
 
 	// 원형 프레임 리소스 배열을 순환한다.
 	m_nCurFrameResourceIdx = (m_nCurFrameResourceIdx + 1) % gNumFrameResource;
@@ -758,6 +860,7 @@ int WaveSimulator::Update(float fDeltaTime)
 	}
 
 	UpdateObjectCBs(fDeltaTime);
+	UpdateMaterialCBs(fDeltaTime);
 	UpdateMainPassCB(fDeltaTime);
 	UpdateWaves(fDeltaTime);
 
@@ -815,7 +918,7 @@ void WaveSimulator::Render(float fDeltaTime)
 
 	// 패스당 상수 버퍼를 바인딩합니다. 이 작업은 패스당 한 번만 수행하면 됩니다.
 	auto passCB = m_curFrameResource->PassCB->Resource();
-	m_CommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
 
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::Opaque]);
 
