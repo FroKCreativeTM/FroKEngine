@@ -1,7 +1,7 @@
 ﻿// FroKEngine.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
 
-#include "FroKEngine.h"
+#include "WaveSimulator.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -21,7 +21,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int nRev;
     try 
     {
-        FroKEngine app;
+        WaveSimulator app;
 
         if (!app.Init(hInstance))
         {

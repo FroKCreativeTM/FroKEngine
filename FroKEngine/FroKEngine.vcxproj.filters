@@ -55,6 +55,15 @@
     <Filter Include="01. Engine\04. Graphics\04. Resource\01. Geometry">
       <UniqueIdentifier>{493e98dd-a9b6-443f-b408-076077785fb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\04. Graphics\05. Light">
+      <UniqueIdentifier>{0edc8043-6573-44ed-87e4-eb2cb13aa936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Game">
+      <UniqueIdentifier>{a2947af3-f036-49f4-848b-144f80d7818a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Simulator">
+      <UniqueIdentifier>{a9571966-a258-4072-89b1-7e9668547cc6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -117,8 +126,14 @@
     <ClInclude Include="Graphics\GeometryGenerator.h">
       <Filter>01. Engine\04. Graphics\04. Resource\01. Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\Material.h">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
+    </ClInclude>
     <ClInclude Include="WaveSimulator.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>03. Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="Wave.h">
+      <Filter>03. Simulator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="Graphics\GeometryGenerator.cpp">
       <Filter>01. Engine\04. Graphics\04. Resource\01. Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Wave.cpp">
+      <Filter>03. Simulator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

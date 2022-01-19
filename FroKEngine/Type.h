@@ -84,3 +84,4 @@ struct MeshGeometry
 		IndexBufferUploader = nullptr;
 	}
 };
+

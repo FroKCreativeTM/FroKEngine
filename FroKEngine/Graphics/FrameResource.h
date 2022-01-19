@@ -2,6 +2,7 @@
 
 #include "../MathHelper.h"
 #include "UploadBuffer.h"
+#include "Material.h"
 
 using namespace std;
 using namespace DirectX;
@@ -73,8 +74,9 @@ struct PassConstants
 // 응용 프로그램마다 달라야 할 것이다.
 class FrameResource
 {
-public : 
+public :
 	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt);
+	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt, UINT waveVertCount);
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
 	~FrameResource();
@@ -92,5 +94,11 @@ public :
 	// 이 값은 GPU가 아직 이 프레임 자원들을 사용하고 있는가를 판정하는 용도이다.
 	UINT64 nFence = 0;
 
+	// GPU가 이를 참조하는 명령 처리를 완료할 때까지 동적 정점 버퍼를 업데이트할 수 없습니다.
+	// 따라서 각 프레임에는 고유한 프레임이 필요합니다.
+	std::unique_ptr<UploadBuffer<Vertex>> WavesVB = nullptr;
+	
+	// 주의 : 이 집합은 단순히 Material의 부분만 나타내는 집합이다.
+	std::unique_ptr<UploadBuffer<MaterialConstants>> MaterialCB = nullptr;
 };
 

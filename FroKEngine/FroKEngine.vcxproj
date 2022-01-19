@@ -151,6 +151,7 @@
     <ClInclude Include="Graphics\d3dx12.h" />
     <ClInclude Include="Graphics\FrameResource.h" />
     <ClInclude Include="Graphics\GeometryGenerator.h" />
+    <ClInclude Include="Graphics\Material.h" />
     <ClInclude Include="Graphics\RenderItem.h" />
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h" />
     <ClInclude Include="Graphics\UploadBuffer.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="Util.h" />
+    <ClInclude Include="Wave.h" />
     <ClInclude Include="WaveSimulator.h" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +179,7 @@
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="StringConverter.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Wave.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FroKEngine.rc" />

@@ -4,6 +4,12 @@
 
 using namespace DirectX;
 
+enum class RenderLayer : int
+{
+	Opaque = 0,		// 불투명체
+	Count
+};
+
 // 하나의 물체를 그리는 데 필요한 매개변수들을 담는 클래스이다.
 // 이 클래스의 구체적인 구성은 응용 프로그램마다 달라질 것이다.
 class RenderItem
@@ -19,7 +25,7 @@ public :
 	// FrameResource마다 물체의 cbuffer가 있으므로, FrameResource마다 갱신을 적용해야 한다.
 	// 따라서 물체의 자료를 수정할 때에는 반드시
 	// NumFrameDirty = gNumFrameResources로 설정해야한다.
-	// 그래di 각각의 프레임 자원이 갱신된다.
+	// 그래야 각각의 프레임 자원이 갱신된다.
 	int nFramesDirty = gNumFrameResource;
 
 	// 이 렌더 아이템의 물체 상수 버퍼에 해당하는 GPU 상수 버퍼의 색인

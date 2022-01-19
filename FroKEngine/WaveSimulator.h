@@ -1,9 +1,3 @@
-/*
-* 
-* 이 코드는 파도 치는 산을 시뮬레이션하는 코드입니다.
-* 
-*/
-
 #pragma once
 
 #include "Core.h"
@@ -12,10 +6,16 @@
 #include "Graphics/FrameResource.h"
 #include "Graphics/RenderItem.h"
 #include "Graphics/GeometryGenerator.h"
+#include "Graphics/Material.h"
+#include "Wave.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
+float GetHillsHeight(float x, float z) 
+{
+	return 0.3f * (z * sinf(0.1f * x) + x * cosf(0.1f * z));
+}
 
 class WaveSimulator : public Core
 {
@@ -44,25 +44,27 @@ private:
 	void BuildConstantBufferViews();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
-	float GetHillsHeight(float x, float z) const;
-	void BuildlandGeometry();
 	void BuildWavesGeometryBuffers();
+	void BuildLandGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
+
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
 	void UpdateCamera(float fDeltaTime);
 	void UpdateObjectCBs(float fDeltaTime);
+	void UpdateMaterialCBs(float fDeltaTime);
 	void UpdateMainPassCB(float fDeltaTime);
+	void UpdateWaves(float fDeltaTime);
 
 	// void MakeRenderItem();
 
-private :
+private:
 	void OnMouseDown(int x, int y);
 	void OnMouseMove(int x, int y);
 	void OnMouseUp(int x, int y);
 
-private :
+private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap>	m_CbvHeap = nullptr;
 
@@ -87,7 +89,17 @@ private :
 	std::vector<std::unique_ptr<RenderItem>> m_allRenderItems;
 	std::vector<RenderItem*> m_OpaqueRenderItems;
 
-	bool m_IsWireframe = true;
+	// 파도에 대한 포인터
+	std::unique_ptr<Waves> m_Waves;
+	RenderItem* m_WaveRenderItem;
+
+	// PSO 상태에 따라 달라지는 렌더링 아이템들이다.
+	std::vector<RenderItem*> m_RenderitemLayer[(int)RenderLayer::Count];
+
+	// 모든 마테리얼 정보
+	std::unordered_map<std::string, std::unique_ptr<Material>> m_Material;
+
+	bool m_IsWireframe = false;
 
 	// 패스 상수들을 저장해둔 구조체
 	PassConstants m_tMainPassCB;
@@ -97,10 +109,10 @@ private :
 
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
 
-	XMFLOAT4X4	m_World	= MathHelper::Identity4x4();
+	XMFLOAT4X4	m_World = MathHelper::Identity4x4();
 	XMFLOAT3 m_EyePos = { 0.0f, 0.0f, 0.0f };
-	XMFLOAT4X4	m_View	= MathHelper::Identity4x4();
-	XMFLOAT4X4	m_Proj	= MathHelper::Identity4x4();
+	XMFLOAT4X4	m_View = MathHelper::Identity4x4();
+	XMFLOAT4X4	m_Proj = MathHelper::Identity4x4();
 
 	float		m_Theta = 1.5f * XM_PI;
 	// float		m_Phi = XM_PIDIV4;
@@ -110,9 +122,14 @@ private :
 	POINT m_LastMousePos;
 };
 
-WaveSimulator::WaveSimulator() : 
+WaveSimulator::WaveSimulator() :
 	Core() { }
-WaveSimulator::~WaveSimulator() { }
+
+WaveSimulator::~WaveSimulator() 
+{ 
+	if (m_d3dDevice != nullptr)
+		FlushCommandQueue();
+}
 
 bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 {
@@ -123,14 +140,17 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 
 	// 먼저 커맨드 리스트를 초기화 한다.
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
+	
+
+	// 파도에 대한 설정을 한다.
+	m_Waves = std::make_unique<Waves>(128, 128, 1.0f, 0.03f, 4.0f, 0.2f);
 
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	BuildlandGeometry();
+	BuildLandGeometry();
+	BuildWavesGeometryBuffers();
 	BuildRenderItems();
 	BuildFrameResources();
-	BuildDescriptorHeaps();
-	BuildConstantBufferViews();
 	BuildPSO();
 
 	// 초기화 명령을 실행합니다.
@@ -158,7 +178,7 @@ inline void WaveSimulator::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResource; ++i)
 	{
 		m_frameResources.push_back(std::make_unique<FrameResource>(
-			m_d3dDevice.Get(), 1, (UINT)m_allRenderItems.size()));
+			m_d3dDevice.Get(), 1, (UINT)m_allRenderItems.size(), m_Waves->VertexCount()));
 	}
 }
 
@@ -223,7 +243,7 @@ inline void WaveSimulator::BuildConstantBufferViews()
 		}
 	}
 
-	
+
 	UINT passCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 
 	// 마지막 3개의 서술자는 각 프레임 리소스를 위한 패스 상수 버퍼 뷰가 된다.
@@ -251,34 +271,17 @@ inline void WaveSimulator::BuildConstantBufferViews()
 // Output : void
 inline void WaveSimulator::BuildRootSignature()
 {
-	// 셰이더 프로그램은 일반적으로 입력으로 리소스를 필요로 합니다(상수 버퍼, 텍스처, 샘플러).
-	// 루트 서명은 셰이더 프로그램이 기대하는 리소스를 정의합니다.
-	// 셰이더 프로그램을 함수로, 입력 리소스를 함수 매개변수로 생각하면
-	// 루트 서명은 함수 서명을 정의하는 것으로 생각할 수 있습니다.
-
-	// 루트 매개변수는 테이블, 루트 설명자 또는 루트 상수일 수 있습니다.
+	// Root parameter can be a table, root descriptor or root constants.
 	CD3DX12_ROOT_PARAMETER slotRootParameter[2];
-	// CBV의 단일 서술자 테이블을 만듭니다.
-	CD3DX12_DESCRIPTOR_RANGE cbvTable0;
-	cbvTable0.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
-		1,	// 테이블의 서술자 갯수
-		0);	// 이 루트 매개변수에 묶일 셰이더 인수들의 기준 레지스터 번호( register (b0) )
 
-	CD3DX12_DESCRIPTOR_RANGE cbvTable1;
-	cbvTable1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
-		1,	// 테이블의 서술자 갯수
-		1);	// 이 루트 매개변수에 묶일 셰이더 인수들의 기준 레지스터 번호( register (b1) )
+	// Create root CBV.
+	slotRootParameter[0].InitAsConstantBufferView(0);
+	slotRootParameter[1].InitAsConstantBufferView(1);
 
-	slotRootParameter[0].InitAsDescriptorTable(1,	// 구간(range) 갯수
-		&cbvTable0);	// 구간들의 배열을 가리키는 포인터
-	slotRootParameter[1].InitAsDescriptorTable(1,	// 구간(range) 갯수
-		&cbvTable1);	// 구간들의 배열을 가리키는 포인터
+	// A root signature is an array of root parameters.
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	// 루트 서명은 루트 매개변수의 배열입니다.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	// 단일 상수 버퍼로 구성된 사술자 구간을 가리키는 단일 슬롯으로 루트 서명을 만듭니다.
+	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
@@ -294,7 +297,7 @@ inline void WaveSimulator::BuildRootSignature()
 		0,
 		serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(),
-		IID_PPV_ARGS(&m_RootSignature)));
+		IID_PPV_ARGS(m_RootSignature.GetAddressOf())));
 }
 
 // 셰이더을 바이트코드로 컴파일하고
@@ -302,7 +305,7 @@ inline void WaveSimulator::BuildRootSignature()
 inline void WaveSimulator::BuildShadersAndInputLayout()
 {
 	HRESULT hr = S_OK;
-	
+
 	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
 	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
 	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\color.hlsl", nullptr, "VS", "vs_5_1");
@@ -315,20 +318,71 @@ inline void WaveSimulator::BuildShadersAndInputLayout()
 	};
 }
 
-inline float WaveSimulator::GetHillsHeight(float x, float z) const
+inline void WaveSimulator::BuildWavesGeometryBuffers()
 {
-	return 0.3f * (z * sinf(0.1 * x) + x * cosf(0.1f * z));
+	std::vector<std::uint16_t> indices(3 * m_Waves->TriangleCount()); // 3 indices per face
+	assert(m_Waves->VertexCount() < 0x0000ffff);
+
+	// 각 쿼드마다 반복한다.
+	int m = m_Waves->RowCount();
+	int n = m_Waves->ColumnCount();
+	int k = 0;
+	for (int i = 0; i < m - 1; ++i)
+	{
+		for (int j = 0; j < n - 1; ++j)
+		{
+			indices[k] = i * n + j;
+			indices[k + 1] = i * n + j + 1;
+			indices[k + 2] = (i + 1) * n + j;
+
+			indices[k + 3] = (i + 1) * n + j;
+			indices[k + 4] = i * n + j + 1;
+			indices[k + 5] = (i + 1) * n + j + 1;
+
+			k += 6; // next quad
+		}
+	}
+
+	UINT vbByteSize = m_Waves->VertexCount() * sizeof(Vertex);
+	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "waterGeo";
+
+	// Set dynamically.
+	geo->VertexBufferCPU = nullptr;
+	geo->VertexBufferGPU = nullptr;
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->IndexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
+		m_CommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["grid"] = submesh;
+
+	m_Geometries["waterGeo"] = std::move(geo);
 }
 
-inline void WaveSimulator::BuildlandGeometry()
+inline void WaveSimulator::BuildLandGeometry()
 {
 	GeometryGenerator geoGen;
 	GeometryGenerator::MeshData grid = geoGen.CreateGrid(160.0f, 160.0f, 50, 50);
 
 	//
-	// Extract the vertex elements we are interested and apply the height function to
-	// each vertex.  In addition, color the vertices based on their height so we have
-	// sandy looking beaches, grassy low hills, and snow mountain peaks.
+	// 꼭짓점 요소를 추출하고 각 꼭짓점에 높이 함수를 적용합니다.
+	// 또한 높이에 따라 정점에 색상을 지정하여 모래처럼 보이는 해변,
+	// 풀이 무성한 낮은 언덕 및 눈 덮인 산봉우리를 만듭니다. 
 	//
 
 	std::vector<Vertex> vertices(grid.Vertices.size());
@@ -338,30 +392,30 @@ inline void WaveSimulator::BuildlandGeometry()
 		vertices[i].Pos = p;
 		vertices[i].Pos.y = GetHillsHeight(p.x, p.z);
 
-		// Color the vertex based on its height.
+		// 색상은 각 높이에 맞춰서 렌더링합니다.
 		if (vertices[i].Pos.y < -10.0f)
 		{
-			// Sandy beach color.
+			// 해변의 컬리
 			vertices[i].Color = XMFLOAT4(1.0f, 0.96f, 0.62f, 1.0f);
 		}
 		else if (vertices[i].Pos.y < 5.0f)
 		{
-			// Light yellow-green.
+			// 연노초록 색
 			vertices[i].Color = XMFLOAT4(0.48f, 0.77f, 0.46f, 1.0f);
 		}
 		else if (vertices[i].Pos.y < 12.0f)
 		{
-			// Dark yellow-green.
+			// 노랑-초록 혼합색
 			vertices[i].Color = XMFLOAT4(0.1f, 0.48f, 0.19f, 1.0f);
 		}
 		else if (vertices[i].Pos.y < 20.0f)
 		{
-			// Dark brown.
+			// 갈색
 			vertices[i].Color = XMFLOAT4(0.45f, 0.39f, 0.34f, 1.0f);
 		}
 		else
 		{
-			// White snow.
+			// 눈색(흰색)
 			vertices[i].Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 	}
@@ -401,141 +455,34 @@ inline void WaveSimulator::BuildlandGeometry()
 	m_Geometries["landGeo"] = std::move(geo);
 }
 
-inline void WaveSimulator::BuildWavesGeometryBuffers()
-{
-	std::vector<std::uint16_t> indices(3 * m_Waves->TriangleCount()); // 3 indices per face
-	assert(mWaves->VertexCount() < 0x0000ffff);
-
-	// Iterate over each quad.
-	int m = mWaves->RowCount();
-	int n = mWaves->ColumnCount();
-	int k = 0;
-	for (int i = 0; i < m - 1; ++i)
-	{
-		for (int j = 0; j < n - 1; ++j)
-		{
-			indices[k] = i * n + j;
-			indices[k + 1] = i * n + j + 1;
-			indices[k + 2] = (i + 1) * n + j;
-
-			indices[k + 3] = (i + 1) * n + j;
-			indices[k + 4] = i * n + j + 1;
-			indices[k + 5] = (i + 1) * n + j + 1;
-
-			k += 6; // next quad
-		}
-	}
-
-	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertex);
-	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
-
-	auto geo = std::make_unique<MeshGeometry>();
-	geo->Name = "waterGeo";
-
-	// Set dynamically.
-	geo->VertexBufferCPU = nullptr;
-	geo->VertexBufferGPU = nullptr;
-
-	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
-	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
-
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
-
-	geo->VertexByteStride = sizeof(Vertex);
-	geo->VertexBufferByteSize = vbByteSize;
-	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	geo->IndexBufferByteSize = ibByteSize;
-
-	SubmeshGeometry submesh;
-	submesh.IndexCount = (UINT)indices.size();
-	submesh.StartIndexLocation = 0;
-	submesh.BaseVertexLocation = 0;
-
-	geo->DrawArgs["grid"] = submesh;
-
-	mGeometries["waterGeo"] = std::move(geo);
-}
-
 inline void WaveSimulator::BuildRenderItems()
 {
-	auto boxRenderItem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&boxRenderItem->World,
-		XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixTranslation(0.0f, 0.5f, 0.0f));
-	boxRenderItem->objCBIdx = 0;
-	boxRenderItem->pGeometry = m_Geometries["landGeo"].get();
-	boxRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	boxRenderItem->nIdxCnt = boxRenderItem->pGeometry->DrawArgs["box"].IndexCount;
-	boxRenderItem->nStartIdxLocation = boxRenderItem->pGeometry->DrawArgs["box"].StartIndexLocation;
-	boxRenderItem->nBaseVertexLocation = boxRenderItem->pGeometry->DrawArgs["box"].BaseVertexLocation;
-	m_allRenderItems.push_back(std::move(boxRenderItem));
+	auto wavesRitem = std::make_unique<RenderItem>();
+	wavesRitem->World = MathHelper::Identity4x4();
+	wavesRitem->objCBIdx = 0;
+	wavesRitem->pGeometry = m_Geometries["waterGeo"].get();
+	wavesRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	wavesRitem->nIdxCnt = wavesRitem->pGeometry->DrawArgs["grid"].IndexCount;
+	wavesRitem->nStartIdxLocation = wavesRitem->pGeometry->DrawArgs["grid"].StartIndexLocation;
+	wavesRitem->nBaseVertexLocation = wavesRitem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
 
-	auto gridRenderItem = std::make_unique<RenderItem>();
-	gridRenderItem->World = MathHelper::Identity4x4();
-	gridRenderItem->objCBIdx = 1;
-	gridRenderItem->pGeometry = m_Geometries["landGeo"].get();
-	gridRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	gridRenderItem->nIdxCnt = gridRenderItem->pGeometry->DrawArgs["grid"].IndexCount;
-	gridRenderItem->nStartIdxLocation = gridRenderItem->pGeometry->DrawArgs["grid"].StartIndexLocation;
-	gridRenderItem->nBaseVertexLocation = gridRenderItem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
-	m_allRenderItems.push_back(std::move(gridRenderItem));
+	m_WaveRenderItem = wavesRitem.get();
 
-	// 기둥들과 구를 두 줄로 배치한다.
-	UINT objCBIdx = 2;
-	for (int i = 0; i < 5; i++)
-	{
-		auto leftCylRenderItem = std::make_unique<RenderItem>();
-		auto rightCylRenderItem = std::make_unique<RenderItem>();
-		auto leftSphereRenderItem = std::make_unique<RenderItem>();
-		auto rightSphereRenderItem = std::make_unique<RenderItem>();
+	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(wavesRitem.get());
 
-		XMMATRIX leftCylWorld = XMMatrixTranslation(-5.0f, 1.5f, -10.0f + i * 5.0f);
-		XMMATRIX rightCylWorld = XMMatrixTranslation(+5.0f, 1.5f, -10.0f + i * 5.0f);
+	auto gridRitem = std::make_unique<RenderItem>();
+	gridRitem->World = MathHelper::Identity4x4();
+	gridRitem->objCBIdx = 1;
+	gridRitem->pGeometry = m_Geometries["landGeo"].get();
+	gridRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	gridRitem->nIdxCnt = gridRitem->pGeometry->DrawArgs["grid"].IndexCount;
+	gridRitem->nStartIdxLocation = gridRitem->pGeometry->DrawArgs["grid"].StartIndexLocation;
+	gridRitem->nBaseVertexLocation = gridRitem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
 
-		XMMATRIX leftSphereWorld = XMMatrixTranslation(-5.0f, 3.5f, -10.0f + i * 5.0f);
-		XMMATRIX rightSphereWorld = XMMatrixTranslation(+5.0f, 3.5f, -10.0f + i * 5.0f);
+	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(gridRitem.get());
 
-		XMStoreFloat4x4(&leftCylRenderItem->World, leftCylWorld);
-		leftCylRenderItem->objCBIdx = objCBIdx++;
-		leftCylRenderItem->pGeometry = m_Geometries["landGeo"].get();
-		leftCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		leftCylRenderItem->nIdxCnt = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].IndexCount;
-		leftCylRenderItem->nStartIdxLocation = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].StartIndexLocation;
-		leftCylRenderItem->nBaseVertexLocation = leftCylRenderItem->pGeometry->DrawArgs["cylinder"].BaseVertexLocation;
-		m_allRenderItems.push_back(std::move(leftCylRenderItem));
-
-		XMStoreFloat4x4(&rightCylRenderItem->World, rightCylWorld);
-		rightCylRenderItem->objCBIdx = objCBIdx++;
-		rightCylRenderItem->pGeometry = m_Geometries["landGeo"].get();
-		rightCylRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		rightCylRenderItem->nIdxCnt = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].IndexCount;
-		rightCylRenderItem->nStartIdxLocation = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].StartIndexLocation;
-		rightCylRenderItem->nBaseVertexLocation = rightCylRenderItem->pGeometry->DrawArgs["cylinder"].BaseVertexLocation;
-		m_allRenderItems.push_back(std::move(rightCylRenderItem));
-
-		XMStoreFloat4x4(&leftSphereRenderItem->World, leftSphereWorld);
-		leftSphereRenderItem->objCBIdx = objCBIdx++;
-		leftSphereRenderItem->pGeometry = m_Geometries["landGeo"].get();
-		leftSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		leftSphereRenderItem->nIdxCnt = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].IndexCount;
-		leftSphereRenderItem->nStartIdxLocation = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].StartIndexLocation;
-		leftSphereRenderItem->nBaseVertexLocation = leftSphereRenderItem->pGeometry->DrawArgs["sphere"].BaseVertexLocation;
-		m_allRenderItems.push_back(std::move(leftSphereRenderItem));
-
-		XMStoreFloat4x4(&rightSphereRenderItem->World, rightSphereWorld);
-		rightSphereRenderItem->objCBIdx = objCBIdx++;
-		rightSphereRenderItem->pGeometry = m_Geometries["landGeo"].get();
-		rightSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		rightSphereRenderItem->nIdxCnt = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].IndexCount;
-		rightSphereRenderItem->nStartIdxLocation = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].StartIndexLocation;
-		rightSphereRenderItem->nBaseVertexLocation = rightSphereRenderItem->pGeometry->DrawArgs["sphere"].BaseVertexLocation;
-		m_allRenderItems.push_back(std::move(rightSphereRenderItem));
-	}
-
-	for (auto& e : m_allRenderItems)
-	{
-		m_OpaqueRenderItems.push_back(e.get());
-	}
+	m_allRenderItems.push_back(std::move(wavesRitem));
+	m_allRenderItems.push_back(std::move(gridRitem));
 }
 
 // 파이프라인 상태 객체(Pipeline State Object)를 생성한다.
@@ -543,47 +490,41 @@ inline void WaveSimulator::BuildRenderItems()
 // 렌더링 파이프라인에 묶어서 이 상태를 제어할 수 있는 PSO를 생성합니다.
 inline void WaveSimulator::BuildPSO()
 {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
-	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	// 입력 레이아웃을 묶습니다.
-	psoDesc.InputLayout = { m_InputLayout.data(), (UINT)m_InputLayout.size() };
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc;
 
-	// 루트 서명을 묶습니다.
-	psoDesc.pRootSignature = m_RootSignature.Get();
-
-	// 정점/픽셀 셰이더를 묶습니다.
-	psoDesc.VS =
+	//
+	// 불투명체(Opaque) 상태의 렌더링
+	//
+	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	opaquePsoDesc.InputLayout = { m_InputLayout.data(), (UINT)m_InputLayout.size() };
+	opaquePsoDesc.pRootSignature = m_RootSignature.Get();
+	opaquePsoDesc.VS =
 	{
 		reinterpret_cast<BYTE*>(m_shaders["standardVS"]->GetBufferPointer()),
 		m_shaders["standardVS"]->GetBufferSize()
 	};
-	psoDesc.PS =
+	opaquePsoDesc.PS =
 	{
 		reinterpret_cast<BYTE*>(m_shaders["opaquePS"]->GetBufferPointer()),
 		m_shaders["opaquePS"]->GetBufferSize()
 	};
-
-	// 래스터라이즈 부분은 셰이더를 직접 프로그래밍할 수 없고
-	// 단순히 설정만 가능한 부분이다.
-	// 레스터나 그 외 설정들을 묶어줍니다.
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	psoDesc.SampleMask = UINT_MAX; // 다중표본화를 설정합니다.(여기서는 그 어떤 표본도 비활성화하지 않는 MAX를 넣습니다.)
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;	// 기본 도형은 삼각형입니다
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = m_BackBufferFormat;
-	psoDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
-	psoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
-	psoDesc.DSVFormat = m_DepthStencilFormat;
-	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PSOs["opaque"])));
+	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.SampleMask = UINT_MAX;
+	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	opaquePsoDesc.NumRenderTargets = 1;
+	opaquePsoDesc.RTVFormats[0] = m_BackBufferFormat;
+	opaquePsoDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
+	opaquePsoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
+	opaquePsoDesc.DSVFormat = m_DepthStencilFormat;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque"])));
 
 	//
-	// PSO for opaque wireframe objects.
+	// 불투명한 와이어프레임 개체에 대한 PSO입니다.
 	//
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = psoDesc;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = opaquePsoDesc;
 	opaqueWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
 }
@@ -594,7 +535,6 @@ inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, c
 
 	auto objectCB = m_curFrameResource->ObjectCB->Resource();
 
-	// 각 렌더링할 아이템마다 파이프라인에 묶는다
 	for (size_t i = 0; i < ritems.size(); ++i)
 	{
 		auto ri = ritems[i];
@@ -603,12 +543,10 @@ inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, c
 		cmdList->IASetIndexBuffer(&ri->pGeometry->IndexBufferView());
 		cmdList->IASetPrimitiveTopology(ri->primitiveType);
 
-		// 이 개체 및 이 프레임 리소스에 대한 설명자 힙의 CBV에 대한 오프셋.
-		UINT cbvIndex = m_nCurFrameResourceIdx * (UINT)m_OpaqueRenderItems.size() + ri->objCBIdx;
-		auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
-		cbvHandle.Offset(cbvIndex, m_CbvSrvUavDescriptorSize);
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress();
+		objCBAddress += ri->objCBIdx * objCBByteSize;
 
-		cmdList->SetGraphicsRootDescriptorTable(0, cbvHandle);
+		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
 
 		cmdList->DrawIndexedInstanced(ri->nIdxCnt, 1, ri->nStartIdxLocation, ri->nBaseVertexLocation, 0);
 	}
@@ -667,18 +605,20 @@ void WaveSimulator::Input(float fDeltaTime)
 
 	if (GET_SINGLE(Input)->IsKeyDown('1'))
 	{
-		m_IsWireframe != m_IsWireframe;
+		m_IsWireframe = true;
+	}
+	else 
+	{
+		m_IsWireframe = false;
 	}
 }
 
 inline void WaveSimulator::UpdateCamera(float fDeltaTime)
 {
-	// Convert Spherical to Cartesian coordinates.
 	m_EyePos.x = m_Radius * sinf(m_Phi) * cosf(m_Theta);
 	m_EyePos.z = m_Radius * sinf(m_Phi) * sinf(m_Theta);
 	m_EyePos.y = m_Radius * cosf(m_Phi);
 
-	// Build the view matrix.
 	XMVECTOR pos = XMVectorSet(m_EyePos.x, m_EyePos.y, m_EyePos.z, 1.0f);
 	XMVECTOR target = XMVectorZero();
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -694,7 +634,7 @@ inline void WaveSimulator::UpdateObjectCBs(float fDeltaTime)
 
 	// 상수들이 바뀌었을 때에만 cbuffer 자료를 갱신해야 한다.
 	// 이러한 갱신을 프레임 자원마다 수행해야 한다.
-	for (auto & e : m_allRenderItems)
+	for (auto& e : m_allRenderItems)
 	{
 		XMMATRIX world = XMLoadFloat4x4(&e->World);
 
@@ -705,6 +645,32 @@ inline void WaveSimulator::UpdateObjectCBs(float fDeltaTime)
 
 		// 다음 프레임 자원으로 넘어간다.
 		e->nFramesDirty--;
+	}
+}
+
+inline void WaveSimulator::UpdateMaterialCBs(float fDeltaTime)
+{
+	auto curMaterialCB = m_curFrameResource->MaterialCB.get();
+
+	for (auto& e : m_Material)
+	{
+		// 상수들이 변했을 때만 cbuffer를 갱신한다.
+		// 이러한 갱신을 프레임 자원마다 수행해야 한다.
+		Material* mat = e.second.get();
+
+		if (mat->nFramesDirty > 0)
+		{
+			XMMATRIX matTransform = XMLoadFloat4x4(&mat->MatTransform);
+
+			MaterialConstants matConst;
+			matConst.DiffuseAlbedo = mat->DiffuseAlbedo;
+			matConst.FresnelR0 = mat->FresnelR0;
+			matConst.fRoughness = mat->fRoughness;
+			curMaterialCB->CopyData(mat->nMatCBIdx, matConst);
+
+			// 다음 프레임 자원으로 넘어간다.
+			mat->nFramesDirty--;
+		}
 	}
 }
 
@@ -738,6 +704,41 @@ inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 	curPassCB->CopyData(0, m_tMainPassCB);
 }
 
+inline void WaveSimulator::UpdateWaves(float fDeltaTime)
+{
+	// 매 1/4초마다 무작위 웨이브를 생성합니다.
+	static float t_base = 0.0f;
+	if ((GET_SINGLE(Timer)->GetTotalTime() - t_base) >= 0.25f)
+	{
+		t_base += 0.25f;
+
+		int i = MathHelper::Rand(4, m_Waves->RowCount() - 5);
+		int j = MathHelper::Rand(4, m_Waves->ColumnCount() - 5);
+
+		float r = MathHelper::RandF(0.2f, 0.5f);
+
+		m_Waves->Disturb(i, j, r);
+	}
+
+	// 웨이브 시뮬레이션을 업데이트합니다.
+	m_Waves->Update(fDeltaTime);
+
+	// 새 솔루션으로 웨이브 정점 버퍼를 업데이트한다.
+	auto currWavesVB = m_curFrameResource->WavesVB.get();
+	for (int i = 0; i < m_Waves->VertexCount(); ++i)
+	{
+		Vertex v;
+
+		v.Pos = m_Waves->Position(i);
+		v.Color = XMFLOAT4(DirectX::Colors::Blue);
+
+		currWavesVB->CopyData(i, v);
+	}
+
+	// 파도 렌더 아이템의 동적 VB를 현재 프레임 VB로 설정합니다.
+	m_WaveRenderItem->pGeometry->VertexBufferGPU = currWavesVB->Resource();
+}
+
 int WaveSimulator::Update(float fDeltaTime)
 {
 	UpdateCamera(fDeltaTime);
@@ -758,6 +759,7 @@ int WaveSimulator::Update(float fDeltaTime)
 
 	UpdateObjectCBs(fDeltaTime);
 	UpdateMainPassCB(fDeltaTime);
+	UpdateWaves(fDeltaTime);
 
 	return 0;
 }
@@ -807,48 +809,36 @@ void WaveSimulator::Render(float fDeltaTime)
 	// 렌더링할 버퍼를 지정합니다.
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
-	// 상수 버퍼 뷰 서술자 힙을 가져옵니다.
-	// 이는 렌더링 파이프라인에 자원을 묶을 때 사용합니다.
-	ID3D12DescriptorHeap* descriptorHeaps[] = { m_CbvHeap.Get() };
-	m_CommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
 	// 그래픽스 루트 서명을 설정합니다.
 	// SetGraphicsRootSignature을 이용하면 서술자 테이블을 가져와서 파이프라인에 묶을 수 있습니다.
 	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
-	int passCbvIndex = m_passCbvOffset + m_nCurFrameResourceIdx;
-	auto passCbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
-	passCbvHandle.Offset(passCbvIndex, m_CbvSrvUavDescriptorSize);
-	m_CommandList->SetGraphicsRootDescriptorTable(1, passCbvHandle);
+	// 패스당 상수 버퍼를 바인딩합니다. 이 작업은 패스당 한 번만 수행하면 됩니다.
+	auto passCB = m_curFrameResource->PassCB->Resource();
+	m_CommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
 
-	DrawRenderItems(m_CommandList.Get(), m_OpaqueRenderItems);
+	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::Opaque]);
 
 	// Indicate a state transition on the resource usage.
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
-	// Done recording commands.
+	// 리코딩 명령 완료
 	ThrowIfFailed(m_CommandList->Close());
 
-	// Add the command list to the queue for execution.
+	// 실행할 대기열에 명령 목록을 추가합니다.
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	// Swap the back and front buffers
+	// 후면 및 전면 버퍼 교체
 	ThrowIfFailed(m_SwapChain->Present(0, 0));
 	m_CurrBackBuffer = (m_CurrBackBuffer + 1) % SwapChainBufferCount;
 
-	// Advance the fence value to mark commands up to this fence point.
+	// 이 펜스 포인트까지 명령을 표시하려면 펜스 값을 증가시킨다.
 	m_curFrameResource->nFence = ++m_CurrentFence;
 
-	// Add an instruction to the command queue to set a new fence point. 
-	// Because we are on the GPU timeline, the new fence point won't be 
-	// set until the GPU finishes processing all the commands prior to this Signal().
+	// 명령 대기열에 명령을 추가하여 새 펜스 포인트를 설정한다.
+	// GPU 타임라인에 있으므로 GPU가 이 Signal() 이전의 모든 명령 처리를 완료할 때까지 새 펜스 포인트가 설정되지 않는다.
 	m_CommandQueue->Signal(m_Fence.Get(), m_CurrentFence);
-
-	// 프레임 명령이 완료될 때까지 기다립니다. 
-	// 이 대기는 비효율적이며 단순성을 위해서 있는 코드입니다. 나중에 렌더링 코드를 구성하는 방법을 보여줍니다.
-	// 따라서 프레임당 기다릴 필요가 없습니다.
-	// FlushCommandQueue();
 }
 

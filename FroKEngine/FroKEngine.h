@@ -6,6 +6,7 @@
 #include "Graphics/FrameResource.h"
 #include "Graphics/RenderItem.h"
 #include "Graphics/GeometryGenerator.h"
+#include "Graphics/Material.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -46,6 +47,7 @@ private:
 
 	void UpdateCamera(float fDeltaTime);
 	void UpdateObjectCBs(float fDeltaTime);
+	void UpdateMaterialCBs(float fDeltaTime);
 	void UpdateMainPassCB(float fDeltaTime);
 
 	// void MakeRenderItem();
@@ -79,6 +81,9 @@ private :
 	// 모든 렌더 아이템의 리스트.
 	std::vector<std::unique_ptr<RenderItem>> m_allRenderItems;
 	std::vector<RenderItem*> m_OpaqueRenderItems;
+	
+	// 모든 마테리얼 정보
+	std::unordered_map<std::string, std::unique_ptr<Material>> m_Material;
 
 	bool m_IsWireframe = true;
 
@@ -570,8 +575,10 @@ inline void FroKEngine::BuildPSO()
 inline void FroKEngine::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT matCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
 
 	auto objectCB = m_curFrameResource->ObjectCB->Resource();
+	auto matCB = m_curFrameResource->MaterialCB->Resource();
 
 	// 각 렌더링할 아이템마다 파이프라인에 묶는다
 	for (size_t i = 0; i < ritems.size(); ++i)
@@ -583,11 +590,17 @@ inline void FroKEngine::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, cons
 		cmdList->IASetPrimitiveTopology(ri->primitiveType);
 
 		// 이 개체 및 이 프레임 리소스에 대한 설명자 힙의 CBV에 대한 오프셋.
-		UINT cbvIndex = m_nCurFrameResourceIdx * (UINT)m_OpaqueRenderItems.size() + ri->objCBIdx;
-		auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
-		cbvHandle.Offset(cbvIndex, m_CbvSrvUavDescriptorSize);
+		// UINT cbvIndex = m_nCurFrameResourceIdx * (UINT)m_OpaqueRenderItems.size() + ri->objCBIdx;
+		// auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
+		// cbvHandle.Offset(cbvIndex, m_CbvSrvUavDescriptorSize);
 
-		cmdList->SetGraphicsRootDescriptorTable(0, cbvHandle);
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress()
+			+ ri->objCBIdx * objCBByteSize;
+		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress()
+			+ ri->Mat->MatCBIdx * objCBByteSize;
+
+		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
 
 		cmdList->DrawIndexedInstanced(ri->nIdxCnt, 1, ri->nStartIdxLocation, ri->nBaseVertexLocation, 0);
 	}
@@ -684,6 +697,32 @@ inline void FroKEngine::UpdateObjectCBs(float fDeltaTime)
 
 		// 다음 프레임 자원으로 넘어간다.
 		e->nFramesDirty--;
+	}
+}
+
+inline void FroKEngine::UpdateMaterialCBs(float fDeltaTime)
+{
+	auto curMaterialCB = m_curFrameResource->MaterialCB.get();
+
+	for (auto& e : m_Material)
+	{
+		// 상수들이 변했을 때만 cbuffer를 갱신한다.
+		// 이러한 갱신을 프레임 자원마다 수행해야 한다.
+		Material* mat = e.second.get();
+
+		if (mat->nFramesDirty > 0)
+		{
+			XMMATRIX matTransform = XMLoadFloat4x4(&mat->MatTransform);
+
+			MaterialConstants matConst;
+			matConst.DiffuseAlbedo = mat->DiffuseAlbedo;
+			matConst.FresnelR0 = mat->FresnelR0;
+			matConst.fRoughness = mat->fRoughness;
+			curMaterialCB->CopyData(mat->nMatCBIdx, matConst);
+
+			// 다음 프레임 자원으로 넘어간다.
+			mat->nFramesDirty--;
+		}
 	}
 }
 
