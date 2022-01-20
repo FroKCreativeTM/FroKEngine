@@ -3,7 +3,6 @@
 #include "Game.h"
 #include "Timer.h"
 #include "Input.h"
-#include "MathHelper.h"
 
 class Core
 {

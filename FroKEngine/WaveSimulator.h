@@ -7,6 +7,7 @@
 #include "Graphics/RenderItem.h"
 #include "Graphics/GeometryGenerator.h"
 #include "Graphics/Material.h"
+#include "Graphics/Camera.h"
 #include "Wave.h"
 
 using namespace DirectX;
@@ -137,6 +138,9 @@ private:
 	float		m_Phi = 0.2f * XM_PI;
 	float		m_Radius = 15.0f;
 
+	// 카메라 클래스
+	Camera m_Camera;
+
 	POINT m_LastMousePos;
 };
 
@@ -166,6 +170,8 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 	// 파도에 대한 설정을 한다.
 	m_Waves = std::make_unique<Waves>(128, 128, 1.0f, 0.03f, 4.0f, 0.2f);
 
+	m_Camera.SetPosition(0.0f, 2.0f, -15.0f);
+
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	BuildLandGeometry();
@@ -191,8 +197,9 @@ void WaveSimulator::OnResize()
 	Core::OnResize();
 
 	// 창 크기가 조정되었으므로 종횡비를 업데이트하고 투영 행렬을 다시 계산합니다
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
-	XMStoreFloat4x4(&m_Proj, P);
+	// XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	// XMStoreFloat4x4(&m_Proj, P);
+	m_Camera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 }
 
 inline void WaveSimulator::BuildFrameResources()
@@ -592,25 +599,8 @@ inline void WaveSimulator::OnMouseMove(int x, int y)
 		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_LastMousePos.x));
 		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - m_LastMousePos.y));
 
-		// 상자 주위의 카메라 궤도에 대한 입력을 기반으로 각도를 업데이트합니다.
-		m_Theta += dx;
-		m_Phi += dy;
-
-		// 각도 mPhi를 제한합니다.
-		m_Phi = MathHelper::Clamp(m_Phi, 0.1f, MathHelper::Pi - 0.1f);
-	}
-
-	if (GET_SINGLE(Input)->GetMouseRButton())
-	{
-		// 마우스 한 픽셀 이동을 장면의 0.005 단위에 대응시킨다.
-		float dx = 0.5f * static_cast<float>(x - m_LastMousePos.x);
-		float dy = 0.5f * static_cast<float>(y - m_LastMousePos.y);
-
-		// 입력에 기초해서 카메라 반지름을 갱신한다.
-		m_Radius += dx - dy;
-
-		// 반지름을 제한한다.
-		m_Radius = MathHelper::Clamp(m_Radius, 5.0f, 150.0f);
+		m_Camera.Pitch(dy);
+		m_Camera.RotateY(dx);
 	}
 
 	m_LastMousePos.x = x;
@@ -637,6 +627,24 @@ void WaveSimulator::Input(float fDeltaTime)
 	else 
 	{
 		m_IsWireframe = false;
+	}
+
+
+	if (GET_SINGLE(Input)->IsKeyDown('W'))
+	{
+		m_Camera.Walk(20.0f * fDeltaTime);
+	}
+	if (GET_SINGLE(Input)->IsKeyDown('S'))
+	{
+		m_Camera.Walk(-20.0f * fDeltaTime);
+	}
+	if (GET_SINGLE(Input)->IsKeyDown('A'))
+	{
+		m_Camera.Strafe(-20.0f * fDeltaTime);
+	}
+	if (GET_SINGLE(Input)->IsKeyDown('D'))
+	{
+		m_Camera.Strafe(20.0f * fDeltaTime);
 	}
 
 	if (GET_SINGLE(Input)->IsKeyDown(VK_LEFT))
@@ -721,8 +729,8 @@ inline void WaveSimulator::UpdateMaterialCBs(float fDeltaTime)
 
 inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 {
-	XMMATRIX view = XMLoadFloat4x4(&m_View);
-	XMMATRIX proj = XMLoadFloat4x4(&m_Proj);
+	XMMATRIX view = m_Camera.GetView();
+	XMMATRIX proj = m_Camera.GetProj();
 
 	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
 	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
@@ -735,7 +743,7 @@ inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 	XMStoreFloat4x4(&m_tMainPassCB.InvView, XMMatrixTranspose(invView));
 	XMStoreFloat4x4(&m_tMainPassCB.InvProj, XMMatrixTranspose(invProj));
 	XMStoreFloat4x4(&m_tMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
-	m_tMainPassCB.EyePosW = m_EyePos;
+	m_tMainPassCB.EyePosW = m_Camera.GetPosition3f();
 
 	m_tMainPassCB.RenderTargetSize = XMFLOAT2((float)m_tRS.nWidth, (float)m_tRS.nHeight);
 	m_tMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / m_tRS.nWidth, 1.0f / m_tRS.nHeight);
@@ -793,7 +801,7 @@ inline void WaveSimulator::UpdateWaves(float fDeltaTime)
 
 int WaveSimulator::Update(float fDeltaTime)
 {
-	UpdateCamera(fDeltaTime);
+	m_Camera.UpdateViewMatrix();
 
 	m_fSunPhi = MathHelper::Clamp(m_fSunPhi, 1.0f, XM_PIDIV2);
 

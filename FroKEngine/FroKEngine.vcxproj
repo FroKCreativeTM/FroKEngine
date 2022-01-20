@@ -148,6 +148,7 @@
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="FroKEngine.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\d3dx12.h" />
     <ClInclude Include="Graphics\FrameResource.h" />
     <ClInclude Include="Graphics\GeometryGenerator.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="FroKEngine.cpp" />
+    <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\FrameResource.cpp" />
     <ClCompile Include="Graphics\GeometryGenerator.cpp" />
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />

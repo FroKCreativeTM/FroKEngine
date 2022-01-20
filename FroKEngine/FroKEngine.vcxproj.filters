@@ -64,6 +64,9 @@
     <Filter Include="01. Engine\04. Graphics\03. Shader">
       <UniqueIdentifier>{f8ab170f-05d1-49a1-bd11-4f725e299f09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\04. Graphics\06. Camera">
+      <UniqueIdentifier>{24b2b673-a9bf-48ff-90de-96a78b3b9943}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -135,6 +138,9 @@
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\Camera.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FroKEngine.cpp">
@@ -172,6 +178,9 @@
     </ClCompile>
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Camera.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
