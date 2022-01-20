@@ -34,17 +34,8 @@
     <Filter Include="01. Engine\04. Graphics\01. UI">
       <UniqueIdentifier>{6956c62a-3aa1-410a-9316-4adb2b6fd601}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Engine\04. Graphics\02. Texture">
-      <UniqueIdentifier>{ed44251e-63b5-4ec5-9375-7565d4d1b6f5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Engine\04. Graphics\00. Shader">
-      <UniqueIdentifier>{f8ab170f-05d1-49a1-bd11-4f725e299f09}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01. Engine\05. Math">
       <UniqueIdentifier>{536037ed-2832-403f-8d0f-52ab7f01cac2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Engine\04. Graphics\03. Buffer">
-      <UniqueIdentifier>{cdeefe4b-06fe-4f94-8180-5e7b4fbb2638}</UniqueIdentifier>
     </Filter>
     <Filter Include="01. Engine\06. Util">
       <UniqueIdentifier>{bf138edb-ae57-4b53-8831-3fa0661b775e}</UniqueIdentifier>
@@ -63,6 +54,15 @@
     </Filter>
     <Filter Include="03. Simulator">
       <UniqueIdentifier>{a9571966-a258-4072-89b1-7e9668547cc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics\00. DirectX Util">
+      <UniqueIdentifier>{b8372b11-8da0-4f2d-9a39-814ceb165e09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics\02. Buffer">
+      <UniqueIdentifier>{cdeefe4b-06fe-4f94-8180-5e7b4fbb2638}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\04. Graphics\03. Shader">
+      <UniqueIdentifier>{f8ab170f-05d1-49a1-bd11-4f725e299f09}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -90,12 +90,6 @@
     <ClInclude Include="Input.h">
       <Filter>01. Engine\03. Input</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\Texture\DDSTextureLoader.h">
-      <Filter>01. Engine\04. Graphics\02. Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\d3dx12.h">
-      <Filter>01. Engine\04. Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="Macro.h">
       <Filter>01. Engine\00. Header</Filter>
     </ClInclude>
@@ -109,7 +103,7 @@
       <Filter>01. Engine\05. Math</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\UploadBuffer.h">
-      <Filter>01. Engine\04. Graphics\03. Buffer</Filter>
+      <Filter>01. Engine\04. Graphics\02. Buffer</Filter>
     </ClInclude>
     <ClInclude Include="Util.h">
       <Filter>01. Engine\06. Util</Filter>
@@ -135,6 +129,12 @@
     <ClInclude Include="FroKEngine.h">
       <Filter>02. Game</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\d3dx12.h">
+      <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Texture\DDSTextureLoader.h">
+      <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FroKEngine.cpp">
@@ -151,9 +151,6 @@
     </ClCompile>
     <ClCompile Include="Input.cpp">
       <Filter>01. Engine\03. Input</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp">
-      <Filter>01. Engine\04. Graphics\02. Texture</Filter>
     </ClCompile>
     <ClCompile Include="ErrorLogger.cpp">
       <Filter>01. Engine\01. Error</Filter>
@@ -173,6 +170,9 @@
     <ClCompile Include="Wave.cpp">
       <Filter>03. Simulator</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp">
+      <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FroKEngine.rc">
@@ -189,13 +189,13 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Graphics\Shader\color.hlsl">
-      <Filter>01. Engine\04. Graphics\00. Shader</Filter>
+      <Filter>01. Engine\04. Graphics\03. Shader</Filter>
     </FxCompile>
     <FxCompile Include="Graphics\Shader\Default.hlsl">
-      <Filter>01. Engine\04. Graphics\00. Shader</Filter>
+      <Filter>01. Engine\04. Graphics\03. Shader</Filter>
     </FxCompile>
     <FxCompile Include="Graphics\Shader\LightingUtils.hlsl">
-      <Filter>01. Engine\04. Graphics\00. Shader</Filter>
+      <Filter>01. Engine\04. Graphics\03. Shader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

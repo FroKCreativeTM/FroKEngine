@@ -12,10 +12,6 @@
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-
-float mouseSensorForce[7] = { 1.0f, 0.5f, 0.1f, 0.05f, 0.01f, 0.005f, 0.001f };
-int idxMouseSensor = 4;
-
 class WaveSimulator : public Core
 {
 public:
@@ -440,34 +436,7 @@ inline void WaveSimulator::BuildLandGeometry()
 		auto& p = grid.Vertices[i].Position;
 		vertices[i].Pos = p;
 		vertices[i].Pos.y = GetHillsHeight(p.x, p.z);
-		// vertices[i].Normal = GetHillsNormal(p.x, p.z);
-
-		// 색상은 각 높이에 맞춰서 렌더링합니다.
-		if (vertices[i].Pos.y < -10.0f)
-		{
-			// 해변의 컬리
-			vertices[i].Normal = XMFLOAT3(1.0f, 0.96f, 0.62f);
-		}
-		else if (vertices[i].Pos.y < 5.0f)
-		{
-			// 연노초록 색
-			vertices[i].Normal = XMFLOAT3(0.48f, 0.77f, 0.46f);
-		}
-		else if (vertices[i].Pos.y < 12.0f)
-		{
-			// 노랑-초록 혼합색
-			vertices[i].Normal = XMFLOAT3(0.1f, 0.48f, 0.19f);
-		}
-		else if (vertices[i].Pos.y < 20.0f)
-		{
-			// 갈색
-			vertices[i].Normal = XMFLOAT3(0.45f, 0.39f, 0.34f);
-		}
-		else
-		{
-			// 눈색(흰색)
-			vertices[i].Normal = XMFLOAT3(1.0f, 1.0f, 1.0f);
-		}
+		vertices[i].Normal = GetHillsNormal(p.x, p.z);
 	}
 
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
@@ -634,8 +603,8 @@ inline void WaveSimulator::OnMouseMove(int x, int y)
 	if (GET_SINGLE(Input)->GetMouseRButton())
 	{
 		// 마우스 한 픽셀 이동을 장면의 0.005 단위에 대응시킨다.
-		float dx = mouseSensorForce[idxMouseSensor] * static_cast<float>(x - m_LastMousePos.x);
-		float dy = mouseSensorForce[idxMouseSensor] * static_cast<float>(y - m_LastMousePos.y);
+		float dx = 0.5f * static_cast<float>(x - m_LastMousePos.x);
+		float dy = 0.5f * static_cast<float>(y - m_LastMousePos.y);
 
 		// 입력에 기초해서 카메라 반지름을 갱신한다.
 		m_Radius += dx - dy;
@@ -668,23 +637,6 @@ void WaveSimulator::Input(float fDeltaTime)
 	else 
 	{
 		m_IsWireframe = false;
-	}
-
-	if (GET_SINGLE(Input)->IsKeyDown('6'))
-	{
-		idxMouseSensor--;
-		if (idxMouseSensor < 0)
-		{
-			idxMouseSensor = 6;
-		}
-	}
-	if (GET_SINGLE(Input)->IsKeyDown('7'))
-	{
-		idxMouseSensor++;
-		if (idxMouseSensor >= 7)
-		{
-			idxMouseSensor = 0;
-		}
 	}
 
 	if (GET_SINGLE(Input)->IsKeyDown(VK_LEFT))
@@ -830,7 +782,7 @@ inline void WaveSimulator::UpdateWaves(float fDeltaTime)
 		Vertex v;
 
 		v.Pos = m_Waves->Position(i);
-		v.Normal = XMFLOAT3(DirectX::Colors::Blue);
+		v.Normal = m_Waves->Normal(i);
 
 		currWavesVB->CopyData(i, v);
 	}
