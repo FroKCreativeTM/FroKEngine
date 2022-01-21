@@ -212,5 +212,8 @@
     <FxCompile Include="Graphics\Shader\LightingUtils.hlsl">
       <Filter>01. Engine\04. Graphics\03. Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Graphics\Shader\TexDefault.hlsl">
+      <Filter>01. Engine\04. Graphics\03. Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -42,12 +42,14 @@ struct Vertex
 {
 	XMFLOAT3 Pos;
 	XMFLOAT3 Normal;
+	XMFLOAT2 TexC;
 };
 
 struct ObjectConstants
 {
 	// 단위행렬을 저장한다.
 	XMFLOAT4X4 World = MathHelper::Identity4x4();
+	XMFLOAT4X4 TexTransform = MathHelper::Identity4x4();
 };
 
 // 이 버퍼는 하나의 랜더링 패스 전체에서 변하지 않는 상수 자료를 저장한다.

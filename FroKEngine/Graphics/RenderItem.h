@@ -21,6 +21,9 @@ public :
 	// 이 행렬은 세계 공간 상에서의 물체의 위치, 방향, 크기를 결정한다.
 	XMFLOAT4X4 World = MathHelper::Identity4x4();
 
+	// 텍스처의 위치
+	XMFLOAT4X4 TexTransform = MathHelper::Identity4x4();
+
 	// 물체의 자료가 변해서 상수 버퍼를 갱신해야 하는 지의 여부를 뜻하는 더티 플래그이다.
 	// FrameResource마다 물체의 cbuffer가 있으므로, FrameResource마다 갱신을 적용해야 한다.
 	// 따라서 물체의 자료를 수정할 때에는 반드시

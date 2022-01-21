@@ -40,17 +40,19 @@ private:
 	// 이 부분은 레벨들을 레이어화하면 해결될 부분인 것 같다.
 	void LoadTexture();
 	void BuildDescriptorHeaps();
-	void BuildConstantBufferViews();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	void BuildWavesGeometryBuffers();
 	void BuildMaterials();
 	void BuildLandGeometry();
+	void BuildBoxGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
-
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
+
+	void AnimateMaterials(float fDeltaTime);
 	void UpdateCamera(float fDeltaTime);
 	void UpdateObjectCBs(float fDeltaTime);
 	void UpdateMaterialCBs(float fDeltaTime);
@@ -125,8 +127,10 @@ private:
 
 	// 지오메트리 정보를 저장하기 위한 map
 	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_Geometries;
-
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
+
+	// 텍스처를 저장하기 위한 맵
+	std::unordered_map<std::string, std::unique_ptr<Texture>> m_Textures;
 
 	XMFLOAT4X4	m_World = MathHelper::Identity4x4();
 	XMFLOAT3 m_EyePos = { 0.0f, 0.0f, 0.0f };
@@ -167,8 +171,8 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 	// 먼저 커맨드 리스트를 초기화 한다.
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
-	// Get the increment size of a descriptor in this heap type.  This is hardware specific, so we have
-	// to query this information.
+	// 이 힙 유형에서 설명자의 증분 크기를 가져옵니다. 
+	// 이것은 하드웨어에 따라 다르므로 이 정보를 쿼리해야 합니다.
 	m_CbvSrvDescriptorSize = m_d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// 파도에 대한 설정을 한다.
@@ -176,10 +180,13 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 
 	m_Camera.SetPosition(0.0f, 2.0f, -15.0f);
 
+	LoadTexture();
 	BuildRootSignature();
+	BuildDescriptorHeaps();
 	BuildShadersAndInputLayout();
 	BuildLandGeometry();
 	BuildWavesGeometryBuffers();
+	BuildBoxGeometry();
 	BuildMaterials();
 	BuildRenderItems();
 	BuildFrameResources();
@@ -217,13 +224,30 @@ inline void WaveSimulator::BuildFrameResources()
 
 inline void WaveSimulator::LoadTexture()
 {
-	auto woodCrateTex = std::make_unique<Texture>();
-	woodCrateTex->strName = "woodCrateTex";
-	woodCrateTex->strFileName = L"Textures/WoodCrate01.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
-		m_d3dDevice.Get(), m_CommandList.Get(),
-		woodCrateTex->strFileName.c_str(),
-		woodCrateTex->pResource, woodCrateTex->pUploadHeap));
+	auto grassTex = std::make_unique<Texture>();
+	grassTex->strName = "grassTex";
+	grassTex->strFileName = L"Graphics/Texture/Datas/grass.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
+		m_CommandList.Get(), grassTex->strFileName.c_str(),
+		grassTex->pResource, grassTex->pUploadHeap));
+
+	auto waterTex = std::make_unique<Texture>();
+	waterTex->strName = "waterTex";
+	waterTex->strFileName = L"Graphics/Texture/Datas/water1.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
+		m_CommandList.Get(), waterTex->strFileName.c_str(),
+		waterTex->pResource, waterTex->pUploadHeap));
+
+	auto fenceTex = std::make_unique<Texture>();
+	fenceTex->strName = "fenceTex";
+	fenceTex->strFileName = L"Graphics/Texture/Datas/WoodCrate01.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
+		m_CommandList.Get(), fenceTex->strFileName.c_str(),
+		fenceTex->pResource, fenceTex->pUploadHeap));
+
+	m_Textures[grassTex->strName] = std::move(grassTex);
+	m_Textures[waterTex->strName] = std::move(waterTex);
+	m_Textures[fenceTex->strName] = std::move(fenceTex);
 }
 
 // 서술자 힙을 생성한다.
@@ -232,89 +256,43 @@ inline void WaveSimulator::LoadTexture()
 // Output : void
 inline void WaveSimulator::BuildDescriptorHeaps()
 {
-	UINT objCnt = (UINT)m_OpaqueRenderItems.size();
-
-	// 각 프레임 자원의 물체마다 하나씩 CBV 서술자가 필요하다.
-	// +1은 각 프레임 자원에 필요한 패스별 CBV를 위한 것이다.
-	UINT nDescriptors = (objCnt + 1) * gNumFrameResource;
-
-	// 패스별 CBV의 시작 오프셋을 저장해둔다.
-	// 이들은 마지막 세 서술자이다.
-	m_passCbvOffset = objCnt * gNumFrameResource;
-
-	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	cbvHeapDesc.NumDescriptors = nDescriptors;
-	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	cbvHeapDesc.NodeMask = 0;
-	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&cbvHeapDesc,
-		IID_PPV_ARGS(&m_CbvHeap)));
-
-	// 자원을 사용할 셰이더 프로그램이 사용할 루트 서명 매개변수 슬롯을 설정할 수 있다.
+	//
+	// SRV 힙을 생성한다.
+	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.NumDescriptors = 3;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&srvHeapDesc,
-		IID_PPV_ARGS(&m_SrvHeap)));
-}
+	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_SrvHeap)));
 
-// 상수 버퍼를 빌드합니다.
-// 
-// Input : void
-// Output : void
-inline void WaveSimulator::BuildConstantBufferViews()
-{
-	// 256바이트 배수로 맞춥니다.
-	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	//
+	// 힙이 할 일을 적어낸다.
+	//
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(m_SrvHeap->GetCPUDescriptorHandleForHeapStart());
 
-	UINT objCnt = (UINT)m_OpaqueRenderItems.size();
+	auto grassTex = m_Textures["grassTex"]->pResource;
+	auto waterTex = m_Textures["waterTex"]->pResource;
+	auto fenceTex = m_Textures["fenceTex"]->pResource;
 
-	// 각 프레임 자원의 물체마다 하나씩 CBV 서술자가 필요하다.
-	for (int frameIdx = 0; frameIdx < gNumFrameResource; ++frameIdx)
-	{
-		auto objCB = m_frameResources[frameIdx]->ObjectCB->Resource();
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = grassTex->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = -1;
+	m_d3dDevice->CreateShaderResourceView(grassTex.Get(), &srvDesc, hDescriptor);
 
-		for (UINT i = 0; i < objCnt; ++i)
-		{
-			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objCB->GetGPUVirtualAddress();
+	// 다음 서술자를 가져온다.
+	hDescriptor.Offset(1, m_CbvSrvDescriptorSize);
 
-			// 현재 버퍼에서 i번째 물체별 상수 버퍼의 오프셋
-			cbAddress += i * objCBByteSize;
+	srvDesc.Format = waterTex->GetDesc().Format;
+	m_d3dDevice->CreateShaderResourceView(waterTex.Get(), &srvDesc, hDescriptor);
 
-			// 서술자 힙 안에서 cbv 오브젝트 오프셋을 구한다.
-			int heapIdx = frameIdx * objCnt + i;
-			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetCPUDescriptorHandleForHeapStart());
-			handle.Offset(heapIdx, m_CbvSrvUavDescriptorSize);
+	// 다음 서술자를 가져온다.
+	hDescriptor.Offset(1, m_CbvSrvDescriptorSize);
 
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-			cbvDesc.BufferLocation = cbAddress;
-			cbvDesc.SizeInBytes = objCBByteSize;
-
-			m_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
-		}
-	}
-
-
-	UINT passCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
-
-	// 마지막 3개의 서술자는 각 프레임 리소스를 위한 패스 상수 버퍼 뷰가 된다.
-	for (int frameIndex = 0; frameIndex < gNumFrameResource; ++frameIndex)
-	{
-		auto passCB = m_frameResources[frameIndex]->PassCB->Resource();
-		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passCB->GetGPUVirtualAddress();
-
-		// 서술자 힙 안의 패스 상수 버퍼 뷰를 위한 오프셋을 계산한다.
-		int heapIndex = m_passCbvOffset + frameIndex;
-		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetCPUDescriptorHandleForHeapStart());
-		handle.Offset(heapIndex, m_CbvSrvUavDescriptorSize);
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-		cbvDesc.BufferLocation = cbAddress;
-		cbvDesc.SizeInBytes = passCBByteSize;
-
-		m_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
-	}
+	srvDesc.Format = fenceTex->GetDesc().Format;
+	m_d3dDevice->CreateShaderResourceView(fenceTex.Get(), &srvDesc, hDescriptor);
 }
 
 // 루트 서명과 서술자 테이블을 생성합니다.
@@ -323,16 +301,24 @@ inline void WaveSimulator::BuildConstantBufferViews()
 // Output : void
 inline void WaveSimulator::BuildRootSignature()
 {
-	// 루트 매개변수는 테이블, 루트 설명자 또는 루트 상수일 수 있습니다.
-	CD3DX12_ROOT_PARAMETER slotRootParameter[3];
+	CD3DX12_DESCRIPTOR_RANGE texTable;
+	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
-	// Create root CBV.
-	slotRootParameter[0].InitAsConstantBufferView(0);
-	slotRootParameter[1].InitAsConstantBufferView(1);
-	slotRootParameter[2].InitAsConstantBufferView(2);
+	// 루트 매개변수는 테이블, 루트 설명자 또는 루트 상수일 수 있습니다.
+	CD3DX12_ROOT_PARAMETER slotRootParameter[4];
+
+	// 성능 팁: 가장 자주 발생하는 것에서 가장 적게 발생하는 순서로 정렬하십시오.
+	slotRootParameter[0].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	slotRootParameter[1].InitAsConstantBufferView(0);
+	slotRootParameter[2].InitAsConstantBufferView(1);
+	slotRootParameter[3].InitAsConstantBufferView(2);
+
+	auto staticSamplers = GetStaticSamplers();
 
 	// 루트 서명은 루트 매개변수의 배열입니다.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter,
+		(UINT)staticSamplers.size(), staticSamplers.data(),
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// 단일 상수 버퍼로 구성된 설명자 범위를 가리키는 단일 슬롯으로 루트 서명을 만듭니다.
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
@@ -361,13 +347,14 @@ inline void WaveSimulator::BuildShadersAndInputLayout()
 
 	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
 	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
-	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\Default.hlsl", nullptr, "VS", "vs_5_0");
-	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\Default.hlsl", nullptr, "PS", "ps_5_0");
+	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\TexDefault.hlsl", nullptr, "VS", "vs_5_1");
+	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\TexDefault.hlsl", nullptr, "PS", "ps_5_1");
 
 	m_InputLayout =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
@@ -432,6 +419,7 @@ inline void WaveSimulator::BuildMaterials()
 	auto grass = std::make_unique<Material>();
 	grass->Name = "grass";
 	grass->nMatCBIdx = 0;
+	grass->nDiffuseSrvHeapIdx = 0;
 	grass->DiffuseAlbedo = XMFLOAT4(0.2f, 0.6f, 0.2f, 1.0f);
 	grass->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
 	grass->fRoughness = 0.125f;
@@ -441,12 +429,22 @@ inline void WaveSimulator::BuildMaterials()
 	auto water = std::make_unique<Material>();
 	water->Name = "water";
 	water->nMatCBIdx = 1;
+	water->nDiffuseSrvHeapIdx = 1;
 	water->DiffuseAlbedo = XMFLOAT4(0.0f, 0.2f, 0.6f, 1.0f);
 	water->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
 	water->fRoughness = 0.0f;
 
+	auto wirefence = std::make_unique<Material>();
+	wirefence->Name = "wirefence";
+	wirefence->nMatCBIdx = 2;
+	wirefence->nDiffuseSrvHeapIdx = 2;
+	wirefence->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	wirefence->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	wirefence->fRoughness = 0.25f;
+
 	m_Materials["grass"] = std::move(grass);
 	m_Materials["water"] = std::move(water);
+	m_Materials["wirefence"] = std::move(wirefence);
 }
 
 inline void WaveSimulator::BuildLandGeometry()
@@ -467,6 +465,7 @@ inline void WaveSimulator::BuildLandGeometry()
 		vertices[i].Pos = p;
 		vertices[i].Pos.y = GetHillsHeight(p.x, p.z);
 		vertices[i].Normal = GetHillsNormal(p.x, p.z);
+		vertices[i].TexC = grid.Vertices[i].TexC;
 	}
 
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
@@ -504,10 +503,60 @@ inline void WaveSimulator::BuildLandGeometry()
 	m_Geometries["landGeo"] = std::move(geo);
 }
 
+inline void WaveSimulator::BuildBoxGeometry()
+{
+	GeometryGenerator geoGen;
+	GeometryGenerator::MeshData box = geoGen.CreateBox(8.0f, 8.0f, 8.0f, 3);
+
+	std::vector<Vertex> vertices(box.Vertices.size());
+	for (size_t i = 0; i < box.Vertices.size(); ++i)
+	{
+		auto& p = box.Vertices[i].Position;
+		vertices[i].Pos = p;
+		vertices[i].Normal = box.Vertices[i].Normal;
+		vertices[i].TexC = box.Vertices[i].TexC;
+	}
+
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+
+	std::vector<std::uint16_t> indices = box.GetIndices16();
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "boxGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->VertexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
+		m_CommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+	geo->IndexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
+		m_CommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["box"] = submesh;
+
+	m_Geometries["boxGeo"] = std::move(geo);
+}
+
 inline void WaveSimulator::BuildRenderItems()
 {
 	auto wavesRitem = std::make_unique<RenderItem>();
 	wavesRitem->World = MathHelper::Identity4x4();
+	XMStoreFloat4x4(&wavesRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	wavesRitem->objCBIdx = 0;
 	wavesRitem->Mat = m_Materials["water"].get();
 	wavesRitem->pGeometry = m_Geometries["waterGeo"].get();
@@ -517,11 +566,11 @@ inline void WaveSimulator::BuildRenderItems()
 	wavesRitem->nBaseVertexLocation = wavesRitem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
 
 	m_WaveRenderItem = wavesRitem.get();
-
 	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(wavesRitem.get());
 
 	auto gridRitem = std::make_unique<RenderItem>();
 	gridRitem->World = MathHelper::Identity4x4();
+	XMStoreFloat4x4(&gridRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	gridRitem->objCBIdx = 1;
 	gridRitem->Mat = m_Materials["grass"].get();
 	gridRitem->pGeometry = m_Geometries["landGeo"].get();
@@ -532,8 +581,21 @@ inline void WaveSimulator::BuildRenderItems()
 
 	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(gridRitem.get());
 
+	auto boxRitem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&boxRitem->World, XMMatrixTranslation(3.0f, 2.0f, -9.0f));
+	boxRitem->objCBIdx = 2;
+	boxRitem->Mat = m_Materials["wirefence"].get();
+	boxRitem->pGeometry = m_Geometries["boxGeo"].get();
+	boxRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	boxRitem->nIdxCnt = boxRitem->pGeometry->DrawArgs["box"].IndexCount;
+	boxRitem->nStartIdxLocation = boxRitem->pGeometry->DrawArgs["box"].StartIndexLocation;
+	boxRitem->nBaseVertexLocation = boxRitem->pGeometry->DrawArgs["box"].BaseVertexLocation;
+
+	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(boxRitem.get());
+
 	m_allRenderItems.push_back(std::move(wavesRitem));
 	m_allRenderItems.push_back(std::move(gridRitem));
+	m_allRenderItems.push_back(std::move(boxRitem));
 }
 
 // 파이프라인 상태 객체(Pipeline State Object)를 생성한다.
@@ -596,16 +658,77 @@ inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, c
 		cmdList->IASetIndexBuffer(&ri->pGeometry->IndexBufferView());
 		cmdList->IASetPrimitiveTopology(ri->primitiveType);
 
+		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(m_SrvHeap->GetGPUDescriptorHandleForHeapStart());
+		tex.Offset(ri->Mat->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);
+
 		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() +
 			ri->objCBIdx * objCBByteSize;
 		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + 
 			ri->Mat->nMatCBIdx * matCBByteSize;
 
-		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
-		cmdList->SetGraphicsRootConstantBufferView(1, matCBAddress);
+		cmdList->SetGraphicsRootDescriptorTable(0, tex);
+		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
 
 		cmdList->DrawIndexedInstanced(ri->nIdxCnt, 1, ri->nStartIdxLocation, ri->nBaseVertexLocation, 0);
 	}
+}
+
+inline std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> WaveSimulator::GetStaticSamplers()
+{
+	// 애플리케이션에는 일반적으로 소수의 샘플러만 필요합니다. 
+	// 따라서 그것들을 모두 미리 정의하고 루트 서명의 일부로 사용할 수 있도록 유지하는 것이 좋습니다.
+
+	const CD3DX12_STATIC_SAMPLER_DESC pointWrap(
+		0, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC pointClamp(
+		1, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC linearWrap(
+		2, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC linearClamp(
+		3, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
+		4, // shaderRegister
+		D3D12_FILTER_ANISOTROPIC, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressW
+		0.0f,                             // mipLODBias
+		8);                               // maxAnisotropy
+
+	const CD3DX12_STATIC_SAMPLER_DESC anisotropicClamp(
+		5, // shaderRegister
+		D3D12_FILTER_ANISOTROPIC, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressW
+		0.0f,                              // mipLODBias
+		8);                                // maxAnisotropy
+
+	return {
+		pointWrap, pointClamp,
+		linearWrap, linearClamp,
+		anisotropicWrap, anisotropicClamp };
 }
 
 inline void WaveSimulator::OnMouseDown(int x, int y)
@@ -688,6 +811,30 @@ void WaveSimulator::Input(float fDeltaTime)
 	}
 }
 
+inline void WaveSimulator::AnimateMaterials(float fDeltaTime)
+{
+	// Scroll the water material texture coordinates.
+	auto waterMat = m_Materials["water"].get();
+
+	float& tu = waterMat->MatTransform(3, 0);
+	float& tv = waterMat->MatTransform(3, 1);
+
+	tu += 0.1f * fDeltaTime;
+	tv += 0.02f * fDeltaTime;
+
+	if (tu >= 1.0f)
+		tu -= 1.0f;
+
+	if (tv >= 1.0f)
+		tv -= 1.0f;
+
+	waterMat->MatTransform(3, 0) = tu;
+	waterMat->MatTransform(3, 1) = tv;
+
+	// 재질이 변경되었으므로 cbuffer를 업데이트해야 합니다.
+	waterMat->nFramesDirty = gNumFrameResource;
+}
+
 inline void WaveSimulator::UpdateCamera(float fDeltaTime)
 {
 	m_EyePos.x = m_Radius * sinf(m_Phi) * cosf(m_Theta);
@@ -711,15 +858,20 @@ inline void WaveSimulator::UpdateObjectCBs(float fDeltaTime)
 	// 이러한 갱신을 프레임 자원마다 수행해야 한다.
 	for (auto& e : m_allRenderItems)
 	{
-		XMMATRIX world = XMLoadFloat4x4(&e->World);
+		if (e->nFramesDirty > 0)
+		{
+			XMMATRIX world = XMLoadFloat4x4(&e->World);
+			XMMATRIX texTransform = XMLoadFloat4x4(&e->TexTransform);
 
-		ObjectConstants objConstants;
-		XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
+			ObjectConstants objConstants;
+			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
+			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(texTransform));
 
-		curObjectCB->CopyData(e->objCBIdx, objConstants);
+			curObjectCB->CopyData(e->objCBIdx, objConstants);
 
-		// 다음 프레임 자원으로 넘어간다.
-		e->nFramesDirty--;
+			// 다음 프레임 자원으로 넘어간다.
+			e->nFramesDirty--;
+		}
 	}
 }
 
@@ -741,6 +893,7 @@ inline void WaveSimulator::UpdateMaterialCBs(float fDeltaTime)
 			matConst.DiffuseAlbedo = mat->DiffuseAlbedo;
 			matConst.FresnelR0 = mat->FresnelR0;
 			matConst.fRoughness = mat->fRoughness;
+			XMStoreFloat4x4(&matConst.MatTransform, XMMatrixTranspose(matTransform));
 
 			curMaterialCB->CopyData(mat->nMatCBIdx, matConst);
 
@@ -778,10 +931,15 @@ inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 
 	m_tMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 
-	XMVECTOR lightDir = -MathHelper::SphericalToCartesian(1.0f, m_fSunTheta, m_fSunPhi);
+	// m_tMainPassCB.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
 
+	XMVECTOR lightDir = -MathHelper::SphericalToCartesian(1.0f, m_fSunTheta, m_fSunPhi);
 	XMStoreFloat3(&m_tMainPassCB.Lights[0].Direction, lightDir);
-	m_tMainPassCB.Lights[0].Strength = { 1.0f, 1.0f, 0.9f };
+	m_tMainPassCB.Lights[0].Strength = { 0.9f, 0.9f, 0.9f };
+	m_tMainPassCB.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
+	m_tMainPassCB.Lights[1].Strength = { 0.5f, 0.5f, 0.5f };
+	m_tMainPassCB.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
+	m_tMainPassCB.Lights[2].Strength = { 0.2f, 0.2f, 0.2f };
 
 	auto curPassCB = m_curFrameResource->PassCB.get();
 	curPassCB->CopyData(0, m_tMainPassCB);
@@ -815,6 +973,10 @@ inline void WaveSimulator::UpdateWaves(float fDeltaTime)
 		v.Pos = m_Waves->Position(i);
 		v.Normal = m_Waves->Normal(i);
 
+		// [-w/2,w/2] --> [0,1] 매핑을 통해 위치에서 tex-coords 파생
+		v.TexC.x = 0.5f + v.Pos.x / m_Waves->Width();
+		v.TexC.y = 0.5f - v.Pos.z / m_Waves->Depth();
+
 		currWavesVB->CopyData(i, v);
 	}
 
@@ -842,6 +1004,7 @@ int WaveSimulator::Update(float fDeltaTime)
 		CloseHandle(eventHandle);
 	}
 
+	AnimateMaterials(fDeltaTime);
 	UpdateObjectCBs(fDeltaTime);
 	UpdateMaterialCBs(fDeltaTime);
 	UpdateMainPassCB(fDeltaTime);
@@ -894,6 +1057,10 @@ void WaveSimulator::Render(float fDeltaTime)
 
 	// 렌더링할 버퍼를 지정합니다.
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+	// 서술자 힙을 가져와서 이를 설정한다.
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_SrvHeap.Get() };
+	m_CommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 	// 그래픽스 루트 서명을 설정합니다.
 	// SetGraphicsRootSignature을 이용하면 서술자 테이블을 가져와서 파이프라인에 묶을 수 있습니다.
