@@ -8,6 +8,7 @@
 #include "Graphics/GeometryGenerator.h"
 #include "Graphics/Material.h"
 #include "Graphics/Camera.h"
+#include "Graphics/Texture/Texture.h"
 #include "Wave.h"
 
 using namespace DirectX;
@@ -36,6 +37,8 @@ private:
 	// 프레임 리소스를 빌드한다.
 	void BuildFrameResources();
 
+	// 이 부분은 레벨들을 레이어화하면 해결될 부분인 것 같다.
+	void LoadTexture();
 	void BuildDescriptorHeaps();
 	void BuildConstantBufferViews();
 	void BuildRootSignature();
@@ -83,6 +86,7 @@ private:
 private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap>	m_CbvHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap>	m_SrvHeap = nullptr;
 
 	UINT m_passCbvOffset = 0;
 
@@ -211,6 +215,17 @@ inline void WaveSimulator::BuildFrameResources()
 	}
 }
 
+inline void WaveSimulator::LoadTexture()
+{
+	auto woodCrateTex = std::make_unique<Texture>();
+	woodCrateTex->strName = "woodCrateTex";
+	woodCrateTex->strFileName = L"Textures/WoodCrate01.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
+		m_d3dDevice.Get(), m_CommandList.Get(),
+		woodCrateTex->strFileName.c_str(),
+		woodCrateTex->pResource, woodCrateTex->pUploadHeap));
+}
+
 // 서술자 힙을 생성한다.
 // 이는 자원을 렌더링 파이프라인에 묶을 때 사용할 것입니다.
 // Input : void
@@ -234,6 +249,14 @@ inline void WaveSimulator::BuildDescriptorHeaps()
 	cbvHeapDesc.NodeMask = 0;
 	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&cbvHeapDesc,
 		IID_PPV_ARGS(&m_CbvHeap)));
+
+	// 자원을 사용할 셰이더 프로그램이 사용할 루트 서명 매개변수 슬롯을 설정할 수 있다.
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.NumDescriptors = 3;
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&srvHeapDesc,
+		IID_PPV_ARGS(&m_SrvHeap)));
 }
 
 // 상수 버퍼를 빌드합니다.
@@ -904,4 +927,3 @@ void WaveSimulator::Render(float fDeltaTime)
 	// GPU 타임라인에 있으므로 GPU가 이 Signal() 이전의 모든 명령 처리를 완료할 때까지 새 펜스 포인트가 설정되지 않는다.
 	m_CommandQueue->Signal(m_Fence.Get(), m_CurrentFence);
 }
-

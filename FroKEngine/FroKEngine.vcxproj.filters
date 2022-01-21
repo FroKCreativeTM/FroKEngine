@@ -67,6 +67,9 @@
     <Filter Include="01. Engine\04. Graphics\06. Camera">
       <UniqueIdentifier>{24b2b673-a9bf-48ff-90de-96a78b3b9943}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\04. Graphics\04. Resource\02. Texture">
+      <UniqueIdentifier>{1542b6c1-058a-444f-91d7-bbae2c1bad5a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -140,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="Graphics\Camera.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Texture\Texture.h">
+      <Filter>01. Engine\04. Graphics\04. Resource\02. Texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

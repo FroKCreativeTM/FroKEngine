@@ -111,6 +111,9 @@ float4 PS(VertexOut pin) : SV_Target
 
     float4 litColor = ambient + directLight;
 
+    // Å÷¼ÎÀÌµù ±¸Çö ÄÚµå
+    litColor = ceil(litColor * 7) / 7.0f;
+
     // Common convention to take alpha from diffuse material.
     litColor.a = gDiffuseAlbedo.a;
 
