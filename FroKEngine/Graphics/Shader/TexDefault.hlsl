@@ -15,11 +15,10 @@
 #define NUM_SPOT_LIGHTS 0
 #endif
 
-// Include structures and functions for lighting.
+// 조명에 관련된 구조체와 메서들ㄹ 가져온다.
 #include "LightingUtils.hlsl"
 
 Texture2D gDiffuseMap : register(t0);
-
 
 SamplerState gsamPointWrap : register(s0);
 SamplerState gsamPointClamp : register(s1);
@@ -28,14 +27,14 @@ SamplerState gsamLinearClamp : register(s3);
 SamplerState gsamAnisotropicWrap : register(s4);
 SamplerState gsamAnisotropicClamp : register(s5);
 
-// Constant data that varies per frame.
+// 프레임당 상수
 cbuffer cbPerObject : register(b0)
 {
     float4x4 gWorld;
     float4x4 gTexTransform;
 };
 
-// Constant data that varies per material.
+// 각 머터리얼당 상수 데이터
 cbuffer cbPass : register(b1)
 {
     float4x4 gView;
@@ -54,10 +53,10 @@ cbuffer cbPass : register(b1)
     float gDeltaTime;
     float4 gAmbientLight;
 
-    // Indices [0, NUM_DIR_LIGHTS) are directional lights;
-    // indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are point lights;
-    // indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
-    // are spot lights for a maximum of MaxLights per object.
+    // 인덱스 [0, NUM_DIR_LIGHTS)는 방향 조명이다.
+    // 인덱스 [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS)는 점광.
+    // 인덱스 [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS) 
+    // 개체당 최대 MaxLights에 대한 점적광.
     Light gLights[MaxLights];
 };
 
@@ -88,17 +87,17 @@ VertexOut VS(VertexIn vin)
 {
     VertexOut vout = (VertexOut) 0.0f;
 	
-    // Transform to world space.
+    // 세계 공간으로 변환한다.
     float4 posW = mul(float4(vin.PosL, 1.0f), gWorld);
     vout.PosW = posW.xyz;
 
-    // Assumes nonuniform scaling; otherwise, need to use inverse-transpose of world matrix.
+    // 균일하지 않은 스케일로 가정한다. 따라서 세계 행렬의 역전치가 필요하다.
     vout.NormalW = mul(vin.NormalL, (float3x3) gWorld);
 
-    // Transform to homogeneous clip space.
+    // 균질한(homogeneous) 클립 공간으로 변환합니다.
     vout.PosH = mul(posW, gViewProj);
 	
-	// Output vertex attributes for interpolation across triangle.
+    // 삼각형을 가로지르는 보간을 위한 출력 정점 속성.
     float4 texC = mul(float4(vin.TexC, 0.0f, 1.0f), gTexTransform);
     vout.TexC = mul(texC, gMatTransform).xy;
 	
@@ -109,10 +108,10 @@ float4 PS(VertexOut pin) : SV_Target
 {
     float4 diffuseAlbedo = gDiffuseMap.Sample(gsamAnisotropicWrap, pin.TexC) * gDiffuseAlbedo;
 	
-    // Interpolating normal can unnormalize it, so renormalize it.
+    // 법선을 보간하면 정규화되지 않을 수 있으므로 다시 정규화합니다.
     pin.NormalW = normalize(pin.NormalW);
 
-    // Vector from point being lit to eye. 
+    // 점에서 눈까지 조명되는 벡터입니다.
     float3 toEyeW = normalize(gEyePosW - pin.PosW);
 
     // Light terms.
@@ -126,7 +125,10 @@ float4 PS(VertexOut pin) : SV_Target
 
     float4 litColor = ambient + directLight;
 
-    // Common convention to take alpha from diffuse albedo.
+    // 툰셰이딩 구현 코드
+    // litColor = ceil(litColor * 5) / 5.0f;
+
+    // 확산 알베도에서 알파를 취하는 일반적인 규칙입니다.
     litColor.a = diffuseAlbedo.a;
 
     return litColor;
