@@ -128,7 +128,7 @@ float4 PS(VertexOut pin) : SV_Target
     pin.NormalW = normalize(pin.NormalW);
 
     // 점에서 눈까지 조명되는 벡터입니다.
-    float3 toEyeW = normalize(gEyePosW - pin.PosW);
+    float3 toEyeW = gEyePosW - pin.PosW;
     float distToEye = length(toEyeW);
     toEyeW /= distToEye;    // 정규화 진행
 
@@ -147,8 +147,8 @@ float4 PS(VertexOut pin) : SV_Target
     // litColor = ceil(litColor * 5) / 5.0f;
 
 #ifdef FOG
-	float fogAmount = saturate((distToEye - gFogStart) / gFogRange);
-	litColor = lerp(litColor, gFogColor, fogAmount);
+    float fogAmount = saturate((distToEye - gFogStart) / gFogRange);
+    litColor = lerp(litColor, gFogColor, fogAmount);
 #endif
 
     // 확산 알베도에서 알파를 취하는 일반적인 규칙입니다.

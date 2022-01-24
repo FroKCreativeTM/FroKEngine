@@ -240,7 +240,7 @@ inline void WaveSimulator::LoadTexture()
 
 	auto fenceTex = std::make_unique<Texture>();
 	fenceTex->strName = "fenceTex";
-	fenceTex->strFileName = L"Graphics/Texture/Datas/WoodCrate01.dds";
+	fenceTex->strFileName = L"Graphics/Texture/Datas/WireFence.dds";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
 		m_CommandList.Get(), fenceTex->strFileName.c_str(),
 		fenceTex->pResource, fenceTex->pUploadHeap));
@@ -447,7 +447,7 @@ inline void WaveSimulator::BuildMaterials()
 	water->Name = "water";
 	water->nMatCBIdx = 1;
 	water->nDiffuseSrvHeapIdx = 1;
-	water->DiffuseAlbedo = XMFLOAT4(0.0f, 0.2f, 0.6f, 1.0f);
+	water->DiffuseAlbedo = XMFLOAT4(0.0f, 0.2f, 0.6f, 0.5f);
 	water->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
 	water->fRoughness = 0.0f;
 
