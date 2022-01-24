@@ -74,10 +74,16 @@ struct PassConstants
 
 	DirectX::XMFLOAT4 AmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-	// Indices [0, NUM_DIR_LIGHTS) are directional lights;
-	// indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are point lights;
-	// indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
-	// are spot lights for a maximum of MaxLights per object.
+	// 안개를 위한 변수
+	DirectX::XMFLOAT4 FogColor = { 0.7f,0.7f,0.7f,1.0f };
+	float gFogStart = 5.0f;
+	float gFogRange = 150.0f;
+	DirectX::XMFLOAT2 cbPerPassPad2;
+
+	// 인덱스 [0, NUM_DIR_LIGHTS)는 방향 조명이다.
+	// 인덱스 [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS)는 점광.
+	// 인덱스 [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS) 
+	// 개체당 최대 MaxLights에 대한 점적광.
 	Light Lights[MAX_LIGHTS];
 };
 
