@@ -49,6 +49,7 @@
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
+// #include <d3dcommon.h>
 
 #include "Graphics/d3dx12.h"
 #include "Graphics/Texture/DDSTextureLoader.h"
