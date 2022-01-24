@@ -70,6 +70,9 @@
     <Filter Include="01. Engine\04. Graphics\04. Resource\02. Texture">
       <UniqueIdentifier>{1542b6c1-058a-444f-91d7-bbae2c1bad5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03. Simulator\01. Shader">
+      <UniqueIdentifier>{30f1e635-fd19-4b90-82b2-244d703d57c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -214,6 +217,9 @@
     </FxCompile>
     <FxCompile Include="Graphics\Shader\TexDefault.hlsl">
       <Filter>01. Engine\04. Graphics\03. Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphics\Shader\BlendDefault.hlsl">
+      <Filter>03. Simulator\01. Shader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
