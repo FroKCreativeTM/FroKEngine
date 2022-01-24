@@ -240,7 +240,7 @@ inline void WaveSimulator::LoadTexture()
 
 	auto fenceTex = std::make_unique<Texture>();
 	fenceTex->strName = "fenceTex";
-	fenceTex->strFileName = L"Graphics/Texture/Datas/WoodCrate01.dds";
+	fenceTex->strFileName = L"Graphics/Texture/Datas/WireFence.dds";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
 		m_CommandList.Get(), fenceTex->strFileName.c_str(),
 		fenceTex->pResource, fenceTex->pUploadHeap));
@@ -345,10 +345,27 @@ inline void WaveSimulator::BuildShadersAndInputLayout()
 {
 	HRESULT hr = S_OK;
 
+	// D3D_SHADER_MACRO 구조체를 이용해서 셰이더 파이프라인에 매개변수를 넘겨줄 수 있다.
+	const D3D_SHADER_MACRO defines[] =
+	{
+		"FOG", "1",
+		NULL, NULL
+	};
+
+	const D3D_SHADER_MACRO alphaTestDefines[] =
+	{
+		"FOG", "1",
+		"ALPHA_TEST", "1",
+		NULL, NULL
+	};
+
 	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
 	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
-	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\TexDefault.hlsl", nullptr, "VS", "vs_5_1");
-	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\TexDefault.hlsl", nullptr, "PS", "ps_5_1");
+	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", nullptr, "VS", "vs_5_1");
+	// 얘는 왜 맨날 에러를 뿜을까
+	// 아 현타온다.
+	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", defines, "PS", "ps_5_1");
+	m_shaders["alphaTestedPS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", alphaTestDefines, "PS", "ps_5_1");
 
 	m_InputLayout =
 	{
@@ -430,7 +447,7 @@ inline void WaveSimulator::BuildMaterials()
 	water->Name = "water";
 	water->nMatCBIdx = 1;
 	water->nDiffuseSrvHeapIdx = 1;
-	water->DiffuseAlbedo = XMFLOAT4(0.0f, 0.2f, 0.6f, 1.0f);
+	water->DiffuseAlbedo = XMFLOAT4(0.0f, 0.2f, 0.6f, 0.5f);
 	water->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
 	water->fRoughness = 0.0f;
 
@@ -566,7 +583,7 @@ inline void WaveSimulator::BuildRenderItems()
 	wavesRitem->nBaseVertexLocation = wavesRitem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
 
 	m_WaveRenderItem = wavesRitem.get();
-	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(wavesRitem.get());
+	m_RenderitemLayer[(int)RenderLayer::Transparent].push_back(wavesRitem.get());
 
 	auto gridRitem = std::make_unique<RenderItem>();
 	gridRitem->World = MathHelper::Identity4x4();
@@ -591,7 +608,7 @@ inline void WaveSimulator::BuildRenderItems()
 	boxRitem->nStartIdxLocation = boxRitem->pGeometry->DrawArgs["box"].StartIndexLocation;
 	boxRitem->nBaseVertexLocation = boxRitem->pGeometry->DrawArgs["box"].BaseVertexLocation;
 
-	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(boxRitem.get());
+	m_RenderitemLayer[(int)RenderLayer::AlphaTested].push_back(boxRitem.get());
 
 	m_allRenderItems.push_back(std::move(wavesRitem));
 	m_allRenderItems.push_back(std::move(gridRitem));
@@ -632,6 +649,36 @@ inline void WaveSimulator::BuildPSO()
 	opaquePsoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
 	opaquePsoDesc.DSVFormat = m_DepthStencilFormat;
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque"])));
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentPSODesc = opaquePsoDesc;
+
+	// 블렌딩을 위한 코드
+	D3D12_RENDER_TARGET_BLEND_DESC transparencyBlendDesc;
+	transparencyBlendDesc.BlendEnable = true;
+	transparencyBlendDesc.LogicOpEnable = false;
+	transparencyBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparencyBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparencyBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;		// 합 연산
+	transparencyBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparencyBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	transparentPSODesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(
+		&transparentPSODesc, IID_PPV_ARGS(&m_PSOs["transparent"])));
+
+	// 알파 판정을 위한 PSO
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC alphaTestPSODesc = opaquePsoDesc;
+	alphaTestPSODesc.PS =
+	{
+		reinterpret_cast<BYTE*>(m_shaders["alphaTestedPS"]->GetBufferPointer()),
+		m_shaders["alphaTestedPS"]->GetBufferSize()
+	};
+	alphaTestPSODesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(
+		&alphaTestPSODesc, IID_PPV_ARGS(&m_PSOs["alphaTested"])));
 
 	//
 	// 불투명한 와이어프레임 개체에 대한 PSO입니다.
@@ -1052,7 +1099,7 @@ void WaveSimulator::Render(float fDeltaTime)
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	// 백 버퍼와 깊이 버퍼를 지웁니다.
-	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), (float*)&m_tMainPassCB.FogColor, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	// 렌더링할 버퍼를 지정합니다.
@@ -1071,6 +1118,12 @@ void WaveSimulator::Render(float fDeltaTime)
 	m_CommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
 
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::Opaque]);
+
+	m_CommandList->SetPipelineState(m_PSOs["alphaTested"].Get());
+	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTested]);
+
+	m_CommandList->SetPipelineState(m_PSOs["transparent"].Get());
+	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::Transparent]);
 
 	// Indicate a state transition on the resource usage.
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
