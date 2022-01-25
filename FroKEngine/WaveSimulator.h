@@ -10,6 +10,7 @@
 #include "Graphics/Camera.h"
 #include "Graphics/Texture/Texture.h"
 #include "Wave.h"
+#include "TreeSpriteVertex.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -46,6 +47,7 @@ private:
 	void BuildMaterials();
 	void BuildLandGeometry();
 	void BuildBoxGeometry();
+	void BuildTreeSpritesGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
@@ -98,6 +100,8 @@ private:
 	std::unordered_map<std::string, ComPtr<ID3DBlob>> m_shaders;
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputLayout;
+	// 기하 셰이더에 넘겨줄 
+	std::vector<D3D12_INPUT_ELEMENT_DESC> m_TreeSpriteInputLayout;
 
 	// 프레임 리소스를 저장하기 위한 vector
 	std::vector<std::unique_ptr<FrameResource>> m_frameResources;
@@ -180,13 +184,22 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 
 	m_Camera.SetPosition(0.0f, 2.0f, -15.0f);
 
+	// 먼저 텍스처를 불러온다. 
 	LoadTexture();
+
+	// 루트 시그네처나 
+	// 서술자 힙 그리고 셰이더를 불러온다.
 	BuildRootSignature();
 	BuildDescriptorHeaps();
 	BuildShadersAndInputLayout();
+	
+	// 지오메트리 생성
 	BuildLandGeometry();
 	BuildWavesGeometryBuffers();
 	BuildBoxGeometry();
+	BuildTreeSpritesGeometry();
+
+	// 재질(머터리얼)을 불러온다.
 	BuildMaterials();
 	BuildRenderItems();
 	BuildFrameResources();
@@ -245,9 +258,17 @@ inline void WaveSimulator::LoadTexture()
 		m_CommandList.Get(), fenceTex->strFileName.c_str(),
 		fenceTex->pResource, fenceTex->pUploadHeap));
 
+	auto treeArrayTex = std::make_unique<Texture>();
+	treeArrayTex->strName = "treeArrayTex";
+	treeArrayTex->strFileName = L"Graphics/Texture/Datas/treeArray2.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
+		m_CommandList.Get(), treeArrayTex->strFileName.c_str(),
+		treeArrayTex->pResource, treeArrayTex->pUploadHeap));
+
 	m_Textures[grassTex->strName] = std::move(grassTex);
 	m_Textures[waterTex->strName] = std::move(waterTex);
 	m_Textures[fenceTex->strName] = std::move(fenceTex);
+	m_Textures[treeArrayTex->strName] = std::move(treeArrayTex);
 }
 
 // 서술자 힙을 생성한다.
@@ -273,6 +294,7 @@ inline void WaveSimulator::BuildDescriptorHeaps()
 	auto grassTex = m_Textures["grassTex"]->pResource;
 	auto waterTex = m_Textures["waterTex"]->pResource;
 	auto fenceTex = m_Textures["fenceTex"]->pResource;
+	auto treeArrayTex = m_Textures["treeArrayTex"]->pResource;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -293,6 +315,20 @@ inline void WaveSimulator::BuildDescriptorHeaps()
 
 	srvDesc.Format = fenceTex->GetDesc().Format;
 	m_d3dDevice->CreateShaderResourceView(fenceTex.Get(), &srvDesc, hDescriptor);
+
+	// 다음 서술자를 가져온다.
+	hDescriptor.Offset(1, m_CbvSrvDescriptorSize);
+
+	// 이 부분은 Texture2D 배열이기 때문에
+	// 다른 방식으로 서술을 진행해줘야 한다.
+	auto desc = treeArrayTex->GetDesc();
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+	srvDesc.Format = treeArrayTex->GetDesc().Format;
+	srvDesc.Texture2DArray.MostDetailedMip = 0;
+	srvDesc.Texture2DArray.MipLevels = -1;	// 딱히 밉맵 안 쓸꺼임
+	srvDesc.Texture2DArray.FirstArraySlice = 0;
+	srvDesc.Texture2DArray.ArraySize = treeArrayTex->GetDesc().DepthOrArraySize;
+	m_d3dDevice->CreateShaderResourceView(treeArrayTex.Get(), &srvDesc, hDescriptor);
 }
 
 // 루트 서명과 서술자 테이블을 생성합니다.
@@ -362,16 +398,25 @@ inline void WaveSimulator::BuildShadersAndInputLayout()
 	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
 	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
 	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", nullptr, "VS", "vs_5_1");
-	// 얘는 왜 맨날 에러를 뿜을까
-	// 아 현타온다.
 	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", defines, "PS", "ps_5_1");
 	m_shaders["alphaTestedPS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", alphaTestDefines, "PS", "ps_5_1");
+
+	// 지오메트리 셰이더도 사용하자.
+	m_shaders["treeSpriteVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "GS", "gs_5_1");
+	m_shaders["treeSpriteGS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "GS", "gs_5_1");
+	m_shaders["treeSpritePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", alphaTestDefines, "GS", "gs_5_1");
 
 	m_InputLayout =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	m_TreeSpriteInputLayout =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
@@ -459,9 +504,18 @@ inline void WaveSimulator::BuildMaterials()
 	wirefence->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
 	wirefence->fRoughness = 0.25f;
 
+	auto treeSprites = std::make_unique<Material>();
+	treeSprites->Name = "treeSprites";
+	treeSprites->nMatCBIdx = 3;
+	treeSprites->nDiffuseSrvHeapIdx = 3;
+	treeSprites->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	treeSprites->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
+	treeSprites->fRoughness = 0.125f;
+
 	m_Materials["grass"] = std::move(grass);
 	m_Materials["water"] = std::move(water);
 	m_Materials["wirefence"] = std::move(wirefence);
+	m_Materials["treeSprites"] = std::move(treeSprites);
 }
 
 inline void WaveSimulator::BuildLandGeometry()
@@ -569,6 +623,62 @@ inline void WaveSimulator::BuildBoxGeometry()
 	m_Geometries["boxGeo"] = std::move(geo);
 }
 
+inline void WaveSimulator::BuildTreeSpritesGeometry()
+{
+	static const int treeCount = 16;
+	std::array<TreeSpriteVertex, 16> vertices;
+	for (UINT i = 0; i < treeCount; ++i)
+	{
+		float x = MathHelper::RandF(-45.0f, 45.0f);
+		float z = MathHelper::RandF(-45.0f, 45.0f);
+		float y = GetHillsHeight(x, z);
+
+		// Move tree slightly above land height.
+		y += 8.0f;
+
+		vertices[i].Pos = XMFLOAT3(x, y, z);
+		vertices[i].Size = XMFLOAT2(20.0f, 20.0f);
+	}
+
+	std::array<std::uint16_t, 16> indices =
+	{
+		0, 1, 2, 3, 4, 5, 6, 7,
+		8, 9, 10, 11, 12, 13, 14, 15
+	};
+
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(TreeSpriteVertex);
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "treeSpritesGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->VertexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
+		m_CommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+	geo->IndexBufferGPU = D3DUtil::CreateDefaultBuffer(m_d3dDevice.Get(),
+		m_CommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(TreeSpriteVertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["points"] = submesh;
+
+	m_Geometries["treeSpritesGeo"] = std::move(geo);
+}
+
 inline void WaveSimulator::BuildRenderItems()
 {
 	auto wavesRitem = std::make_unique<RenderItem>();
@@ -610,9 +720,23 @@ inline void WaveSimulator::BuildRenderItems()
 
 	m_RenderitemLayer[(int)RenderLayer::AlphaTested].push_back(boxRitem.get());
 
+
+	auto treeSpritesRitem = std::make_unique<RenderItem>();
+	treeSpritesRitem->World = MathHelper::Identity4x4();
+	treeSpritesRitem->objCBIdx = 3;
+	treeSpritesRitem->Mat = m_Materials["treeSprites"].get();
+	treeSpritesRitem->pGeometry = m_Geometries["treeSpritesGeo"].get();
+	treeSpritesRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+	treeSpritesRitem->nIdxCnt = treeSpritesRitem->pGeometry->DrawArgs["points"].IndexCount;
+	treeSpritesRitem->nStartIdxLocation = treeSpritesRitem->pGeometry->DrawArgs["points"].StartIndexLocation;
+	treeSpritesRitem->nBaseVertexLocation = treeSpritesRitem->pGeometry->DrawArgs["points"].BaseVertexLocation;
+
+	m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites].push_back(treeSpritesRitem.get());
+
 	m_allRenderItems.push_back(std::move(wavesRitem));
 	m_allRenderItems.push_back(std::move(gridRitem));
 	m_allRenderItems.push_back(std::move(boxRitem));
+	m_allRenderItems.push_back(std::move(treeSpritesRitem));
 }
 
 // 파이프라인 상태 객체(Pipeline State Object)를 생성한다.
@@ -687,6 +811,32 @@ inline void WaveSimulator::BuildPSO()
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = opaquePsoDesc;
 	opaqueWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
+
+	// 
+	// 트리를 위한 PSO 코드입니다.
+	// 
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC treeSpritePsoDesc = opaquePsoDesc;
+	treeSpritePsoDesc.VS =
+	{
+		reinterpret_cast<BYTE*>(m_shaders["treeSpriteVS"]->GetBufferPointer()),
+		m_shaders["treeSpriteVS"]->GetBufferSize()
+	};
+	treeSpritePsoDesc.GS =
+	{
+		reinterpret_cast<BYTE*>(m_shaders["treeSpriteGS"]->GetBufferPointer()),
+		m_shaders["treeSpriteGS"]->GetBufferSize()
+	};
+	treeSpritePsoDesc.PS =
+	{
+		reinterpret_cast<BYTE*>(m_shaders["treeSpritePS"]->GetBufferPointer()),
+		m_shaders["treeSpritePS"]->GetBufferSize()
+	};
+	treeSpritePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+	treeSpritePsoDesc.InputLayout = { m_TreeSpriteInputLayout.data(), (UINT)m_TreeSpriteInputLayout.size() };
+	treeSpritePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&treeSpritePsoDesc, 
+		IID_PPV_ARGS(&m_PSOs["treeSprites"])));
 }
 
 inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
