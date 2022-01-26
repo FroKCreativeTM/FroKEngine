@@ -804,13 +804,6 @@ inline void WaveSimulator::BuildPSO()
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(
 		&alphaTestPSODesc, IID_PPV_ARGS(&m_PSOs["alphaTested"])));
 
-	//
-	// 불투명한 와이어프레임 개체에 대한 PSO입니다.
-	//
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = opaquePsoDesc;
-	opaqueWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
 
 	// 
 	// 트리를 위한 PSO 코드입니다.
@@ -837,6 +830,27 @@ inline void WaveSimulator::BuildPSO()
 
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&treeSpritePsoDesc, 
 		IID_PPV_ARGS(&m_PSOs["treeSprites"])));
+
+
+	//
+	// 불투명한 와이어프레임 개체에 대한 PSO입니다.
+	//
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = opaquePsoDesc;
+	opaqueWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentWireframePsoDesc = transparentPSODesc;
+	transparentWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&transparentWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["transparent_wireframe"])));
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC alphaframePsoDesc = alphaTestPSODesc;
+	alphaframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&alphaframePsoDesc, IID_PPV_ARGS(&m_PSOs["alpha_wireframe"])));
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC treeSpriteWireframePsoDesc = treeSpritePsoDesc;
+	treeSpriteWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&treeSpriteWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["treeSprite_wireframe"])));
 }
 
 inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
@@ -1269,13 +1283,34 @@ void WaveSimulator::Render(float fDeltaTime)
 
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::Opaque]);
 
-	m_CommandList->SetPipelineState(m_PSOs["alphaTested"].Get());
+	if (m_IsWireframe)
+	{
+		m_CommandList->SetPipelineState(m_PSOs["alpha_wireframe"].Get());
+	}
+	else
+	{
+		m_CommandList->SetPipelineState(m_PSOs["alphaTested"].Get());
+	}
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTested]);
 
-	m_CommandList->SetPipelineState(m_PSOs["treeSprites"].Get());
+	if (m_IsWireframe)
+	{
+		m_CommandList->SetPipelineState(m_PSOs["treeSprite_wireframe"].Get());
+	}
+	else
+	{
+		m_CommandList->SetPipelineState(m_PSOs["treeSprites"].Get());
+	}
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites]);
 
-	m_CommandList->SetPipelineState(m_PSOs["transparent"].Get());
+	if (m_IsWireframe)
+	{
+		m_CommandList->SetPipelineState(m_PSOs["transparent_wireframe"].Get());
+	}
+	else
+	{
+		m_CommandList->SetPipelineState(m_PSOs["transparent"].Get());
+	}
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::Transparent]);
 
 	// Indicate a state transition on the resource usage.
