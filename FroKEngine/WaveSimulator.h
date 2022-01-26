@@ -281,7 +281,7 @@ inline void WaveSimulator::BuildDescriptorHeaps()
 	// SRV 힙을 생성한다.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 3;
+	srvHeapDesc.NumDescriptors = 4;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_SrvHeap)));
@@ -402,9 +402,9 @@ inline void WaveSimulator::BuildShadersAndInputLayout()
 	m_shaders["alphaTestedPS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", alphaTestDefines, "PS", "ps_5_1");
 
 	// 지오메트리 셰이더도 사용하자.
-	m_shaders["treeSpriteVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "GS", "gs_5_1");
+	m_shaders["treeSpriteVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "VS", "vs_5_1");
 	m_shaders["treeSpriteGS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "GS", "gs_5_1");
-	m_shaders["treeSpritePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", alphaTestDefines, "GS", "gs_5_1");
+	m_shaders["treeSpritePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", alphaTestDefines, "PS", "ps_5_1");
 
 	m_InputLayout =
 	{
@@ -1271,6 +1271,9 @@ void WaveSimulator::Render(float fDeltaTime)
 
 	m_CommandList->SetPipelineState(m_PSOs["alphaTested"].Get());
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTested]);
+
+	m_CommandList->SetPipelineState(m_PSOs["treeSprites"].Get());
+	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites]);
 
 	m_CommandList->SetPipelineState(m_PSOs["transparent"].Get());
 	DrawRenderItems(m_CommandList.Get(), m_RenderitemLayer[(int)RenderLayer::Transparent]);
