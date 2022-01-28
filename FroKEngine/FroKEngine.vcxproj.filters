@@ -76,6 +76,9 @@
     <Filter Include="03. Simulator\02. Type">
       <UniqueIdentifier>{b1c0d230-0f85-4312-91c5-3b5de26d03b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\07. Scene">
+      <UniqueIdentifier>{4c085257-5497-44c2-94de-dfe787d55396}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
