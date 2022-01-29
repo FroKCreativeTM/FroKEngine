@@ -160,7 +160,12 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MathHelper.h" />
+    <ClInclude Include="Object\GameObject.h" />
+    <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Scene\Layer.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\SceneManager.h" />
     <ClInclude Include="StringConverter.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Timer.h" />
@@ -181,6 +186,11 @@
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MathHelper.cpp" />
+    <ClCompile Include="Object\GameObject.cpp" />
+    <ClCompile Include="Object\Object.cpp" />
+    <ClCompile Include="Scene\Layer.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\SceneManager.cpp" />
     <ClCompile Include="StringConverter.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Wave.cpp" />

@@ -79,6 +79,9 @@
     <Filter Include="01. Engine\07. Scene">
       <UniqueIdentifier>{4c085257-5497-44c2-94de-dfe787d55396}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\08. Object">
+      <UniqueIdentifier>{25db6756-e0b6-4481-be7e-18db614e8797}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -150,14 +153,29 @@
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\Camera.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\Texture\Texture.h">
       <Filter>01. Engine\04. Graphics\04. Resource\02. Texture</Filter>
     </ClInclude>
     <ClInclude Include="TreeSpriteVertex.h">
       <Filter>03. Simulator\02. Type</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\SceneManager.h">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Camera.h">
+      <Filter>01. Engine\04. Graphics\06. Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Scene.h">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Layer.h">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\GameObject.h">
+      <Filter>01. Engine\08. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Object.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -197,7 +215,22 @@
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\SceneManager.cpp">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClCompile>
     <ClCompile Include="Graphics\Camera.cpp">
+      <Filter>01. Engine\04. Graphics\06. Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Scene.cpp">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Layer.cpp">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\GameObject.cpp">
+      <Filter>01. Engine\08. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Object.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
