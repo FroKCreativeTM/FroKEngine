@@ -3,6 +3,8 @@
 #include "Game.h"
 #include "Timer.h"
 #include "Input.h"
+#include "Path/PathManager.h"
+#include "Resource/ResourceManager.h"
 
 class Core
 {

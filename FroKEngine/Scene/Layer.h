@@ -17,9 +17,19 @@ public:
 		this->m_strTag = str;
 	}
 
+	void SetZOrder(int nZOrder)
+	{
+		this->m_nZOrder = nZOrder;
+	}
+
 	void SetScene(class Scene* pScene)
 	{
 		this->m_pScene = pScene;
+	}
+
+	int GetZOrder() const
+	{
+		return m_nZOrder;
 	}
 
 	string GetTag() const
@@ -79,6 +89,13 @@ public:
 private:
 	class Scene* m_pScene;	// 이 레이어를 가진 장면 정보를 가진다.
 	string		m_strTag;
+	int			m_nZOrder;	// z축의 순서를 담당한다. (출력 우선순위)
+							// 이펙트 레이어들은 위에 존재하는 등
+							// UI레이어는 가장 뒤에
+							// 이것을 결정하는 것이 바로 이 ZOrder이다.
+							// 장면이 레이어들을 들고 있을텐데
+							// 이것을 정렬하게 할 것이다.
+
 	// 오브젝트는 삭제가 많이 생기는 그런 물건이다.
 	// 그렇기 때문에 중간 삽입,삭제가 굉장히 많이 발생할 것이다.
 	// 그런 부분은 vector보다는 list가 빠르다.

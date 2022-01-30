@@ -1,7 +1,10 @@
 #pragma once
 
-struct Texture
+#include "../../Ref.h"
+
+class Texture : public Ref
 { 
+public :
 	// 조회 시 사용할 고유한 재질의 이름
 	std::string strName;
 

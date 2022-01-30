@@ -237,38 +237,10 @@ inline void WaveSimulator::BuildFrameResources()
 
 inline void WaveSimulator::LoadTexture()
 {
-	auto grassTex = std::make_unique<Texture>();
-	grassTex->strName = "grassTex";
-	grassTex->strFileName = L"Graphics/Texture/Datas/grass.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), grassTex->strFileName.c_str(),
-		grassTex->pResource, grassTex->pUploadHeap));
-
-	auto waterTex = std::make_unique<Texture>();
-	waterTex->strName = "waterTex";
-	waterTex->strFileName = L"Graphics/Texture/Datas/water1.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), waterTex->strFileName.c_str(),
-		waterTex->pResource, waterTex->pUploadHeap));
-
-	auto fenceTex = std::make_unique<Texture>();
-	fenceTex->strName = "fenceTex";
-	fenceTex->strFileName = L"Graphics/Texture/Datas/WireFence.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), fenceTex->strFileName.c_str(),
-		fenceTex->pResource, fenceTex->pUploadHeap));
-
-	auto treeArrayTex = std::make_unique<Texture>();
-	treeArrayTex->strName = "treeArrayTex";
-	treeArrayTex->strFileName = L"Graphics/Texture/Datas/treeArray2.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), treeArrayTex->strFileName.c_str(),
-		treeArrayTex->pResource, treeArrayTex->pUploadHeap));
-
-	m_Textures[grassTex->strName] = std::move(grassTex);
-	m_Textures[waterTex->strName] = std::move(waterTex);
-	m_Textures[fenceTex->strName] = std::move(fenceTex);
-	m_Textures[treeArrayTex->strName] = std::move(treeArrayTex);
+	GET_SINGLE(ResourceManager)->LoadTexture("grassTex", L"Graphics/Texture/Datas/grass.dds");
+	GET_SINGLE(ResourceManager)->LoadTexture("waterTex", L"Graphics/Texture/Datas/water1.dds");
+	GET_SINGLE(ResourceManager)->LoadTexture("fenceTex", L"Graphics/Texture/Datas/WireFence.dds");
+	GET_SINGLE(ResourceManager)->LoadTexture("treeArrayTex", L"Graphics/Texture/Datas/treeArray2.dds");
 }
 
 // 서술자 힙을 생성한다.
@@ -291,10 +263,10 @@ inline void WaveSimulator::BuildDescriptorHeaps()
 	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(m_SrvHeap->GetCPUDescriptorHandleForHeapStart());
 
-	auto grassTex = m_Textures["grassTex"]->pResource;
-	auto waterTex = m_Textures["waterTex"]->pResource;
-	auto fenceTex = m_Textures["fenceTex"]->pResource;
-	auto treeArrayTex = m_Textures["treeArrayTex"]->pResource;
+	auto grassTex = GET_SINGLE(ResourceManager)->FindTexture("grassTex")->pResource;
+	auto waterTex = GET_SINGLE(ResourceManager)->FindTexture("waterTex")->pResource;
+	auto fenceTex = GET_SINGLE(ResourceManager)->FindTexture("fenceTex")->pResource;
+	auto treeArrayTex = GET_SINGLE(ResourceManager)->FindTexture("treeArrayTex")->pResource;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

@@ -82,6 +82,12 @@
     <Filter Include="01. Engine\09. Path">
       <UniqueIdentifier>{4ec7b72a-99de-4389-b85e-9fee65d58ab5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\07. Scene\01. Layer">
+      <UniqueIdentifier>{e31de124-56f8-4c1f-8f53-0f7aede58996}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Simulator\03. Scene">
+      <UniqueIdentifier>{9eae3c54-1930-454c-8c18-02be94686520}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -165,9 +171,6 @@
     <ClInclude Include="Scene\Scene.h">
       <Filter>01. Engine\07. Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\Layer.h">
-      <Filter>01. Engine\07. Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Object\GameObject.h">
       <Filter>01. Engine\08. Object</Filter>
     </ClInclude>
@@ -185,6 +188,15 @@
     </ClInclude>
     <ClInclude Include="Scene\SceneConst.h">
       <Filter>01. Engine\07. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Layer.h">
+      <Filter>01. Engine\07. Scene\01. Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\WaveSimulatorScene.h">
+      <Filter>03. Simulator\03. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\ResourceManager.h">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -233,9 +245,6 @@
     <ClCompile Include="Scene\Scene.cpp">
       <Filter>01. Engine\07. Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\Layer.cpp">
-      <Filter>01. Engine\07. Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Object\GameObject.cpp">
       <Filter>01. Engine\08. Object</Filter>
     </ClCompile>
@@ -247,6 +256,15 @@
     </ClCompile>
     <ClCompile Include="Path\PathManager.cpp">
       <Filter>01. Engine\09. Path</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Layer.cpp">
+      <Filter>01. Engine\07. Scene\01. Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\WaveSimulatorScene.cpp">
+      <Filter>03. Simulator\03. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\ResourceManager.cpp">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

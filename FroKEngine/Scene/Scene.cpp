@@ -28,7 +28,6 @@ Layer* Scene::CreateLayer(const string& strTag, int nZOrder)
 
     // 이 장면에 넣을 새로운 레이어 정보를 채운다.
     pLayer->SetTag(strTag);
-    pLayer->SetZOrder(nZOrder);
     pLayer->SetScene(this);
 
     // 리스트에 레이어를 넣는다.

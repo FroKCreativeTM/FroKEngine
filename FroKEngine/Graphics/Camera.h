@@ -60,6 +60,12 @@ public :
 	// 카메라 위치나 방향을 수정한 후에는 이 메서드를 호출해서 시야 행렬을 재구축한다.
 	void UpdateViewMatrix();
 
+public:
+	bool Init(const DirectX::XMFLOAT3& tPos);
+	void Input(float fDeltaTime);
+	void Update(float fDeltaTime);
+	void Scroll(float x, float y);
+
 private:
 
 	// 세계 공간 기준의 카메라 좌표계

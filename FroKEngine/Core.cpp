@@ -94,6 +94,18 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
         return false;
     }
 
+    // 경로관리자 초기화
+    if (!GET_SINGLE(PathManager)->Init())
+    {
+        return false;
+    }
+
+    // 리소스 매니저 초기화
+    if (!GET_SINGLE(ResourceManager)->Init(m_d3dDevice.Get(), m_CommandList.Get()))
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -826,6 +838,8 @@ Core::~Core()
 {
     DESTROY_SINGLE(Input);
     DESTROY_SINGLE(Timer);
+    DESTROY_SINGLE(PathManager);
+    DESTROY_SINGLE(ResourceManager);
 
     if (m_d3dDevice != nullptr)
     {

@@ -1,5 +1,8 @@
 #include "Object.h"
 
+// static
+list<Object*> Object::m_ObjList;
+
 void Object::Input(float fDeltaTime)
 {
 }
