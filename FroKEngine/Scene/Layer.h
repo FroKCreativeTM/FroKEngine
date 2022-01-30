@@ -49,7 +49,7 @@ public:
 	int Update(float fDeltaTime);
 	int LateUpdate(float fDeltaTime);
 	void Collision(float fDeltaTime);
-	void Render(HDC hDC, float fDeltaTime);
+	void Render(float fDeltaTime);
 
 public:
 	void AddObj(class CObj* pObj);

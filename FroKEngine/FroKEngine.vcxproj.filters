@@ -49,9 +49,6 @@
     <Filter Include="01. Engine\04. Graphics\05. Light">
       <UniqueIdentifier>{0edc8043-6573-44ed-87e4-eb2cb13aa936}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. Game">
-      <UniqueIdentifier>{a2947af3-f036-49f4-848b-144f80d7818a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03. Simulator">
       <UniqueIdentifier>{a9571966-a258-4072-89b1-7e9668547cc6}</UniqueIdentifier>
     </Filter>
@@ -81,6 +78,9 @@
     </Filter>
     <Filter Include="01. Engine\08. Object">
       <UniqueIdentifier>{25db6756-e0b6-4481-be7e-18db614e8797}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\09. Path">
+      <UniqueIdentifier>{4ec7b72a-99de-4389-b85e-9fee65d58ab5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -144,9 +144,6 @@
     <ClInclude Include="Wave.h">
       <Filter>03. Simulator</Filter>
     </ClInclude>
-    <ClInclude Include="FroKEngine.h">
-      <Filter>02. Game</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\d3dx12.h">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
     </ClInclude>
@@ -174,8 +171,20 @@
     <ClInclude Include="Object\GameObject.h">
       <Filter>01. Engine\08. Object</Filter>
     </ClInclude>
+    <ClInclude Include="Ref.h">
+      <Filter>01. Engine</Filter>
+    </ClInclude>
     <ClInclude Include="Object\Object.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>01. Engine\08. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Path\PathManager.h">
+      <Filter>01. Engine\09. Path</Filter>
+    </ClInclude>
+    <ClInclude Include="Path\PathConst.h">
+      <Filter>01. Engine\09. Path</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\SceneConst.h">
+      <Filter>01. Engine\07. Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -230,8 +239,14 @@
     <ClCompile Include="Object\GameObject.cpp">
       <Filter>01. Engine\08. Object</Filter>
     </ClCompile>
+    <ClCompile Include="Ref.cpp">
+      <Filter>01. Engine</Filter>
+    </ClCompile>
     <ClCompile Include="Object\Object.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>01. Engine\08. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Path\PathManager.cpp">
+      <Filter>01. Engine\09. Path</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

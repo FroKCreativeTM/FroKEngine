@@ -2,6 +2,7 @@
 
 #include "../Game.h"
 
+
 using namespace std;
 
 class Scene
@@ -14,7 +15,7 @@ public:
 
 public:
 	// 전역 함수이다!!!!(list의 sort caller가 callee로 전역함수를 원한다.)
-	static bool LayerSort(class CLayer* pL1, class CLayer* pL2);
+	static bool LayerSort(class Layer* pL1, class Layer* pL2);
 
 public:
 	/* 게임 요소를 위한 메소드 */
@@ -64,7 +65,7 @@ protected:
 protected:
 	// 이 방식을 이용하면 장면이 날아가면 그 장면에 종속된 모든
 	// 레이어들도 함께 날아간다.
-	list<class CLayer*> m_LayerList;
+	list<class Layer*> m_LayerList;
 	SCENE_CREATE		m_eSceneType;
 
 public:
@@ -80,7 +81,7 @@ public:
 
 public:
 	// 생성할 때만 필요하다.
-	static class GameObject* FindPrototype(const string& strTag, SCENE_CREATE sc);
+	static class Object* FindPrototype(const string& strTag, SCENE_CREATE sc);
 	static void ChangePrototype();
 
 private:
@@ -92,5 +93,5 @@ private:
 	// 그러면 파일에 있는 것을 로딩할텐데 문제는 느려!
 	// 그렇기 때문에 여기다가 미리 만들어놓고, 리스폰될 객체들을
 	// 만들면 될 것이다.
-	static unordered_map<string, class GameObject*> m_mapPrototype[SC_END];
+	static unordered_map<string, class Object*> m_mapPrototype[SC_END];
 };

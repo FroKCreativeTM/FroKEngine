@@ -1,14 +1,14 @@
 #include "Scene.h"
 #include "Layer.h"
-#include "../Object/GameObject.h"
+#include "../Object/Object.h"
 
-unordered_map<string, CObj*> Scene::m_mapPrototype[SC_END];
+unordered_map<string, Object*> Scene::m_mapPrototype[SC_END];
 
 Scene::Scene()
 {
     // 장면이 시작하면 아무 레이어도 없으니
     // 하나는 만들어두자.
-    CLayer* pLayer = CreateLayer("Default", 1);
+    Layer* pLayer = CreateLayer("Default", 1);
     pLayer = CreateLayer("HUD", INT_MAX - 1);
     pLayer = CreateLayer("UI", INT_MAX); // 맨 뒤에 있단 뜻
     pLayer = CreateLayer("Stage", 0); // 맨 뒤에 있단 뜻
@@ -22,9 +22,9 @@ Scene::~Scene()
 }
 
 // 새로운 레이어 생성
-CLayer* Scene::CreateLayer(const string& strTag, int nZOrder)
+Layer* Scene::CreateLayer(const string& strTag, int nZOrder)
 {
-    CLayer* pLayer = new CLayer();
+    Layer* pLayer = new Layer();
 
     // 이 장면에 넣을 새로운 레이어 정보를 채운다.
     pLayer->SetTag(strTag);
@@ -49,10 +49,10 @@ CLayer* Scene::CreateLayer(const string& strTag, int nZOrder)
 // 레이어 찾기
 // @parameter
 // strTag : 찾으려는 레이어의 태그
-CLayer* Scene::FindLayer(const string& strTag)
+Layer* Scene::FindLayer(const string& strTag)
 {
-    list<CLayer*>::iterator iter;
-    list<CLayer*>::iterator iterEnd = m_LayerList.end();
+    list<Layer*>::iterator iter;
+    list<Layer*>::iterator iterEnd = m_LayerList.end();
 
     for (iter = m_LayerList.begin(); iter != iterEnd; ++iter)
     {
@@ -64,7 +64,7 @@ CLayer* Scene::FindLayer(const string& strTag)
     return nullptr;
 }
 
-bool Scene::LayerSort(CLayer* pL1, CLayer* pL2)
+bool Scene::LayerSort(Layer* pL1, Layer* pL2)
 {
     // zOrder에 따른 오름차순 정렬을 할 것이다.
     // = 들어가면 crash 오지게 나오니까 주의
@@ -79,8 +79,8 @@ bool Scene::Init()
 void Scene::Input(float fDeltaTime)
 {
     // 레이어 리스트를 반복해서 돌려야 처리가 가능하다.
-    list<CLayer*>::iterator iter;
-    list<CLayer*>::iterator iterEnd = m_LayerList.end();
+    list<Layer*>::iterator iter;
+    list<Layer*>::iterator iterEnd = m_LayerList.end();
 
     for (iter = m_LayerList.begin(); iter != iterEnd;)
     {// 비활성화시
@@ -109,8 +109,8 @@ void Scene::Input(float fDeltaTime)
 int Scene::Update(float fDeltaTime)
 {
     // 레이어 리스트를 반복해서 돌려야 처리가 가능하다.
-    list<CLayer*>::iterator iter;
-    list<CLayer*>::iterator iterEnd = m_LayerList.end();
+    list<Layer*>::iterator iter;
+    list<Layer*>::iterator iterEnd = m_LayerList.end();
 
     for (iter = m_LayerList.begin(); iter != iterEnd;)
     {
@@ -142,8 +142,8 @@ int Scene::Update(float fDeltaTime)
 int Scene::LateUpdate(float fDeltaTime)
 {
     // 레이어 리스트를 반복해서 돌려야 처리가 가능하다.
-    list<CLayer*>::iterator iter;
-    list<CLayer*>::iterator iterEnd = m_LayerList.end();
+    list<Layer*>::iterator iter;
+    list<Layer*>::iterator iterEnd = m_LayerList.end();
 
     for (iter = m_LayerList.begin(); iter != iterEnd;)
     {// 비활성화시
@@ -174,8 +174,8 @@ int Scene::LateUpdate(float fDeltaTime)
 void Scene::Collision(float fDeltaTime)
 {
     // 레이어 리스트를 반복해서 돌려야 처리가 가능하다.
-    list<CLayer*>::iterator iter;
-    list<CLayer*>::iterator iterEnd = m_LayerList.end();
+    list<Layer*>::iterator iter;
+    list<Layer*>::iterator iterEnd = m_LayerList.end();
 
     for (iter = m_LayerList.begin(); iter != iterEnd;)
     {// 비활성화시
@@ -201,11 +201,11 @@ void Scene::Collision(float fDeltaTime)
     }
 }
 
-void Scene::Render(HDC hDC, float fDeltaTime)
+void Scene::Render(float fDeltaTime)
 {
     // 레이어 리스트를 반복해서 돌려야 처리가 가능하다.
-    list<CLayer*>::iterator iter;
-    list<CLayer*>::iterator iterEnd = m_LayerList.end();
+    list<Layer*>::iterator iter;
+    list<Layer*>::iterator iterEnd = m_LayerList.end();
 
     for (iter = m_LayerList.begin(); iter != iterEnd;)
     {// 비활성화시
@@ -215,7 +215,7 @@ void Scene::Render(HDC hDC, float fDeltaTime)
             continue;
         }
 
-        (*iter)->Render(hDC, fDeltaTime);
+        (*iter)->Render(fDeltaTime);
 
         // 만약 이 레이어가 죽었다면
         if (!(*iter)->GetLife())
@@ -239,7 +239,7 @@ void Scene::ErasePrototype(SCENE_CREATE sc)
 
 void Scene::ErasePrototype(const string& strTag, SCENE_CREATE sc)
 {
-    unordered_map<string, CObj*>::iterator iter
+    unordered_map<string, Object*>::iterator iter
         = m_mapPrototype[sc].find(strTag);
 
     if (!iter->second)
@@ -251,9 +251,9 @@ void Scene::ErasePrototype(const string& strTag, SCENE_CREATE sc)
     m_mapPrototype[sc].erase(iter);
 }
 
-CObj* Scene::FindPrototype(const string& strTag, SCENE_CREATE sc)
+Object* Scene::FindPrototype(const string& strTag, SCENE_CREATE sc)
 {
-    unordered_map<string, CObj*>::iterator iter = m_mapPrototype[sc].find(strTag);
+    unordered_map<string, Object*>::iterator iter = m_mapPrototype[sc].find(strTag);
 
     if (iter == m_mapPrototype[sc].end())
     {

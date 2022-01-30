@@ -1,6 +1,8 @@
 #pragma once
 
-#define SAFE_DELETE(p) if(p) { delete p; p = NULL; }
+#define SAFE_DELETE(p) if(p) { delete p; p = nullptr; }
+#define SAFE_DELETE_ARRAY(p) if(p) { delete p; p = nullptr; }
+#define SAFE_RELEASE(p) if(p) { p->Release(); p = nullptr; }
 
 // 클래스를 싱글톤으로 자동 생성한다.
 #define DECLARE_SINGLE(Type) \
@@ -27,6 +29,66 @@ private : \
 #define DEFINITION_SINGLE(Type) Type* Type::m_pInst = NULL; 
 #define GET_SINGLE(Type) Type::GetInst()
 #define DESTROY_SINGLE(Type) Type::DestroyInst()
+
+// STL을 날리기 위한 함수
+// 타입을 잡아줄 필요가 없기 때문에, 재사용성이 높다.
+template <typename T>
+void Safe_Delete_VecList(T & ref)
+{
+	typename T::iterator iter;
+	typename T::iterator iterEnd = ref.end();
+
+	for (iter = ref.begin(); iter != iterEnd; ++iter)
+	{
+		SAFE_DELETE((*iter));
+	}
+
+	ref.clear();
+}
+
+// 레이어 소멸자에서
+// 모든 오브젝트를 지운다.
+template <typename T>
+void Safe_Release_VecList(T & ref)
+{
+	typename T::iterator iter;
+	typename T::iterator iterEnd = ref.end();
+
+	for (iter = ref.begin(); iter != iterEnd; ++iter)
+	{
+		SAFE_RELEASE((*iter));
+	}
+
+	ref.clear();
+}
+
+template <typename T>
+void Safe_Delete_Map(T & ref)
+{
+	typename T::iterator iter;
+	typename T::iterator iterEnd = ref.end();
+
+	for (iter = ref.begin(); iter != iterEnd; ++iter)
+	{
+		SAFE_DELETE(iter->second);
+	}
+
+	ref.clear();
+}
+
+template <typename T>
+void Safe_Release_Map(T & ref)
+{
+	typename T::iterator iter;
+	typename T::iterator iterEnd = ref.end();
+
+	for (iter = ref.begin(); iter != iterEnd; ++iter)
+	{
+		SAFE_RELEASE(iter->second);
+	}
+
+	ref.clear();
+}
 
 inline std::wstring AnsiToWString(const std::string & str)
 {

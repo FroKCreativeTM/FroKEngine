@@ -20,7 +20,7 @@ class RenderItem
 public : 
 	RenderItem() = default;
 
-	// 세계 공간을 기준으로 물체의 로컬 공간을 서술ㅇ하는 세계 행렬이다.
+	// 세계 공간을 기준으로 물체의 로컬 공간을 서술하는 세계 행렬이다.
 	// 이 행렬은 세계 공간 상에서의 물체의 위치, 방향, 크기를 결정한다.
 	XMFLOAT4X4 World = MathHelper::Identity4x4();
 

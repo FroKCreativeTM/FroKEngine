@@ -1,4 +1,5 @@
 #include "SceneManager.h"
+#include "Scene.h"
 
 DEFINITION_SINGLE(SceneManager)
 
@@ -60,10 +61,10 @@ SCENE_CHANGE SceneManager::ChangeScene()
 		m_pScene = m_pNextScene;
 		m_pNextScene = nullptr;
 
-		GET_SINGLE(CCollisionManager)->ClearScene();
+		// GET_SINGLE(CCollisionManager)->ClearScene();
 
 		m_pScene->SetSceneType(SC_CURRENT);
-		CScene::ChangePrototype();
+		Scene::ChangePrototype();
 
 		return SC_CHANGE;
 	}
