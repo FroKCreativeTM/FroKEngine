@@ -11,6 +11,26 @@ class CLayer;
 // 이를 관리합니다.
 class Object : public Ref
 {
+public : 
+	void SetScene(class Scene* pScene)
+	{
+		this->m_pScene = pScene;
+	}
+
+	void SetLayer(class Layer* pLayer)
+	{
+		this->m_pLayer = pLayer;
+	}
+
+	class Scene* GetScene() const 
+	{
+		return m_pScene;
+	}
+
+	class Layer* GetLayer() const
+	{
+		return m_pLayer;
+	}
 
 protected:
 	Object();
@@ -35,6 +55,20 @@ public:
 	void LoadFromPath(const char* pFileName, const string& strPathKey = DATA_PATH);
 	void LoadFromFullPath(const char* pFullPath);
 
+
+// 오브젝트 자료 다루기 
+public:
+	static void AddObj(Object* pObj);
+	static Object* FindObj(const string& strTag);
+	static void EraseObj();	// 전체
+	static void EraseObj(Object* pObj);
+	static void EraseObj(const string& strTag);
+
+protected:
+	// 자기가 속한 장면과 레이어를 알게 한다.
+	class Scene* m_pScene;
+	class Layer* m_pLayer;
+
 protected:
 	// 세계 공간을 기준으로 물체의 로컬 공간을 서술하는 세계 행렬이다.
 	// 이 행렬은 세계 공간 상에서의 물체의 위치, 방향, 크기를 결정한다.
@@ -48,12 +82,7 @@ protected:
 	float					m_fGravityTime;
 
 protected:
-	// 자기가 속한 장면과 레이어를 알게 한다.
-	class CScene* m_pScene;
-	class CLayer* m_pLayer;
-
-protected:
-	friend class CScene;
+	friend class Scene;
 
 private:
 	// 생성되는 모든 오브젝트들은 여기서 저장된다.
