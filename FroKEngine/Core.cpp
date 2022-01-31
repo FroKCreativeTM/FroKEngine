@@ -106,6 +106,21 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
         return false;
     }
 
+    // 카메라 초기화
+    if(!GET_SINGLE(Camera)->Init(0.0f, 2.0f, -15.0f))
+    {
+        return false;
+    }
+
+    /* 사운드 매니저 초기화 */
+    if (!GET_SINGLE(SoundManager)->Init())
+    {
+        return false;
+    }
+
+    GET_SINGLE(SoundManager)->LoadSound("BGM", true, "Title.mp3");
+    GET_SINGLE(SoundManager)->Play("BGM");
+
     return true;
 }
 
@@ -837,6 +852,8 @@ Core::Core()
 Core::~Core()
 {
     DESTROY_SINGLE(Input);
+    DESTROY_SINGLE(SoundManager);
+    DESTROY_SINGLE(Camera);
     DESTROY_SINGLE(Timer);
     DESTROY_SINGLE(PathManager);
     DESTROY_SINGLE(ResourceManager);

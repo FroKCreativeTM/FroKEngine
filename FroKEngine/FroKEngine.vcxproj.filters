@@ -88,6 +88,9 @@
     <Filter Include="03. Simulator\03. Scene">
       <UniqueIdentifier>{9eae3c54-1930-454c-8c18-02be94686520}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\10. Sound">
+      <UniqueIdentifier>{61718043-1bc0-4007-8851-598a6a2652a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -201,6 +204,9 @@
     <ClInclude Include="Scene\LayerConst.h">
       <Filter>01. Engine\07. Scene\01. Layer</Filter>
     </ClInclude>
+    <ClInclude Include="Sound\SoundManager.h">
+      <Filter>01. Engine\10. Sound</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FroKEngine.cpp">
@@ -268,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="Resource\ResourceManager.cpp">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound\SoundManager.cpp">
+      <Filter>01. Engine\10. Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

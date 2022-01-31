@@ -1,8 +1,21 @@
 #include "Object.h"
 #include "../Scene/Scene.h"
+#include "../Scene/Layer.h"
 
 // static
 list<Object*> Object::m_ObjList;
+
+Object::Object()
+{
+}
+
+Object::Object(const Object& ref)
+{
+}
+
+Object::~Object()
+{
+}
 
 void Object::Input(float fDeltaTime)
 {
