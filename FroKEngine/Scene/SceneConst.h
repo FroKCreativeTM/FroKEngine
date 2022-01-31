@@ -10,7 +10,7 @@ enum SCENE_CREATE
 };
 
 // 장면 전환 관련 플래그
-enum SCENE_CHANGE
+enum class SCENE_CHANGE : int
 {
 	SC_NONE,
 	SC_CHANGE

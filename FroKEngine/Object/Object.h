@@ -56,6 +56,23 @@ public:
 	void LoadFromFullPath(const char* pFullPath);
 
 
+public:
+	// 굉장히 다양한 타입의 오브젝트를 만들기 위한 
+	// 템플릿 타입의 메소드이다.
+	template <typename T>
+	static T* CreateObj(const string& strTag,
+		class Layer* pLayer = nullptr);
+	// 생성된 프로토타입의 복사를 생성한다.
+	// 템플릿으로 만들 이유도 없다.
+	static Object* CreateCloneObj(const string& strProtoKey,
+		const string& strTag,
+		SCENE_CREATE sc,
+		class Layer* pLayer = nullptr);
+	//template <typename T>
+	//void AddCollisionFunction(const string& strTag,
+	//	COLLISION_STATE eState, T* pObj,
+	//	void(T::* pFunc)(CCollider*, CCollider*, float));
+
 // 오브젝트 자료 다루기 
 public:
 	static void AddObj(Object* pObj);

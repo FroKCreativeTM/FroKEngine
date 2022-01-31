@@ -1,5 +1,6 @@
 #include "SceneManager.h"
 #include "Scene.h"
+#include "WaveSimulatorScene.h"
 
 DEFINITION_SINGLE(SceneManager)
 
@@ -20,7 +21,7 @@ SceneManager::~SceneManager()
 bool SceneManager::Init()
 {
 	// 기본 장면은 무조건 하나 만들어둔다.
-	// CreateScene<CStartScene>(SC_CURRENT);
+	CreateScene<WaveSimulatorScene>(SC_CURRENT);
 
 	return true;
 }
@@ -28,7 +29,7 @@ bool SceneManager::Init()
 void SceneManager::Input(float fDeltaTime)
 {
 	// 현재 씬의 입력을 받는다.
-	// m_pScene->Input(fDeltaTime);
+	m_pScene->Input(fDeltaTime);
 }
 
 SCENE_CHANGE SceneManager::Update(float fDeltaTime)
@@ -66,8 +67,8 @@ SCENE_CHANGE SceneManager::ChangeScene()
 		m_pScene->SetSceneType(SC_CURRENT);
 		Scene::ChangePrototype();
 
-		return SC_CHANGE;
+		return SCENE_CHANGE::SC_CHANGE;
 	}
 
-	return SC_NONE;
+	return SCENE_CHANGE::SC_NONE;
 }

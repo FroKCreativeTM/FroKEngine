@@ -198,6 +198,9 @@
     <ClInclude Include="Resource\ResourceManager.h">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Scene\LayerConst.h">
+      <Filter>01. Engine\07. Scene\01. Layer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FroKEngine.cpp">
@@ -299,5 +302,10 @@
     <FxCompile Include="Graphics\Shader\GeometryShader.hlsl">
       <Filter>03. Simulator\01. Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Object\Object.inl">
+      <Filter>01. Engine\08. Object</Filter>
+    </None>
   </ItemGroup>
 </Project>

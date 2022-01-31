@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "../Scene/Scene.h"
 
 // static
 list<Object*> Object::m_ObjList;
@@ -52,6 +53,31 @@ void Object::LoadFromPath(const char* pFileName, const string& strPathKey)
 
 void Object::LoadFromFullPath(const char* pFullPath)
 {
+}
+
+Object* Object::CreateCloneObj(const string& strProtoKey, const string& strTag, 
+	SCENE_CREATE sc, Layer* pLayer)
+{
+	// 어떤 타입인지 알아서 찾아서 복사하도록
+	// 짜피 static이라 CScene::
+	Object* pPrototype = Scene::FindPrototype(strProtoKey, sc);
+
+	if (!pPrototype)
+	{
+		return nullptr;
+	}
+
+	Object* pObj = pPrototype->Clone();
+	pObj->SetTag(strTag);
+
+	if (pLayer)
+	{
+		pLayer->AddObj(pObj);
+	}
+
+	AddObj(pObj);
+
+	return pObj;
 }
 
 void Object::AddObj(Object* pObj)

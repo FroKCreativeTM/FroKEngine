@@ -167,6 +167,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Resource\ResourceManager.h" />
     <ClInclude Include="Scene\Layer.h" />
+    <ClInclude Include="Scene\LayerConst.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\SceneConst.h" />
     <ClInclude Include="Scene\SceneManager.h" />
@@ -231,6 +232,9 @@
     <FxCompile Include="Graphics\Shader\TexDefault.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Object\Object.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

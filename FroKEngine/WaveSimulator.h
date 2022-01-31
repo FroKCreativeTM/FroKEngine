@@ -692,7 +692,6 @@ inline void WaveSimulator::BuildRenderItems()
 
 	m_RenderitemLayer[(int)RenderLayer::AlphaTested].push_back(boxRitem.get());
 
-
 	auto treeSpritesRitem = std::make_unique<RenderItem>();
 	treeSpritesRitem->World = MathHelper::Identity4x4();
 	treeSpritesRitem->objCBIdx = 3;

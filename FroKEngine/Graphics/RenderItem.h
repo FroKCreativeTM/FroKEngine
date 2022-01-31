@@ -4,15 +4,6 @@
 
 using namespace DirectX;
 
-enum class RenderLayer : int
-{
-	Opaque = 0,		// 불투명체
-	Transparent,
-	AlphaTested,
-	AlphaTestedTreeSprites,
-	Count
-};
-
 // 하나의 물체를 그리는 데 필요한 매개변수들을 담는 클래스이다.
 // 이 클래스의 구체적인 구성은 응용 프로그램마다 달라질 것이다.
 class RenderItem
