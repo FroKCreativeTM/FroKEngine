@@ -96,9 +96,6 @@ private:
 
 	std::unique_ptr<MeshGeometry> m_BoxGeo = nullptr;
 
-	// 셰이더들을 상수로 매핑해서 저장한다.
-	std::unordered_map<std::string, ComPtr<ID3DBlob>> m_shaders;
-
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputLayout;
 	// 기하 셰이더에 넘겨줄 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_TreeSpriteInputLayout;
@@ -150,9 +147,6 @@ private:
 	float		m_Phi = 0.2f * XM_PI;
 	float		m_Radius = 15.0f;
 
-	// 카메라 클래스
-	Camera m_Camera;
-
 	POINT m_LastMousePos;
 };
 
@@ -181,8 +175,6 @@ bool WaveSimulator::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 
 	// 파도에 대한 설정을 한다.
 	m_Waves = std::make_unique<Waves>(128, 128, 1.0f, 0.03f, 4.0f, 0.2f);
-
-	m_Camera.SetPosition(0.0f, 2.0f, -15.0f);
 
 	// 먼저 텍스처를 불러온다. 
 	LoadTexture();
@@ -223,7 +215,7 @@ void WaveSimulator::OnResize()
 	// 창 크기가 조정되었으므로 종횡비를 업데이트하고 투영 행렬을 다시 계산합니다
 	// XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 	// XMStoreFloat4x4(&m_Proj, P);
-	m_Camera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	GET_SINGLE(Camera)->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 }
 
 inline void WaveSimulator::BuildFrameResources()
@@ -237,38 +229,10 @@ inline void WaveSimulator::BuildFrameResources()
 
 inline void WaveSimulator::LoadTexture()
 {
-	auto grassTex = std::make_unique<Texture>();
-	grassTex->strName = "grassTex";
-	grassTex->strFileName = L"Graphics/Texture/Datas/grass.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), grassTex->strFileName.c_str(),
-		grassTex->pResource, grassTex->pUploadHeap));
-
-	auto waterTex = std::make_unique<Texture>();
-	waterTex->strName = "waterTex";
-	waterTex->strFileName = L"Graphics/Texture/Datas/water1.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), waterTex->strFileName.c_str(),
-		waterTex->pResource, waterTex->pUploadHeap));
-
-	auto fenceTex = std::make_unique<Texture>();
-	fenceTex->strName = "fenceTex";
-	fenceTex->strFileName = L"Graphics/Texture/Datas/WireFence.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), fenceTex->strFileName.c_str(),
-		fenceTex->pResource, fenceTex->pUploadHeap));
-
-	auto treeArrayTex = std::make_unique<Texture>();
-	treeArrayTex->strName = "treeArrayTex";
-	treeArrayTex->strFileName = L"Graphics/Texture/Datas/treeArray2.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(m_d3dDevice.Get(),
-		m_CommandList.Get(), treeArrayTex->strFileName.c_str(),
-		treeArrayTex->pResource, treeArrayTex->pUploadHeap));
-
-	m_Textures[grassTex->strName] = std::move(grassTex);
-	m_Textures[waterTex->strName] = std::move(waterTex);
-	m_Textures[fenceTex->strName] = std::move(fenceTex);
-	m_Textures[treeArrayTex->strName] = std::move(treeArrayTex);
+	GET_SINGLE(ResourceManager)->LoadTexture("grassTex", L"Graphics/Texture/Datas/grass.dds");
+	GET_SINGLE(ResourceManager)->LoadTexture("waterTex", L"Graphics/Texture/Datas/water1.dds");
+	GET_SINGLE(ResourceManager)->LoadTexture("fenceTex", L"Graphics/Texture/Datas/WireFence.dds");
+	GET_SINGLE(ResourceManager)->LoadTexture("treeArrayTex", L"Graphics/Texture/Datas/treeArray2.dds");
 }
 
 // 서술자 힙을 생성한다.
@@ -291,10 +255,10 @@ inline void WaveSimulator::BuildDescriptorHeaps()
 	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(m_SrvHeap->GetCPUDescriptorHandleForHeapStart());
 
-	auto grassTex = m_Textures["grassTex"]->pResource;
-	auto waterTex = m_Textures["waterTex"]->pResource;
-	auto fenceTex = m_Textures["fenceTex"]->pResource;
-	auto treeArrayTex = m_Textures["treeArrayTex"]->pResource;
+	auto grassTex = GET_SINGLE(ResourceManager)->FindTexture("grassTex")->pResource;
+	auto waterTex = GET_SINGLE(ResourceManager)->FindTexture("waterTex")->pResource;
+	auto fenceTex = GET_SINGLE(ResourceManager)->FindTexture("fenceTex")->pResource;
+	auto treeArrayTex = GET_SINGLE(ResourceManager)->FindTexture("treeArrayTex")->pResource;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -397,14 +361,14 @@ inline void WaveSimulator::BuildShadersAndInputLayout()
 
 	// 셰이더를 컴파일해서 바이트코드로 만들어낸다.
 	// 그리고 그 시스템의 GPU에 맞게 최적의 네이티브 명령으로 컴파일을 한다.
-	m_shaders["standardVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", nullptr, "VS", "vs_5_1");
-	m_shaders["opaquePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", defines, "PS", "ps_5_1");
-	m_shaders["alphaTestedPS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\BlendDefault.hlsl", alphaTestDefines, "PS", "ps_5_1");
+	GET_SINGLE(ResourceManager)->LoadShader("standardVS", L"Graphics\\Shader\\BlendDefault.hlsl", nullptr, "VS", "vs_5_1");
+	GET_SINGLE(ResourceManager)->LoadShader("opaquePS", L"Graphics\\Shader\\BlendDefault.hlsl", defines, "PS", "ps_5_1");
+	GET_SINGLE(ResourceManager)->LoadShader("alphaTestedPS", L"Graphics\\Shader\\BlendDefault.hlsl", alphaTestDefines, "PS", "ps_5_1");
 
 	// 지오메트리 셰이더도 사용하자.
-	m_shaders["treeSpriteVS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "VS", "vs_5_1");
-	m_shaders["treeSpriteGS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "GS", "gs_5_1");
-	m_shaders["treeSpritePS"] = D3DUtil::CompileShader(L"Graphics\\Shader\\GeometryShader.hlsl", alphaTestDefines, "PS", "ps_5_1");
+	GET_SINGLE(ResourceManager)->LoadShader("treeSpriteVS", L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "VS", "vs_5_1");
+	GET_SINGLE(ResourceManager)->LoadShader("treeSpriteGS", L"Graphics\\Shader\\GeometryShader.hlsl", nullptr, "GS", "gs_5_1");
+	GET_SINGLE(ResourceManager)->LoadShader("treeSpritePS", L"Graphics\\Shader\\GeometryShader.hlsl", alphaTestDefines, "PS", "ps_5_1");
 
 	m_InputLayout =
 	{
@@ -720,7 +684,6 @@ inline void WaveSimulator::BuildRenderItems()
 
 	m_RenderitemLayer[(int)RenderLayer::AlphaTested].push_back(boxRitem.get());
 
-
 	auto treeSpritesRitem = std::make_unique<RenderItem>();
 	treeSpritesRitem->World = MathHelper::Identity4x4();
 	treeSpritesRitem->objCBIdx = 3;
@@ -754,13 +717,14 @@ inline void WaveSimulator::BuildPSO()
 	opaquePsoDesc.pRootSignature = m_RootSignature.Get();
 	opaquePsoDesc.VS =
 	{
-		reinterpret_cast<BYTE*>(m_shaders["standardVS"]->GetBufferPointer()),
-		m_shaders["standardVS"]->GetBufferSize()
+		
+		reinterpret_cast<BYTE*>(GET_SINGLE(ResourceManager)->FindShader("standardVS")->GetBufferPointer()),
+		GET_SINGLE(ResourceManager)->FindShader("standardVS")->GetBufferSize()
 	};
 	opaquePsoDesc.PS =
 	{
-		reinterpret_cast<BYTE*>(m_shaders["opaquePS"]->GetBufferPointer()),
-		m_shaders["opaquePS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(GET_SINGLE(ResourceManager)->FindShader("opaquePS")->GetBufferPointer()),
+		GET_SINGLE(ResourceManager)->FindShader("opaquePS")->GetBufferSize()
 	};
 	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
@@ -797,8 +761,8 @@ inline void WaveSimulator::BuildPSO()
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC alphaTestPSODesc = opaquePsoDesc;
 	alphaTestPSODesc.PS =
 	{
-		reinterpret_cast<BYTE*>(m_shaders["alphaTestedPS"]->GetBufferPointer()),
-		m_shaders["alphaTestedPS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(GET_SINGLE(ResourceManager)->FindShader("alphaTestedPS")->GetBufferPointer()),
+		GET_SINGLE(ResourceManager)->FindShader("alphaTestedPS")->GetBufferSize()
 	};
 	alphaTestPSODesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(
@@ -811,18 +775,18 @@ inline void WaveSimulator::BuildPSO()
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC treeSpritePsoDesc = opaquePsoDesc;
 	treeSpritePsoDesc.VS =
 	{
-		reinterpret_cast<BYTE*>(m_shaders["treeSpriteVS"]->GetBufferPointer()),
-		m_shaders["treeSpriteVS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(GET_SINGLE(ResourceManager)->FindShader("treeSpriteVS")->GetBufferPointer()),
+		GET_SINGLE(ResourceManager)->FindShader("treeSpriteVS")->GetBufferSize()
 	};
 	treeSpritePsoDesc.GS =
 	{
-		reinterpret_cast<BYTE*>(m_shaders["treeSpriteGS"]->GetBufferPointer()),
-		m_shaders["treeSpriteGS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(GET_SINGLE(ResourceManager)->FindShader("treeSpriteGS")->GetBufferPointer()),
+		GET_SINGLE(ResourceManager)->FindShader("treeSpriteGS")->GetBufferSize()
 	};
 	treeSpritePsoDesc.PS =
 	{
-		reinterpret_cast<BYTE*>(m_shaders["treeSpritePS"]->GetBufferPointer()),
-		m_shaders["treeSpritePS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(GET_SINGLE(ResourceManager)->FindShader("treeSpritePS")->GetBufferPointer()),
+		GET_SINGLE(ResourceManager)->FindShader("treeSpritePS")->GetBufferSize()
 	};
 	treeSpritePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 	treeSpritePsoDesc.InputLayout = { m_TreeSpriteInputLayout.data(), (UINT)m_TreeSpriteInputLayout.size() };
@@ -956,8 +920,8 @@ inline void WaveSimulator::OnMouseMove(int x, int y)
 		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_LastMousePos.x));
 		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - m_LastMousePos.y));
 
-		m_Camera.Pitch(dy);
-		m_Camera.RotateY(dx);
+		GET_SINGLE(Camera)->Pitch(dy);
+		GET_SINGLE(Camera)->RotateY(dx);
 	}
 
 	m_LastMousePos.x = x;
@@ -989,19 +953,19 @@ void WaveSimulator::Input(float fDeltaTime)
 
 	if (GET_SINGLE(Input)->IsKeyDown('W'))
 	{
-		m_Camera.Walk(20.0f * fDeltaTime);
+		GET_SINGLE(Camera)->Walk(20.0f * fDeltaTime);
 	}
 	if (GET_SINGLE(Input)->IsKeyDown('S'))
 	{
-		m_Camera.Walk(-20.0f * fDeltaTime);
+		GET_SINGLE(Camera)->Walk(-20.0f * fDeltaTime);
 	}
 	if (GET_SINGLE(Input)->IsKeyDown('A'))
 	{
-		m_Camera.Strafe(-20.0f * fDeltaTime);
+		GET_SINGLE(Camera)->Strafe(-20.0f * fDeltaTime);
 	}
 	if (GET_SINGLE(Input)->IsKeyDown('D'))
 	{
-		m_Camera.Strafe(20.0f * fDeltaTime);
+		GET_SINGLE(Camera)->Strafe(20.0f * fDeltaTime);
 	}
 
 	if (GET_SINGLE(Input)->IsKeyDown(VK_LEFT))
@@ -1116,8 +1080,8 @@ inline void WaveSimulator::UpdateMaterialCBs(float fDeltaTime)
 
 inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 {
-	XMMATRIX view = m_Camera.GetView();
-	XMMATRIX proj = m_Camera.GetProj();
+	XMMATRIX view = GET_SINGLE(Camera)->GetView();
+	XMMATRIX proj = GET_SINGLE(Camera)->GetProj();
 
 	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
 	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
@@ -1130,7 +1094,7 @@ inline void WaveSimulator::UpdateMainPassCB(float fDeltaTime)
 	XMStoreFloat4x4(&m_tMainPassCB.InvView, XMMatrixTranspose(invView));
 	XMStoreFloat4x4(&m_tMainPassCB.InvProj, XMMatrixTranspose(invProj));
 	XMStoreFloat4x4(&m_tMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
-	m_tMainPassCB.EyePosW = m_Camera.GetPosition3f();
+	m_tMainPassCB.EyePosW = GET_SINGLE(Camera)->GetPosition3f();
 
 	m_tMainPassCB.RenderTargetSize = XMFLOAT2((float)m_tRS.nWidth, (float)m_tRS.nHeight);
 	m_tMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / m_tRS.nWidth, 1.0f / m_tRS.nHeight);
@@ -1197,7 +1161,7 @@ inline void WaveSimulator::UpdateWaves(float fDeltaTime)
 
 int WaveSimulator::Update(float fDeltaTime)
 {
-	m_Camera.UpdateViewMatrix();
+	GET_SINGLE(Camera)->UpdateViewMatrix();
 
 	m_fSunPhi = MathHelper::Clamp(m_fSunPhi, 1.0f, XM_PIDIV2);
 

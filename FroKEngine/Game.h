@@ -79,6 +79,13 @@
 #include "Util.h"
 #include "MathHelper.h"
 
+// 경로 관련 상수
+#include "Path/PathConst.h"
+
+// 씬/레이어/매니저 관련 상수
+#include "Scene/SceneConst.h"
+#include "Scene/LayerConst.h"
+
 // 프레임 자원 3개를 담는 벡터를 생성하기 위한 도구
 // 이렇게 하면 n~n+2까지의 프레임을 미리 생성할 수 있다.
 static const int gNumFrameResource = 3;
