@@ -5,9 +5,6 @@
 class Camera
 {
 public :
-	Camera();
-	~Camera();
-
 	// 세계 공간 카메라 위치를 조회 및 설정하는 메서드
 	DirectX::XMVECTOR GetPosition()const;
 	DirectX::XMFLOAT3 GetPosition3f()const;
@@ -60,6 +57,13 @@ public :
 	// 카메라 위치나 방향을 수정한 후에는 이 메서드를 호출해서 시야 행렬을 재구축한다.
 	void UpdateViewMatrix();
 
+public:
+	bool Init(float x, float y, float z);
+	bool Init(const DirectX::XMFLOAT3& tPos);
+	//void Input(float fDeltaTime);
+	//void Update(float fDeltaTime);
+	//void Scroll(float x, float y);
+
 private:
 
 	// 세계 공간 기준의 카메라 좌표계
@@ -81,5 +85,8 @@ private:
 	// 시야 행렬과 투영 행렬
 	DirectX::XMFLOAT4X4 m_View = MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 m_Proj = MathHelper::Identity4x4();
+
+	DECLARE_SINGLE(Camera)
 };
+
 

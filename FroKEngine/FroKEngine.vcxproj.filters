@@ -49,9 +49,6 @@
     <Filter Include="01. Engine\04. Graphics\05. Light">
       <UniqueIdentifier>{0edc8043-6573-44ed-87e4-eb2cb13aa936}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. Game">
-      <UniqueIdentifier>{a2947af3-f036-49f4-848b-144f80d7818a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03. Simulator">
       <UniqueIdentifier>{a9571966-a258-4072-89b1-7e9668547cc6}</UniqueIdentifier>
     </Filter>
@@ -78,6 +75,21 @@
     </Filter>
     <Filter Include="01. Engine\07. Scene">
       <UniqueIdentifier>{4c085257-5497-44c2-94de-dfe787d55396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\08. Object">
+      <UniqueIdentifier>{25db6756-e0b6-4481-be7e-18db614e8797}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\09. Path">
+      <UniqueIdentifier>{4ec7b72a-99de-4389-b85e-9fee65d58ab5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\07. Scene\01. Layer">
+      <UniqueIdentifier>{e31de124-56f8-4c1f-8f53-0f7aede58996}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Simulator\03. Scene">
+      <UniqueIdentifier>{9eae3c54-1930-454c-8c18-02be94686520}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\10. Sound">
+      <UniqueIdentifier>{61718043-1bc0-4007-8851-598a6a2652a9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -141,23 +153,59 @@
     <ClInclude Include="Wave.h">
       <Filter>03. Simulator</Filter>
     </ClInclude>
-    <ClInclude Include="FroKEngine.h">
-      <Filter>02. Game</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\d3dx12.h">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\Camera.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\Texture\Texture.h">
       <Filter>01. Engine\04. Graphics\04. Resource\02. Texture</Filter>
     </ClInclude>
     <ClInclude Include="TreeSpriteVertex.h">
       <Filter>03. Simulator\02. Type</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\SceneManager.h">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Camera.h">
+      <Filter>01. Engine\04. Graphics\06. Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Scene.h">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\GameObject.h">
+      <Filter>01. Engine\08. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Ref.h">
+      <Filter>01. Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Object.h">
+      <Filter>01. Engine\08. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Path\PathManager.h">
+      <Filter>01. Engine\09. Path</Filter>
+    </ClInclude>
+    <ClInclude Include="Path\PathConst.h">
+      <Filter>01. Engine\09. Path</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\SceneConst.h">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Layer.h">
+      <Filter>01. Engine\07. Scene\01. Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\WaveSimulatorScene.h">
+      <Filter>03. Simulator\03. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\ResourceManager.h">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\LayerConst.h">
+      <Filter>01. Engine\07. Scene\01. Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\SoundManager.h">
+      <Filter>01. Engine\10. Sound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -197,8 +245,38 @@
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp">
       <Filter>01. Engine\04. Graphics\00. DirectX Util</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\SceneManager.cpp">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClCompile>
     <ClCompile Include="Graphics\Camera.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>01. Engine\04. Graphics\06. Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Scene.cpp">
+      <Filter>01. Engine\07. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\GameObject.cpp">
+      <Filter>01. Engine\08. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Ref.cpp">
+      <Filter>01. Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Object.cpp">
+      <Filter>01. Engine\08. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Path\PathManager.cpp">
+      <Filter>01. Engine\09. Path</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Layer.cpp">
+      <Filter>01. Engine\07. Scene\01. Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\WaveSimulatorScene.cpp">
+      <Filter>03. Simulator\03. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\ResourceManager.cpp">
+      <Filter>01. Engine\04. Graphics\04. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound\SoundManager.cpp">
+      <Filter>01. Engine\10. Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -233,5 +311,10 @@
     <FxCompile Include="Graphics\Shader\GeometryShader.hlsl">
       <Filter>03. Simulator\01. Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Object\Object.inl">
+      <Filter>01. Engine\08. Object</Filter>
+    </None>
   </ItemGroup>
 </Project>

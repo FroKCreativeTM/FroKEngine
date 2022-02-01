@@ -4,15 +4,6 @@
 
 using namespace DirectX;
 
-enum class RenderLayer : int
-{
-	Opaque = 0,		// 불투명체
-	Transparent,
-	AlphaTested,
-	AlphaTestedTreeSprites,
-	Count
-};
-
 // 하나의 물체를 그리는 데 필요한 매개변수들을 담는 클래스이다.
 // 이 클래스의 구체적인 구성은 응용 프로그램마다 달라질 것이다.
 class RenderItem
@@ -20,7 +11,7 @@ class RenderItem
 public : 
 	RenderItem() = default;
 
-	// 세계 공간을 기준으로 물체의 로컬 공간을 서술ㅇ하는 세계 행렬이다.
+	// 세계 공간을 기준으로 물체의 로컬 공간을 서술하는 세계 행렬이다.
 	// 이 행렬은 세계 공간 상에서의 물체의 위치, 방향, 크기를 결정한다.
 	XMFLOAT4X4 World = MathHelper::Identity4x4();
 

@@ -1,7 +1,8 @@
 #pragma once
 
-struct Material
+class Material
 {
+public : 
 	// 고유한 재질 이름
 	std::string Name;
 

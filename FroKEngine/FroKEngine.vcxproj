@@ -80,11 +80,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>../Bin/</OutDir>
     <TargetName>$(ProjectName)64_Debug</TargetName>
+    <LibraryPath>../lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../Bin/</OutDir>
     <TargetName>$(ProjectName)64_Release</TargetName>
+    <LibraryPath>../lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -146,7 +148,6 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="ErrorLogger.h" />
-    <ClInclude Include="FroKEngine.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\d3dx12.h" />
@@ -160,7 +161,20 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MathHelper.h" />
+    <ClInclude Include="Object\GameObject.h" />
+    <ClInclude Include="Object\Object.h" />
+    <ClInclude Include="Path\PathConst.h" />
+    <ClInclude Include="Path\PathManager.h" />
+    <ClInclude Include="Ref.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Resource\ResourceManager.h" />
+    <ClInclude Include="Scene\Layer.h" />
+    <ClInclude Include="Scene\LayerConst.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\SceneConst.h" />
+    <ClInclude Include="Scene\SceneManager.h" />
+    <ClInclude Include="Scene\WaveSimulatorScene.h" />
+    <ClInclude Include="Sound\SoundManager.h" />
     <ClInclude Include="StringConverter.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Timer.h" />
@@ -181,6 +195,16 @@
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MathHelper.cpp" />
+    <ClCompile Include="Object\GameObject.cpp" />
+    <ClCompile Include="Object\Object.cpp" />
+    <ClCompile Include="Path\PathManager.cpp" />
+    <ClCompile Include="Ref.cpp" />
+    <ClCompile Include="Resource\ResourceManager.cpp" />
+    <ClCompile Include="Scene\Layer.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\SceneManager.cpp" />
+    <ClCompile Include="Scene\WaveSimulatorScene.cpp" />
+    <ClCompile Include="Sound\SoundManager.cpp" />
     <ClCompile Include="StringConverter.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Wave.cpp" />
@@ -212,6 +236,9 @@
     <FxCompile Include="Graphics\Shader\TexDefault.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Object\Object.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

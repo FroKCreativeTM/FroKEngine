@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+DEFINITION_SINGLE(Camera)
+
 Camera::Camera()
 {
     SetLens(0.25f * MathHelper::Pi, 1.0f, 1.0f, 1000.0f);
@@ -263,4 +265,20 @@ void Camera::UpdateViewMatrix()
 
         m_ViewDirty = false;
     }
+}
+
+bool Camera::Init(float x, float y, float z)
+{
+    m_Position = XMFLOAT3(x, y, z);
+    m_ViewDirty = true;
+
+    return true;
+}
+
+bool Camera::Init(const DirectX::XMFLOAT3& tPos)
+{
+    m_Position = tPos;
+    m_ViewDirty = true;
+
+    return true;
 }
