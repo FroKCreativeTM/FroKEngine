@@ -91,6 +91,9 @@
     <Filter Include="01. Engine\10. Sound">
       <UniqueIdentifier>{61718043-1bc0-4007-8851-598a6a2652a9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\11. Collision">
+      <UniqueIdentifier>{e2aee5d0-8afb-4b02-85fa-5896418d1248}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">

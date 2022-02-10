@@ -17,6 +17,7 @@ public:
 		this->m_strTag = str;
 	}
 
+	// UI작업할 때 써먹ㅇㄹ 수 있을 거 같기도 하고
 	void SetZOrder(int nZOrder)
 	{
 		this->m_nZOrder = nZOrder;
