@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Scene/Layer.h"
-// #include "../Collider/CCollider.h"
 #include "Object.h"
 
 template <typename T>
@@ -28,21 +27,19 @@ static T* Object::CreateObj(const string& strTag,
 	return pObj;
 }
 
-//template<typename T>
-//inline void CObj::AddCollisionFunction(
-//	const string& strTag, COLLISION_STATE eState, T* pObj, void(T::* pFunc)(CCollider*, CCollider*, float))
-//{
-//	list<CCollider*>::iterator iter;
-//	list<CCollider*>::iterator iterEnd = m_ColliderList.end();
-//
-//	for (iter = m_ColliderList.begin(); iter != iterEnd; ++iter)
-//	{
-//		if ((*iter)->GetTag() == strTag)
-//		{
-//			(*iter)->AddCollisionFunction(eState, pObj, pFunc);
-//			break;
-//		}
-//
-//	}
-//}
-//
+template<typename T>
+inline void Object::AddCollisionFunction(const string& strTag,
+	COLLISION_STATE eState, T* pObj, void(T::* pFunc)(Collider*, Collider*, float))
+{
+	list<CCollider*>::iterator iter;
+	list<CCollider*>::iterator iterEnd = m_ColliderList.end();
+
+	for (iter = m_ColliderList.begin(); iter != iterEnd; ++iter)
+	{
+		if ((*iter)->GetTag() == strTag)
+		{
+			(*iter)->AddCollisionFunction(eState, pObj, pFunc);
+			break;
+		}
+	}
+}

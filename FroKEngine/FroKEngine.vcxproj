@@ -145,6 +145,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Collision\Collider.h" />
+    <ClInclude Include="Collision\CollisionFlag.h" />
+    <ClInclude Include="Collision\CollisionManager.h" />
+    <ClInclude Include="Collision\RectCollider.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="ErrorLogger.h" />
@@ -161,7 +165,6 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MathHelper.h" />
-    <ClInclude Include="Object\GameObject.h" />
     <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Path\PathConst.h" />
     <ClInclude Include="Path\PathManager.h" />
@@ -185,6 +188,9 @@
     <ClInclude Include="WaveSimulator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Collision\Collider.cpp" />
+    <ClCompile Include="Collision\CollisionManager.cpp" />
+    <ClCompile Include="Collision\RectCollider.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
@@ -195,7 +201,6 @@
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MathHelper.cpp" />
-    <ClCompile Include="Object\GameObject.cpp" />
     <ClCompile Include="Object\Object.cpp" />
     <ClCompile Include="Path\PathManager.cpp" />
     <ClCompile Include="Ref.cpp" />

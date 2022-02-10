@@ -733,8 +733,6 @@ void Core::CalculateFrameStats()
         wstring fpsStr = to_wstring(fps);
         wstring mspfStr = to_wstring(mspf);
 
-        std::wcout << L"fps: " + fpsStr + L"   mspf: " + mspfStr << std::endl;
-
         wstring windowText = m_MainWndCaption +
             L"    fps: " + fpsStr +
             L"   mspf: " + mspfStr;
@@ -857,6 +855,7 @@ Core::~Core()
     DESTROY_SINGLE(Timer);
     DESTROY_SINGLE(PathManager);
     DESTROY_SINGLE(ResourceManager);
+    DESTROY_SINGLE(CollisionManager);
 
     if (m_d3dDevice != nullptr)
     {
