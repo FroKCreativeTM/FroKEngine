@@ -733,8 +733,6 @@ void Core::CalculateFrameStats()
         wstring fpsStr = to_wstring(fps);
         wstring mspfStr = to_wstring(mspf);
 
-        std::wcout << L"fps: " + fpsStr + L"   mspf: " + mspfStr << std::endl;
-
         wstring windowText = m_MainWndCaption +
             L"    fps: " + fpsStr +
             L"   mspf: " + mspfStr;

@@ -47,12 +47,6 @@ public :
 	virtual Object* Clone() = 0;
 
 public : 
-	XMVECTOR GetPos() const
-	{
-		return m_
-	}
-
-public : 
 	/* Getter */
 	Collider* GetCollider(const string& strTag);
 

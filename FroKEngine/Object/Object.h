@@ -77,6 +77,12 @@ public:
 	static void EraseObj(Object* pObj);
 	static void EraseObj(const string& strTag);
 
+public : 
+	XMFLOAT3 GetPos() const
+	{
+		return m_tPos;
+	}
+
 protected:
 	// 자기가 속한 장면과 레이어를 알게 한다.
 	class Scene* m_pScene;
@@ -86,6 +92,8 @@ protected:
 	// 세계 공간을 기준으로 물체의 로컬 공간을 서술하는 세계 행렬이다.
 	// 이 행렬은 세계 공간 상에서의 물체의 위치, 방향, 크기를 결정한다.
 	XMFLOAT4X4 World = MathHelper::Identity4x4();
+
+	XMFLOAT3 m_tPos;
 
 	// 텍스처의 위치
 	XMFLOAT4X4 TexTransform = MathHelper::Identity4x4();

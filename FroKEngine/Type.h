@@ -14,3 +14,9 @@ typedef struct _tagResolution
 	_tagResolution(int x, int y) :
 		nWidth(x), nHeight(y) {}
 }RESOLUTION, * PRESOLUTION;
+
+typedef struct _tagAABB
+{
+	XMFLOAT3 m_vecMax;
+	XMFLOAT3 m_vecMin;
+}AABB, * PAABB;

@@ -211,6 +211,9 @@
     <ClInclude Include="Collision\CollisionFlag.h">
       <Filter>01. Engine\11. Collsion</Filter>
     </ClInclude>
+    <ClInclude Include="Collision\RectCollider.h">
+      <Filter>01. Engine\11. Collsion</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp">
@@ -286,6 +289,9 @@
       <Filter>01. Engine\11. Collsion</Filter>
     </ClCompile>
     <ClCompile Include="Collision\Collider.cpp">
+      <Filter>01. Engine\11. Collsion</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\RectCollider.cpp">
       <Filter>01. Engine\11. Collsion</Filter>
     </ClCompile>
   </ItemGroup>

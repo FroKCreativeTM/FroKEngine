@@ -148,6 +148,7 @@
     <ClInclude Include="Collision\Collider.h" />
     <ClInclude Include="Collision\CollisionFlag.h" />
     <ClInclude Include="Collision\CollisionManager.h" />
+    <ClInclude Include="Collision\RectCollider.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="ErrorLogger.h" />
@@ -190,6 +191,7 @@
   <ItemGroup>
     <ClCompile Include="Collision\Collider.cpp" />
     <ClCompile Include="Collision\CollisionManager.cpp" />
+    <ClCompile Include="Collision\RectCollider.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />

@@ -53,11 +53,6 @@ void CollisionManager::Collision(float fDeltaTime)
 	m_CollisionList.clear();
 }
 
-bool CollisionManager::Collision(GameObject* pSrc, GameObject* pDst, float fDeltaTime)
-{
-	return false;
-}
-
 // 두개의 오브젝트를 넘겨줘서 충돌처리를 한다.
 bool CollisionManager::Collision(GameObject* pSrc, GameObject* pDst, float fDeltaTime)
 {

@@ -18,6 +18,6 @@ public:
 
 private:
 	// 충돌체가 있는 오브젝트들로 리스트를 채우는 방식
-	list<class GameObject*> m_CollisionList;
+	std::list<class GameObject*> m_CollisionList;
 };
 

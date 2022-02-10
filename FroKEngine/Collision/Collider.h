@@ -18,7 +18,7 @@ public:
 	virtual void Load(FILE* pFile);
 
 protected:
-	bool CollisionPointInRect();
+	bool CollisionRectToRect(const AABB& tBox1, const AABB& tBox2);
 
 protected:
 	Collider();
