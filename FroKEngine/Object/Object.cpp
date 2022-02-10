@@ -39,9 +39,21 @@ void Object::Render(float fDeltaTime)
 {
 }
 
-Object* Object::Clone()
+Collider* Object::GetCollider(const string& strTag)
 {
-    return nullptr;
+	list<Collider*>::iterator iter;
+	list<Collider*>::iterator iterEnd = m_ColliderList.end();
+
+	for (iter = m_ColliderList.begin(); iter != iterEnd; ++iter)
+	{
+		if ((*iter)->GetTag() == strTag)
+		{
+			(*iter)->AddRef();
+			return *iter;
+		}
+	}
+
+	return nullptr;
 }
 
 void Object::Save(FILE* pFile)

@@ -165,7 +165,6 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MathHelper.h" />
-    <ClInclude Include="Object\GameObject.h" />
     <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Path\PathConst.h" />
     <ClInclude Include="Path\PathManager.h" />
@@ -202,7 +201,6 @@
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MathHelper.cpp" />
-    <ClCompile Include="Object\GameObject.cpp" />
     <ClCompile Include="Object\Object.cpp" />
     <ClCompile Include="Path\PathManager.cpp" />
     <ClCompile Include="Ref.cpp" />
@@ -245,7 +243,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Object\GameObject.inl" />
     <None Include="Object\Object.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

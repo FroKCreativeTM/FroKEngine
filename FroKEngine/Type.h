@@ -17,6 +17,6 @@ typedef struct _tagResolution
 
 typedef struct _tagAABB
 {
-	XMFLOAT3 m_vecMax;
-	XMFLOAT3 m_vecMin;
+	DirectX::XMFLOAT3 m_vecMax;
+	DirectX::XMFLOAT3 m_vecMin;
 }AABB, * PAABB;

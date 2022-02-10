@@ -27,7 +27,7 @@ protected:
 
 public:
 	/* Setter */
-	void SetObj(class GameObject* obj)
+	void SetObj(class Object* obj)
 	{
 		m_pObj = obj;
 	}
@@ -43,7 +43,7 @@ public:
 		return m_eColType;
 	}
 
-	class GameObject* GetObj() const
+	class Object* GetObj() const
 	{
 		return m_pObj;
 	}
@@ -126,7 +126,7 @@ public:
 
 protected:
 	COLLIDER_TYPE	m_eColType;
-	class GameObject* m_pObj;
+	class Object* m_pObj;
 	list<Collider*>		m_CollisionList;
 	// C++11
 	// 다양한 충돌체에 관련된 함수 저장소(callback)

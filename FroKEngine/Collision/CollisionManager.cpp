@@ -1,5 +1,5 @@
 #include "CollisionManager.h"
-#include "../Object/GameObject.h"
+#include "../Object/Object.h"
 #include "Collider.h"
 
 DEFINITION_SINGLE(CollisionManager);
@@ -14,7 +14,7 @@ CollisionManager::~CollisionManager()
 
 }
 
-void CollisionManager::AddObject(GameObject* pObj)
+void CollisionManager::AddObject(Object* pObj)
 {
 	if (pObj->CheckCollider())
 	{
@@ -33,15 +33,15 @@ void CollisionManager::Collision(float fDeltaTime)
 	}
 
 	/* 이중 루프를 돌면서 모든 충돌체간 처리를 담당할 것이다. */
-	list<GameObject*>::iterator iter;
-	list<GameObject*>::iterator iterEnd = m_CollisionList.end();
+	list<Object*>::iterator iter;
+	list<Object*>::iterator iterEnd = m_CollisionList.end();
 	--iterEnd;
 
 	for (iter = m_CollisionList.begin(); iter != iterEnd; ++iter)
 	{
-		list<GameObject*>::iterator innerIter = iter;
+		list<Object*>::iterator innerIter = iter;
 		++innerIter;
-		list<GameObject*>::iterator innerIterEnd = m_CollisionList.end();
+		list<Object*>::iterator innerIterEnd = m_CollisionList.end();
 
 		for (; innerIter != innerIterEnd; ++innerIter)
 		{
@@ -54,7 +54,7 @@ void CollisionManager::Collision(float fDeltaTime)
 }
 
 // 두개의 오브젝트를 넘겨줘서 충돌처리를 한다.
-bool CollisionManager::Collision(GameObject* pSrc, GameObject* pDst, float fDeltaTime)
+bool CollisionManager::Collision(Object* pSrc, Object* pDst, float fDeltaTime)
 {
 	const list<Collider*>* pSrcList = pSrc->GetColliderList();
 	const list<Collider*>* pDstcList = pDst->GetColliderList();

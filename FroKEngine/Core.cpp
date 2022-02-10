@@ -855,6 +855,7 @@ Core::~Core()
     DESTROY_SINGLE(Timer);
     DESTROY_SINGLE(PathManager);
     DESTROY_SINGLE(ResourceManager);
+    DESTROY_SINGLE(CollisionManager);
 
     if (m_d3dDevice != nullptr)
     {

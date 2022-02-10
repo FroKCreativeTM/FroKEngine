@@ -1,5 +1,5 @@
 #include "Collider.h"
-#include "../Object/GameObject.h"
+#include "../Object/Object.h"
 
 Collider::Collider()
 {

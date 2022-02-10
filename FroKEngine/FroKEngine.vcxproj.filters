@@ -86,6 +86,12 @@
     <Filter Include="01. Engine\11. Collsion">
       <UniqueIdentifier>{677ce284-28fc-4b45-85a7-1ae33b8047dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\08. Object\01. MoveObj">
+      <UniqueIdentifier>{b6cc2a77-9f9d-4dda-bf06-7b55a8a6bc47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\08. Object\02. StaticObj">
+      <UniqueIdentifier>{fdeccd1b-6f36-4ec1-9fc9-96505b8c9261}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -168,9 +174,6 @@
     </ClInclude>
     <ClInclude Include="Scene\Scene.h">
       <Filter>01. Engine\07. Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\GameObject.h">
-      <Filter>01. Engine\08. Object</Filter>
     </ClInclude>
     <ClInclude Include="Ref.h">
       <Filter>01. Engine</Filter>
@@ -258,9 +261,6 @@
     <ClCompile Include="Scene\Scene.cpp">
       <Filter>01. Engine\07. Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Object\GameObject.cpp">
-      <Filter>01. Engine\08. Object</Filter>
-    </ClCompile>
     <ClCompile Include="Ref.cpp">
       <Filter>01. Engine</Filter>
     </ClCompile>
@@ -330,9 +330,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Object\Object.inl">
-      <Filter>01. Engine\08. Object</Filter>
-    </None>
-    <None Include="Object\GameObject.inl">
       <Filter>01. Engine\08. Object</Filter>
     </None>
   </ItemGroup>

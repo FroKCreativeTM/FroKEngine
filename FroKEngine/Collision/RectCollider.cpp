@@ -57,7 +57,7 @@ bool RectCollider::Collision(Collider* pDst)
 {
 	switch (pDst->GetColliderType())
 	{
-	case CT_RECT:
+	case CT_RECT : 
 		return CollisionRectToRect(m_tInfo, ((RectCollider*)pDst)->GetInfo());
 	}
 	return false;

@@ -19,6 +19,10 @@ public:
 
 	ComPtr<ID3DBlob> FindShader(const string& strKey);
 
+	std::unique_ptr<class Material> BuildMaterial(string key, int nMatCBIdx,
+		int nDiffuseSrvHeapIdx, XMFLOAT4 diffuseAlbedo, XMFLOAT3 fresnelR0,
+		float fRoughness);
+
 private : 
 	Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(const std::wstring& filename,
 		const D3D_SHADER_MACRO* defines,

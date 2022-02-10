@@ -5,6 +5,7 @@
 #include "Graphics/UploadBuffer.h"
 #include "Graphics/FrameResource.h"
 #include "Graphics/RenderItem.h"
+#include "Object/Object.h"
 #include "Graphics/GeometryGenerator.h"
 #include "Graphics/Material.h"
 #include "Graphics/Camera.h"
@@ -223,7 +224,8 @@ inline void WaveSimulator::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResource; ++i)
 	{
 		m_frameResources.push_back(std::make_unique<FrameResource>(
-			m_d3dDevice.Get(), 1, (UINT)m_allRenderItems.size(), (UINT)m_Materials.size(), m_Waves->VertexCount()));
+			m_d3dDevice.Get(), 1, (UINT)m_allRenderItems.size(), 
+			(UINT)m_Materials.size(), m_Waves->VertexCount()));
 	}
 }
 
@@ -442,39 +444,14 @@ inline void WaveSimulator::BuildWavesGeometryBuffers()
 
 inline void WaveSimulator::BuildMaterials()
 {
-	auto grass = std::make_unique<Material>();
-	grass->Name = "grass";
-	grass->nMatCBIdx = 0;
-	grass->nDiffuseSrvHeapIdx = 0;
-	grass->DiffuseAlbedo = XMFLOAT4(0.2f, 0.6f, 0.2f, 1.0f);
-	grass->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
-	grass->fRoughness = 0.125f;
-
-	// This is not a good water material definition, but we do not have all the rendering
-	// tools we need (transparency, environment reflection), so we fake it for now.
-	auto water = std::make_unique<Material>();
-	water->Name = "water";
-	water->nMatCBIdx = 1;
-	water->nDiffuseSrvHeapIdx = 1;
-	water->DiffuseAlbedo = XMFLOAT4(0.0f, 0.2f, 0.6f, 0.5f);
-	water->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
-	water->fRoughness = 0.0f;
-
-	auto wirefence = std::make_unique<Material>();
-	wirefence->Name = "wirefence";
-	wirefence->nMatCBIdx = 2;
-	wirefence->nDiffuseSrvHeapIdx = 2;
-	wirefence->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	wirefence->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
-	wirefence->fRoughness = 0.25f;
-
-	auto treeSprites = std::make_unique<Material>();
-	treeSprites->Name = "treeSprites";
-	treeSprites->nMatCBIdx = 3;
-	treeSprites->nDiffuseSrvHeapIdx = 3;
-	treeSprites->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	treeSprites->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
-	treeSprites->fRoughness = 0.125f;
+	auto grass = GET_SINGLE(ResourceManager)->BuildMaterial("grass", 0, 0,
+		XMFLOAT4(0.2f, 0.6f, 0.2f, 1.0f), XMFLOAT3(0.01f, 0.01f, 0.01f), 0.125f);
+	auto water = GET_SINGLE(ResourceManager)->BuildMaterial("water", 1, 1,
+		XMFLOAT4(0.0f, 0.2f, 0.6f, 0.5f), XMFLOAT3(0.1f, 0.1f, 0.1f), 0.0);
+	auto wirefence = GET_SINGLE(ResourceManager)->BuildMaterial("wirefence", 2, 2,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(0.1f, 0.1f, 0.1f), 0.25f);
+	auto treeSprites = GET_SINGLE(ResourceManager)->BuildMaterial("treeSprites", 3, 3,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(0.01f, 0.01f, 0.01f), 0.125f);
 
 	m_Materials["grass"] = std::move(grass);
 	m_Materials["water"] = std::move(water);
@@ -1195,6 +1172,7 @@ int WaveSimulator::LateUpdate(float fDeltaTime)
 
 void WaveSimulator::Collision(float fDeltaTime)
 {
+	GET_SINGLE(CollisionManager)->Collision(fDeltaTime);
 }
 
 void WaveSimulator::Render(float fDeltaTime)

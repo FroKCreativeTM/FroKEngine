@@ -7,6 +7,7 @@
 #include "Path/PathManager.h"
 #include "Resource/ResourceManager.h"
 #include "Sound/SoundManager.h"
+#include "Collision/CollisionManager.h"
 
 class Core
 {
