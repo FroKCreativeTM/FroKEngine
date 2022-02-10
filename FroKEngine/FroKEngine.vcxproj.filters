@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="헤더 파일">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="리소스 파일">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -23,10 +19,6 @@
     </Filter>
     <Filter Include="01. Engine\03. Input">
       <UniqueIdentifier>{8a12cbf6-9651-4f12-b137-73625c97d949}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="01. Engine\04. Graphics">
       <UniqueIdentifier>{b95fcd69-9b26-48b4-8eff-3390d2ef67e1}</UniqueIdentifier>
@@ -90,6 +82,9 @@
     </Filter>
     <Filter Include="01. Engine\10. Sound">
       <UniqueIdentifier>{61718043-1bc0-4007-8851-598a6a2652a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\11. Collsion">
+      <UniqueIdentifier>{677ce284-28fc-4b45-85a7-1ae33b8047dc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -207,11 +202,17 @@
     <ClInclude Include="Sound\SoundManager.h">
       <Filter>01. Engine\10. Sound</Filter>
     </ClInclude>
+    <ClInclude Include="Collision\CollisionManager.h">
+      <Filter>01. Engine\11. Collsion</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\Collider.h">
+      <Filter>01. Engine\11. Collsion</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\CollisionFlag.h">
+      <Filter>01. Engine\11. Collsion</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FroKEngine.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Core.cpp">
       <Filter>01. Engine</Filter>
     </ClCompile>
@@ -278,6 +279,15 @@
     <ClCompile Include="Sound\SoundManager.cpp">
       <Filter>01. Engine\10. Sound</Filter>
     </ClCompile>
+    <ClCompile Include="FroKEngine.cpp">
+      <Filter>03. Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\CollisionManager.cpp">
+      <Filter>01. Engine\11. Collsion</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\Collider.cpp">
+      <Filter>01. Engine\11. Collsion</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FroKEngine.rc">
@@ -314,6 +324,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Object\Object.inl">
+      <Filter>01. Engine\08. Object</Filter>
+    </None>
+    <None Include="Object\GameObject.inl">
       <Filter>01. Engine\08. Object</Filter>
     </None>
   </ItemGroup>

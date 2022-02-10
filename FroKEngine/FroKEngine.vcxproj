@@ -145,6 +145,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Collision\Collider.h" />
+    <ClInclude Include="Collision\CollisionFlag.h" />
+    <ClInclude Include="Collision\CollisionManager.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="ErrorLogger.h" />
@@ -185,6 +188,8 @@
     <ClInclude Include="WaveSimulator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Collision\Collider.cpp" />
+    <ClCompile Include="Collision\CollisionManager.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
@@ -238,6 +243,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Object\GameObject.inl" />
     <None Include="Object\Object.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

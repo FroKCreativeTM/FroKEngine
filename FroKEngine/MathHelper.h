@@ -90,6 +90,8 @@ public:
 		return I;
 	}
 
+
+
 	static DirectX::XMVECTOR RandUnitVec3();
 	static DirectX::XMVECTOR RandHemisphereUnitVec3(DirectX::XMVECTOR n);
 

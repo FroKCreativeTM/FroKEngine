@@ -68,10 +68,6 @@ public:
 		const string& strTag,
 		SCENE_CREATE sc,
 		class Layer* pLayer = nullptr);
-	//template <typename T>
-	//void AddCollisionFunction(const string& strTag,
-	//	COLLISION_STATE eState, T* pObj,
-	//	void(T::* pFunc)(CCollider*, CCollider*, float));
 
 // 오브젝트 자료 다루기 
 public:
