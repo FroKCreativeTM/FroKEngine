@@ -1,6 +1,7 @@
 #include "Object.h"
 #include "../Scene/Scene.h"
 #include "../Scene/Layer.h"
+#include "../Graphics/FrameResource.h"
 
 // static
 list<Object*> Object::m_ObjList;

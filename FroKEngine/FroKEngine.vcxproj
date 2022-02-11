@@ -166,6 +166,9 @@
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Object\Object.h" />
+    <ClInclude Include="Object\StaticObj\MeshGeometry.h" />
+    <ClInclude Include="Object\StaticObj\MeshObject.h" />
+    <ClInclude Include="Object\StaticObj\StaticObj.h" />
     <ClInclude Include="Path\PathConst.h" />
     <ClInclude Include="Path\PathManager.h" />
     <ClInclude Include="Ref.h" />
@@ -202,6 +205,8 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="Object\Object.cpp" />
+    <ClCompile Include="Object\StaticObj\MeshObject.cpp" />
+    <ClCompile Include="Object\StaticObj\StaticObj.cpp" />
     <ClCompile Include="Path\PathManager.cpp" />
     <ClCompile Include="Ref.cpp" />
     <ClCompile Include="Resource\ResourceManager.cpp" />

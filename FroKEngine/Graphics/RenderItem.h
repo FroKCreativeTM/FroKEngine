@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Game.h"
+#include "../Object/StaticObj/MeshGeometry.h"
 
 using namespace DirectX;
 

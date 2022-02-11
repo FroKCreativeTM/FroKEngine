@@ -9,35 +9,6 @@ using namespace DirectX;
 
 const int MAX_LIGHTS = 16;
 
-// Vertex 설명
-/*// 법선과 색상의 위치를 가진 구조체
-struct Vertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
-	// XMFLOAT2 tex0;
-	// XMFLOAT2 tex1;
-};
-
-// 위의 데이터는 D3D12_INPUT_ELEMENT_DESC 배열을 이용해서 입력 배치를 서술한다
-// 예로 들어 위의 경우는(주석까지 포함해서) 다음과 같이 표현한다.
-// D3D12_INPUT_ELEMENT_DESC vertexDesc[] = 
-// {
-//		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-//		{"COLOR", 0, DXGI_FORMAT_A32R32G32B32_FLOAT, 0, 12, // 12는 offset
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-//		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28,	// 12 + 16
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-//		{"TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 36,	// 12 + 16 + 8
-//			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
-// };
-// 그리고 위 코드는 Vertex Shader 코드에서 다음과 같이 입력을 받는다.
-// VertexOut VS(float3 iPos : POSITION,
-//	float3 iNormal : NORMAL,
-//	float3 iTex0 : TEXCOORD0,
-//	float3 iTex1 : TEXCOORD1)*/
-
 struct Vertex
 {
 	XMFLOAT3 Pos;

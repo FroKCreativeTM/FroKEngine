@@ -35,9 +35,6 @@
     <Filter Include="01. Engine\04. Graphics\04. Resource">
       <UniqueIdentifier>{d328d9ce-2be8-4355-8e10-6d94e69eb2b3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Engine\04. Graphics\04. Resource\01. Geometry">
-      <UniqueIdentifier>{493e98dd-a9b6-443f-b408-076077785fb7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01. Engine\04. Graphics\05. Light">
       <UniqueIdentifier>{0edc8043-6573-44ed-87e4-eb2cb13aa936}</UniqueIdentifier>
     </Filter>
@@ -92,6 +89,9 @@
     <Filter Include="01. Engine\08. Object\02. StaticObj">
       <UniqueIdentifier>{fdeccd1b-6f36-4ec1-9fc9-96505b8c9261}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Engine\08. Object\02. StaticObj\01. Geometry">
+      <UniqueIdentifier>{493e98dd-a9b6-443f-b408-076077785fb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -143,7 +143,7 @@
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\GeometryGenerator.h">
-      <Filter>01. Engine\04. Graphics\04. Resource\01. Geometry</Filter>
+      <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Material.h">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
@@ -217,6 +217,13 @@
     <ClInclude Include="Collision\RectCollider.h">
       <Filter>01. Engine\11. Collsion</Filter>
     </ClInclude>
+    <ClInclude Include="Object\StaticObj\StaticObj.h">
+      <Filter>01. Engine\08. Object\02. StaticObj</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\StaticObj\MeshGeometry.h">
+      <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\StaticObj\MeshObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp">
@@ -244,7 +251,7 @@
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\GeometryGenerator.cpp">
-      <Filter>01. Engine\04. Graphics\04. Resource\01. Geometry</Filter>
+      <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
     </ClCompile>
     <ClCompile Include="Wave.cpp">
       <Filter>03. Simulator</Filter>
@@ -294,6 +301,10 @@
     <ClCompile Include="Collision\RectCollider.cpp">
       <Filter>01. Engine\11. Collsion</Filter>
     </ClCompile>
+    <ClCompile Include="Object\StaticObj\StaticObj.cpp">
+      <Filter>01. Engine\08. Object\02. StaticObj</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\StaticObj\MeshObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FroKEngine.rc">

@@ -5,7 +5,7 @@
 #include "Graphics/UploadBuffer.h"
 #include "Graphics/FrameResource.h"
 #include "Graphics/RenderItem.h"
-#include "Object/Object.h"
+#include "Object/StaticObj/MeshObject.h"
 #include "Graphics/GeometryGenerator.h"
 #include "Graphics/Material.h"
 #include "Graphics/Camera.h"
@@ -51,7 +51,7 @@ private:
 	void BuildTreeSpritesGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems);
 
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
 
@@ -109,18 +109,18 @@ private:
 	UINT m_CbvSrvDescriptorSize = 0;
 
 	// 모든 렌더 아이템의 리스트.
-	std::vector<std::unique_ptr<RenderItem>> m_allRenderItems;
+	std::vector<std::unique_ptr<MeshObject>> m_allRenderItems;
 	std::vector<RenderItem*> m_OpaqueRenderItems;
 
 	// 파도에 대한 포인터
 	std::unique_ptr<Waves> m_Waves;
-	RenderItem* m_WaveRenderItem;
+	MeshObject* m_WaveRenderItem;
 
 	// 마테리얼을 저장하기 위한 맵
 	std::unordered_map<std::string, std::unique_ptr<Material>> m_Materials;
 
 	// PSO 상태에 따라 달라지는 렌더링 아이템들이다.
-	std::vector<RenderItem*> m_RenderitemLayer[(int)RenderLayer::Count];
+	std::vector<MeshObject*> m_RenderitemLayer[(int)RenderLayer::Count];
 
 	bool m_IsWireframe = false;
 
@@ -128,7 +128,7 @@ private:
 	PassConstants m_tMainPassCB;
 
 	// 지오메트리 정보를 저장하기 위한 map
-	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_Geometries;
+	std::unordered_map<std::string, unique_ptr<MeshGeometry>> m_Geometries;
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
 
 	// 텍스처를 저장하기 위한 맵
@@ -622,54 +622,55 @@ inline void WaveSimulator::BuildTreeSpritesGeometry()
 
 inline void WaveSimulator::BuildRenderItems()
 {
-	auto wavesRitem = std::make_unique<RenderItem>();
-	wavesRitem->World = MathHelper::Identity4x4();
-	XMStoreFloat4x4(&wavesRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
-	wavesRitem->objCBIdx = 0;
-	wavesRitem->Mat = m_Materials["water"].get();
-	wavesRitem->pGeometry = m_Geometries["waterGeo"].get();
-	wavesRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	wavesRitem->nIdxCnt = wavesRitem->pGeometry->DrawArgs["grid"].IndexCount;
-	wavesRitem->nStartIdxLocation = wavesRitem->pGeometry->DrawArgs["grid"].StartIndexLocation;
-	wavesRitem->nBaseVertexLocation = wavesRitem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
+	auto wavesRitem = std::make_unique<MeshObject>();
+	wavesRitem->SetWorldMatrix(MathHelper::Identity4x4());
+	wavesRitem->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
+	wavesRitem->SetObjCBIdx(0);
+	wavesRitem->SetMaterial(m_Materials["water"].get());
+	wavesRitem->SetGeometry(m_Geometries["waterGeo"].get());
+	wavesRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	wavesRitem->SetIdxCnt(wavesRitem->GetGeometry()->DrawArgs["grid"].IndexCount);
+	wavesRitem->SetStartIdxLocation(wavesRitem->GetGeometry()->DrawArgs["grid"].StartIndexLocation);
+	wavesRitem->SetBaseVertexLocation(wavesRitem->GetGeometry()->DrawArgs["grid"].BaseVertexLocation);
 
 	m_WaveRenderItem = wavesRitem.get();
 	m_RenderitemLayer[(int)RenderLayer::Transparent].push_back(wavesRitem.get());
 
-	auto gridRitem = std::make_unique<RenderItem>();
-	gridRitem->World = MathHelper::Identity4x4();
-	XMStoreFloat4x4(&gridRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
-	gridRitem->objCBIdx = 1;
-	gridRitem->Mat = m_Materials["grass"].get();
-	gridRitem->pGeometry = m_Geometries["landGeo"].get();
-	gridRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	gridRitem->nIdxCnt = gridRitem->pGeometry->DrawArgs["grid"].IndexCount;
-	gridRitem->nStartIdxLocation = gridRitem->pGeometry->DrawArgs["grid"].StartIndexLocation;
-	gridRitem->nBaseVertexLocation = gridRitem->pGeometry->DrawArgs["grid"].BaseVertexLocation;
+	auto gridRitem = std::make_unique<MeshObject>();
+	gridRitem->SetWorldMatrix(MathHelper::Identity4x4());
+	gridRitem->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
+	gridRitem->SetObjCBIdx(1);
+	gridRitem->SetMaterial(m_Materials["grass"].get());
+	gridRitem->SetGeometry(m_Geometries["landGeo"].get());
+	gridRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	gridRitem->SetIdxCnt(gridRitem->GetGeometry()->DrawArgs["grid"].IndexCount);
+	gridRitem->SetStartIdxLocation(gridRitem->GetGeometry()->DrawArgs["grid"].StartIndexLocation);
+	gridRitem->SetBaseVertexLocation(gridRitem->GetGeometry()->DrawArgs["grid"].BaseVertexLocation);
 
 	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(gridRitem.get());
 
-	auto boxRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&boxRitem->World, XMMatrixTranslation(3.0f, 2.0f, -9.0f));
-	boxRitem->objCBIdx = 2;
-	boxRitem->Mat = m_Materials["wirefence"].get();
-	boxRitem->pGeometry = m_Geometries["boxGeo"].get();
-	boxRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	boxRitem->nIdxCnt = boxRitem->pGeometry->DrawArgs["box"].IndexCount;
-	boxRitem->nStartIdxLocation = boxRitem->pGeometry->DrawArgs["box"].StartIndexLocation;
-	boxRitem->nBaseVertexLocation = boxRitem->pGeometry->DrawArgs["box"].BaseVertexLocation;
+	auto boxRitem = std::make_unique<MeshObject>();
+	boxRitem->SetWorldMatrix(MathHelper::Identity4x4());
+	boxRitem->SetTexTransform(XMMatrixScaling(3.0f, 2.0f, -9.0f));
+	boxRitem->SetObjCBIdx(2);
+	boxRitem->SetMaterial(m_Materials["wirefence"].get());
+	boxRitem->SetGeometry(m_Geometries["boxGeo"].get());
+	boxRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	boxRitem->SetIdxCnt(boxRitem->GetGeometry()->DrawArgs["box"].IndexCount);
+	boxRitem->SetStartIdxLocation(boxRitem->GetGeometry()->DrawArgs["box"].StartIndexLocation);
+	boxRitem->SetBaseVertexLocation(boxRitem->GetGeometry()->DrawArgs["box"].BaseVertexLocation);
 
 	m_RenderitemLayer[(int)RenderLayer::AlphaTested].push_back(boxRitem.get());
 
-	auto treeSpritesRitem = std::make_unique<RenderItem>();
-	treeSpritesRitem->World = MathHelper::Identity4x4();
-	treeSpritesRitem->objCBIdx = 3;
-	treeSpritesRitem->Mat = m_Materials["treeSprites"].get();
-	treeSpritesRitem->pGeometry = m_Geometries["treeSpritesGeo"].get();
-	treeSpritesRitem->primitiveType = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
-	treeSpritesRitem->nIdxCnt = treeSpritesRitem->pGeometry->DrawArgs["points"].IndexCount;
-	treeSpritesRitem->nStartIdxLocation = treeSpritesRitem->pGeometry->DrawArgs["points"].StartIndexLocation;
-	treeSpritesRitem->nBaseVertexLocation = treeSpritesRitem->pGeometry->DrawArgs["points"].BaseVertexLocation;
+	auto treeSpritesRitem = std::make_unique<MeshObject>();
+	treeSpritesRitem->SetWorldMatrix(MathHelper::Identity4x4());
+	treeSpritesRitem->SetObjCBIdx(3);
+	treeSpritesRitem->SetMaterial(m_Materials["treeSprites"].get());
+	treeSpritesRitem->SetGeometry(m_Geometries["treeSpritesGeo"].get());
+	treeSpritesRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	treeSpritesRitem->SetIdxCnt(treeSpritesRitem->GetGeometry()->DrawArgs["points"].IndexCount);
+	treeSpritesRitem->SetStartIdxLocation(treeSpritesRitem->GetGeometry()->DrawArgs["points"].StartIndexLocation);
+	treeSpritesRitem->SetBaseVertexLocation(treeSpritesRitem->GetGeometry()->DrawArgs["points"].BaseVertexLocation);
 
 	m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites].push_back(treeSpritesRitem.get());
 
@@ -794,7 +795,7 @@ inline void WaveSimulator::BuildPSO()
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&treeSpriteWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["treeSprite_wireframe"])));
 }
 
-inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
+inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems)
 {
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	UINT matCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
@@ -806,23 +807,23 @@ inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, c
 	{
 		auto ri = ritems[i];
 
-		cmdList->IASetVertexBuffers(0, 1, &ri->pGeometry->VertexBufferView());
-		cmdList->IASetIndexBuffer(&ri->pGeometry->IndexBufferView());
-		cmdList->IASetPrimitiveTopology(ri->primitiveType);
+		cmdList->IASetVertexBuffers(0, 1, &ri->GetGeometry()->VertexBufferView());
+		cmdList->IASetIndexBuffer(&ri->GetGeometry()->IndexBufferView());
+		cmdList->IASetPrimitiveTopology(ri->GetPrimitiveType());
 
 		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(m_SrvHeap->GetGPUDescriptorHandleForHeapStart());
-		tex.Offset(ri->Mat->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);
+		tex.Offset(ri->GetMaterial()->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);
 
 		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() +
-			ri->objCBIdx * objCBByteSize;
+			ri->GetObjCBIdx() * objCBByteSize;
 		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + 
-			ri->Mat->nMatCBIdx * matCBByteSize;
+			ri->GetMaterial()->nMatCBIdx * matCBByteSize;
 
 		cmdList->SetGraphicsRootDescriptorTable(0, tex);
 		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
 		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
 
-		cmdList->DrawIndexedInstanced(ri->nIdxCnt, 1, ri->nStartIdxLocation, ri->nBaseVertexLocation, 0);
+		cmdList->DrawIndexedInstanced(ri->GetIdxCnt(), 1, ri->GetStartIdxLocation(), ri->GetBaseVertexLocation(), 0);
 	}
 }
 
@@ -1010,19 +1011,20 @@ inline void WaveSimulator::UpdateObjectCBs(float fDeltaTime)
 	// 이러한 갱신을 프레임 자원마다 수행해야 한다.
 	for (auto& e : m_allRenderItems)
 	{
-		if (e->nFramesDirty > 0)
+		int dirty = e->GetFrameDirty();
+		if (dirty > 0)
 		{
-			XMMATRIX world = XMLoadFloat4x4(&e->World);
-			XMMATRIX texTransform = XMLoadFloat4x4(&e->TexTransform);
+			XMMATRIX world = XMLoadFloat4x4(&e->GetWorldMatrix());
+			XMMATRIX texTransform = XMLoadFloat4x4(&e->GetTexTransform());
 
 			ObjectConstants objConstants;
 			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
 			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(texTransform));
 
-			curObjectCB->CopyData(e->objCBIdx, objConstants);
+			curObjectCB->CopyData(e->GetObjCBIdx(), objConstants);
 
 			// 다음 프레임 자원으로 넘어간다.
-			e->nFramesDirty--;
+			e->SetFrameDirty(dirty--);
 		}
 	}
 }
@@ -1133,7 +1135,7 @@ inline void WaveSimulator::UpdateWaves(float fDeltaTime)
 	}
 
 	// 파도 렌더 아이템의 동적 VB를 현재 프레임 VB로 설정합니다.
-	m_WaveRenderItem->pGeometry->VertexBufferGPU = currWavesVB->Resource();
+	m_WaveRenderItem->GetGeometry()->VertexBufferGPU = currWavesVB->Resource();
 }
 
 int WaveSimulator::Update(float fDeltaTime)
