@@ -19,7 +19,7 @@ private:
 	void OnMouseMove(int x, int y);
 	void OnMouseUp(int x, int y);
 
-private:
+private :
 	WaveSimulatorScene();
 	~WaveSimulatorScene();
 

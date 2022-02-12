@@ -26,6 +26,11 @@ bool Core::m_bLoop = true;
 Core* Core::m_pInst = nullptr;
 Core* Core::GetInst()
 {
+    if (!m_pInst)
+    {
+        m_pInst = new Core;
+    }
+
 	return m_pInst;
 }
 

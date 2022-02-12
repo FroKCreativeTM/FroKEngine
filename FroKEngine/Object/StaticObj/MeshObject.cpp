@@ -59,6 +59,14 @@ void MeshObject::Load(FILE* pFile)
 {
 }
 
+MeshObject::MeshObject()
+{
+}
+
+MeshObject::MeshObject(const MeshObject& pMesh)
+{
+}
+
 MeshObject::~MeshObject()
 {
 }

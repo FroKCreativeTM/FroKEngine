@@ -340,9 +340,4 @@
       <Filter>03. Simulator\01. Shader</Filter>
     </FxCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Object\Object.inl">
-      <Filter>01. Engine\08. Object</Filter>
-    </None>
-  </ItemGroup>
 </Project>
