@@ -1,5 +1,6 @@
 #include "Layer.h"
 #include "../Object/Object.h"
+#include "../Scene/Scene.h"
 
 void Layer::Input(float fDeltaTime)
 {
@@ -135,7 +136,7 @@ void Layer::Collision(float fDeltaTime)
 	}
 }
 
-void Layer::Render(float fDeltaTime)
+void Layer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
 	// 오브젝트 리스트를 반복해서 돌려야 처리가 가능하다.
 	list<Object*>::iterator iter;
@@ -150,7 +151,7 @@ void Layer::Render(float fDeltaTime)
 			continue;
 		}
 
-		(*iter)->Render(fDeltaTime);
+		(*iter)->Render(commandList, fDeltaTime);
 
 		// 만약 이 레이어가 죽었다면
 		if (!(*iter)->GetLife())

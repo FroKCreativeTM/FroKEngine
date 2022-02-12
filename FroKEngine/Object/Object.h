@@ -5,8 +5,8 @@
 
 using namespace std;
 
-class CScene;
-class CLayer;
+class Scene;
+class Layer;
 
 // 레퍼런스 카운터는 특수 클래스를 이용해서
 // 이를 관리합니다.
@@ -33,7 +33,7 @@ public :
 		return m_pLayer;
 	}
 
-protected:
+protected :
 	Object();
 	Object(const Object& ref);
 	virtual ~Object();
@@ -45,7 +45,7 @@ public:
 	virtual int Update(float fDeltaTime);
 	virtual int LateUpdate(float fDeltaTime);
 	virtual void Collision(float fDeltaTime);
-	virtual void Render(float fDeltaTime);
+	virtual void Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime);
 	virtual void Save(FILE* pFile);
 	virtual void Load(FILE* pFile); 
 	virtual Object* Clone() = 0;

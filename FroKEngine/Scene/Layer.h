@@ -50,7 +50,7 @@ public:
 	int Update(float fDeltaTime);
 	int LateUpdate(float fDeltaTime);
 	void Collision(float fDeltaTime);
-	void Render(float fDeltaTime);
+	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime);
 
 public:
 	void AddObj(class Object* pObj);

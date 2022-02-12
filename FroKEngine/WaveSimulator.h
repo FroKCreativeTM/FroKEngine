@@ -109,7 +109,7 @@ private:
 	UINT m_CbvSrvDescriptorSize = 0;
 
 	// 모든 렌더 아이템의 리스트.
-	std::vector<std::unique_ptr<MeshObject>> m_allRenderItems;
+	std::vector<std::unique_ptr<Object>> m_allRenderItems;
 	std::vector<RenderItem*> m_OpaqueRenderItems;
 
 	// 파도에 대한 포인터
@@ -117,7 +117,7 @@ private:
 	MeshObject* m_WaveRenderItem;
 
 	// 마테리얼을 저장하기 위한 맵
-	std::unordered_map<std::string, std::unique_ptr<Material>> m_Materials;
+	std::unordered_map<std::string, Material*> m_Materials;
 
 	// PSO 상태에 따라 달라지는 렌더링 아이템들이다.
 	std::vector<MeshObject*> m_RenderitemLayer[(int)RenderLayer::Count];
@@ -128,7 +128,7 @@ private:
 	PassConstants m_tMainPassCB;
 
 	// 지오메트리 정보를 저장하기 위한 map
-	std::unordered_map<std::string, unique_ptr<MeshGeometry>> m_Geometries;
+	std::unordered_map<std::string, MeshGeometry*> m_Geometries;
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
 
 	// 텍스처를 저장하기 위한 맵
@@ -414,7 +414,7 @@ inline void WaveSimulator::BuildWavesGeometryBuffers()
 	UINT vbByteSize = m_Waves->VertexCount() * sizeof(Vertex);
 	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	auto geo = std::make_unique<MeshGeometry>();
+	auto geo = new MeshGeometry();
 	geo->Name = "waterGeo";
 
 	// Set dynamically.
@@ -485,7 +485,7 @@ inline void WaveSimulator::BuildLandGeometry()
 	std::vector<std::uint16_t> indices = grid.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	auto geo = std::make_unique<MeshGeometry>();
+	auto geo = new MeshGeometry();
 	geo->Name = "landGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
@@ -534,7 +534,7 @@ inline void WaveSimulator::BuildBoxGeometry()
 	std::vector<std::uint16_t> indices = box.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	auto geo = std::make_unique<MeshGeometry>();
+	auto geo = new MeshGeometry();
 	geo->Name = "boxGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
@@ -590,7 +590,7 @@ inline void WaveSimulator::BuildTreeSpritesGeometry()
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(TreeSpriteVertex);
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	auto geo = std::make_unique<MeshGeometry>();
+	auto geo = new MeshGeometry();
 	geo->Name = "treeSpritesGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
@@ -626,8 +626,8 @@ inline void WaveSimulator::BuildRenderItems()
 	wavesRitem->SetWorldMatrix(MathHelper::Identity4x4());
 	wavesRitem->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	wavesRitem->SetObjCBIdx(0);
-	wavesRitem->SetMaterial(m_Materials["water"].get());
-	wavesRitem->SetGeometry(m_Geometries["waterGeo"].get());
+	wavesRitem->SetMaterial(m_Materials["water"]);
+	wavesRitem->SetGeometry(m_Geometries["waterGeo"]);
 	wavesRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	wavesRitem->SetIdxCnt(wavesRitem->GetGeometry()->DrawArgs["grid"].IndexCount);
 	wavesRitem->SetStartIdxLocation(wavesRitem->GetGeometry()->DrawArgs["grid"].StartIndexLocation);
@@ -640,8 +640,8 @@ inline void WaveSimulator::BuildRenderItems()
 	gridRitem->SetWorldMatrix(MathHelper::Identity4x4());
 	gridRitem->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	gridRitem->SetObjCBIdx(1);
-	gridRitem->SetMaterial(m_Materials["grass"].get());
-	gridRitem->SetGeometry(m_Geometries["landGeo"].get());
+	gridRitem->SetMaterial(m_Materials["grass"]);
+	gridRitem->SetGeometry(m_Geometries["landGeo"]);
 	gridRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gridRitem->SetIdxCnt(gridRitem->GetGeometry()->DrawArgs["grid"].IndexCount);
 	gridRitem->SetStartIdxLocation(gridRitem->GetGeometry()->DrawArgs["grid"].StartIndexLocation);
@@ -653,8 +653,8 @@ inline void WaveSimulator::BuildRenderItems()
 	boxRitem->SetWorldMatrix(MathHelper::Identity4x4());
 	boxRitem->SetTexTransform(XMMatrixScaling(3.0f, 2.0f, -9.0f));
 	boxRitem->SetObjCBIdx(2);
-	boxRitem->SetMaterial(m_Materials["wirefence"].get());
-	boxRitem->SetGeometry(m_Geometries["boxGeo"].get());
+	boxRitem->SetMaterial(m_Materials["wirefence"]);
+	boxRitem->SetGeometry(m_Geometries["boxGeo"]);
 	boxRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	boxRitem->SetIdxCnt(boxRitem->GetGeometry()->DrawArgs["box"].IndexCount);
 	boxRitem->SetStartIdxLocation(boxRitem->GetGeometry()->DrawArgs["box"].StartIndexLocation);
@@ -665,8 +665,8 @@ inline void WaveSimulator::BuildRenderItems()
 	auto treeSpritesRitem = std::make_unique<MeshObject>();
 	treeSpritesRitem->SetWorldMatrix(MathHelper::Identity4x4());
 	treeSpritesRitem->SetObjCBIdx(3);
-	treeSpritesRitem->SetMaterial(m_Materials["treeSprites"].get());
-	treeSpritesRitem->SetGeometry(m_Geometries["treeSpritesGeo"].get());
+	treeSpritesRitem->SetMaterial(m_Materials["treeSprites"]);
+	treeSpritesRitem->SetGeometry(m_Geometries["treeSpritesGeo"]);
 	treeSpritesRitem->SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	treeSpritesRitem->SetIdxCnt(treeSpritesRitem->GetGeometry()->DrawArgs["points"].IndexCount);
 	treeSpritesRitem->SetStartIdxLocation(treeSpritesRitem->GetGeometry()->DrawArgs["points"].StartIndexLocation);
@@ -892,7 +892,7 @@ inline void WaveSimulator::OnMouseDown(int x, int y)
 
 inline void WaveSimulator::OnMouseMove(int x, int y)
 {
-	if (GET_SINGLE(Input)->GetMouseLButton())
+	if (GET_SINGLE(InputManager)->KeyDown("MouseLButton"))
 	{
 		// 각 픽셀이 4분의 1도에 해당하도록 합니다.
 		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_LastMousePos.x));
@@ -912,62 +912,57 @@ inline void WaveSimulator::OnMouseUp(int x, int y)
 
 void WaveSimulator::Input(float fDeltaTime)
 {
-	if (GET_SINGLE(Input)->IsKeyDown(VK_ESCAPE))
+	if (GET_SINGLE(InputManager)->KeyDown("Escape"))
 	{
 		m_bLoop = false;
 		PostQuitMessage(0);
 	}
 
-	if (GET_SINGLE(Input)->IsKeyDown('1'))
+	if (GET_SINGLE(InputManager)->KeyDown("WireFrame"))
 	{
 		cout << "1 pressed" << endl;
 		m_IsWireframe = true;
 	}
-	else 
-	{
-		m_IsWireframe = false;
-	}
 
-
-	if (GET_SINGLE(Input)->IsKeyDown('W'))
+	if (GET_SINGLE(InputManager)->KeyDown("MoveFront"))
 	{
 		GET_SINGLE(Camera)->Walk(20.0f * fDeltaTime);
 	}
-	if (GET_SINGLE(Input)->IsKeyDown('S'))
+	if (GET_SINGLE(InputManager)->KeyDown("MoveBack"))
 	{
 		GET_SINGLE(Camera)->Walk(-20.0f * fDeltaTime);
 	}
-	if (GET_SINGLE(Input)->IsKeyDown('A'))
+	if (GET_SINGLE(InputManager)->KeyDown("MoveLeft"))
 	{
 		GET_SINGLE(Camera)->Strafe(-20.0f * fDeltaTime);
 	}
-	if (GET_SINGLE(Input)->IsKeyDown('D'))
+	if (GET_SINGLE(InputManager)->KeyDown("MoveRight"))
 	{
 		GET_SINGLE(Camera)->Strafe(20.0f * fDeltaTime);
 	}
 
-	if (GET_SINGLE(Input)->IsKeyDown(VK_LEFT))
-	{
-		m_fSunTheta -= 1.0f * fDeltaTime;
-	}
-	if (GET_SINGLE(Input)->IsKeyDown(VK_RIGHT))
-	{
-		m_fSunTheta += 1.0f * fDeltaTime;
-	}
-	if (GET_SINGLE(Input)->IsKeyDown(VK_UP))
-	{
-		m_fSunPhi -= 1.0f * fDeltaTime;
-	}
-	if (GET_SINGLE(Input)->IsKeyDown(VK_DOWN))
-	{
-		m_fSunPhi += 1.0f * fDeltaTime;
-	}
+	// if (GET_SINGLE(Input)->IsKeyDown(VK_LEFT))
+	// {
+	// 	m_fSunTheta -= 1.0f * fDeltaTime;
+	// }
+	// if (GET_SINGLE(Input)->IsKeyDown(VK_RIGHT))
+	// {
+	// 	m_fSunTheta += 1.0f * fDeltaTime;
+	// }
+	// if (GET_SINGLE(Input)->IsKeyDown(VK_UP))
+	// {
+	// 	m_fSunPhi -= 1.0f * fDeltaTime;
+	// }
+	// if (GET_SINGLE(Input)->IsKeyDown(VK_DOWN))
+	// {
+	// 	m_fSunPhi += 1.0f * fDeltaTime;
+	// }
 }
 
 inline void WaveSimulator::AnimateMaterials(float fDeltaTime)
 {
 	// Scroll the water material texture coordinates.
-	auto waterMat = m_Materials["water"].get();
+	auto waterMat = m_Materials["water"];
 
 	float& tu = waterMat->MatTransform(3, 0);
 	float& tv = waterMat->MatTransform(3, 1);
@@ -1037,7 +1032,7 @@ inline void WaveSimulator::UpdateMaterialCBs(float fDeltaTime)
 	{
 		// 상수들이 변했을 때만 cbuffer를 갱신한다.
 		// 이러한 갱신을 프레임 자원마다 수행해야 한다.
-		Material* mat = e.second.get();
+		Material* mat = e.second;
 
 		if (mat->nFramesDirty > 0)
 		{

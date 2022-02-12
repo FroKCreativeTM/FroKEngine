@@ -20,3 +20,177 @@ typedef struct _tagAABB
 	DirectX::XMFLOAT3 m_vecMax;
 	DirectX::XMFLOAT3 m_vecMin;
 }AABB, * PAABB;
+
+typedef struct _tagPosition
+{
+	float x, y; // Á¤È®ÇÑ ÀÌµ¿ °æ·Î¸¦ ¸¸µé±â À§ÇØ¼­ float¸¦ »ç¿ëÇÑ´Ù.
+
+	/* À§Ä¡ »ý¼ºÀÚ ÆÄÆ®ÀÔ´Ï´Ù. */
+	_tagPosition() : x(0.f), y(0.f) {}
+	_tagPosition(float x, float y) : x(x), y(y) {}
+	_tagPosition(const _tagPosition& ref) : x(ref.x), y(ref.y) {}
+	_tagPosition(const POINT& ref) : x(ref.x), y(ref.y) {}
+
+	void operator= (const _tagPosition& ref)
+	{
+		x = ref.x;
+		y = ref.y;
+	}
+
+	void operator= (const POINT& ref)
+	{
+		x = ref.x;
+		y = ref.y;
+	}
+
+	void operator= (float f[2])
+	{
+		x = f[0];
+		y = f[1];
+	}
+
+	/* µ¡¼À */
+	_tagPosition operator+(const _tagPosition& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x + ref.x;
+		tPos.y = y + ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator+(const POINT& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x + ref.x;
+		tPos.y = y + ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator+(float f[2]) const
+	{
+		_tagPosition tPos;
+		tPos.x = x + f[0];
+		tPos.y = y + f[1];
+		return tPos;
+	}
+
+	_tagPosition operator+(float f) const
+	{
+		_tagPosition tPos;
+		tPos.x = x + f;
+		tPos.y = y + f;
+		return tPos;
+	}
+
+	void operator+=(const _tagPosition& ref)
+	{
+		x += ref.x;
+		y += ref.y;
+	}
+
+	/* »¬¼À */
+	_tagPosition operator-(const _tagPosition& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x - ref.x;
+		tPos.y = y - ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator-(const POINT& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x - ref.x;
+		tPos.y = y - ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator-(float f[2]) const
+	{
+		_tagPosition tPos;
+		tPos.x = x - f[0];
+		tPos.y = y - f[1];
+		return tPos;
+	}
+
+	_tagPosition operator-(float f) const
+	{
+		_tagPosition tPos;
+		tPos.x = x - f;
+		tPos.y = y - f;
+		return tPos;
+	}
+
+	void operator-=(const _tagPosition& ref)
+	{
+		this->x = x - ref.x;
+		this->y = y - ref.y;
+	}
+
+	/* °ö¼À */
+	_tagPosition operator*(const _tagPosition& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x * ref.x;
+		tPos.y = y * ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator*(const POINT& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x * ref.x;
+		tPos.y = y * ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator*(float f[2]) const
+	{
+		_tagPosition tPos;
+		tPos.x = x * f[0];
+		tPos.y = y * f[1];
+		return tPos;
+	}
+
+	_tagPosition operator*(float f) const
+	{
+		_tagPosition tPos;
+		tPos.x = x * f;
+		tPos.y = y * f;
+		return tPos;
+	}
+
+	/* ³ª´°¼À */
+	_tagPosition operator/(const _tagPosition& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x / ref.x;
+		tPos.y = y / ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator/(const POINT& ref) const
+	{
+		_tagPosition tPos;
+		tPos.x = x / ref.x;
+		tPos.y = y / ref.y;
+		return tPos;
+	}
+
+	_tagPosition operator/(float f[2]) const
+	{
+		_tagPosition tPos;
+		tPos.x = x / f[0];
+		tPos.y = y / f[1];
+		return tPos;
+	}
+
+	_tagPosition operator/(float f) const
+	{
+		_tagPosition tPos;
+		tPos.x = x / f;
+		tPos.y = y / f;
+		return tPos;
+	}
+
+}POSITION, * PPOSITION, _SIZE, * _PSIZE;

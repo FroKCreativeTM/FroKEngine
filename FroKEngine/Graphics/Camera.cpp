@@ -282,3 +282,11 @@ bool Camera::Init(const DirectX::XMFLOAT3& tPos)
 
     return true;
 }
+
+void Camera::Input(float fDeltaTime)
+{
+}
+
+void Camera::Update(float fDeltaTime)
+{
+}

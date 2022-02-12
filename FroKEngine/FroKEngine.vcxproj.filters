@@ -115,7 +115,7 @@
     <ClInclude Include="Timer.h">
       <Filter>01. Engine\02. Timer</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h">
+    <ClInclude Include="InputManager.h">
       <Filter>01. Engine\03. Input</Filter>
     </ClInclude>
     <ClInclude Include="Macro.h">
@@ -193,9 +193,6 @@
     <ClInclude Include="Scene\Layer.h">
       <Filter>01. Engine\07. Scene\01. Layer</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\WaveSimulatorScene.h">
-      <Filter>03. Simulator\03. Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\ResourceManager.h">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClInclude>
@@ -223,7 +220,12 @@
     <ClInclude Include="Object\StaticObj\MeshGeometry.h">
       <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="Object\StaticObj\MeshObject.h" />
+    <ClInclude Include="Object\StaticObj\MeshObject.h">
+      <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\WaveSimulatorScene.h">
+      <Filter>03. Simulator\03. Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp">
@@ -235,7 +237,7 @@
     <ClCompile Include="Timer.cpp">
       <Filter>01. Engine\02. Timer</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
+    <ClCompile Include="InputManager.cpp">
       <Filter>01. Engine\03. Input</Filter>
     </ClCompile>
     <ClCompile Include="ErrorLogger.cpp">
@@ -280,9 +282,6 @@
     <ClCompile Include="Scene\Layer.cpp">
       <Filter>01. Engine\07. Scene\01. Layer</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\WaveSimulatorScene.cpp">
-      <Filter>03. Simulator\03. Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Resource\ResourceManager.cpp">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClCompile>
@@ -304,7 +303,12 @@
     <ClCompile Include="Object\StaticObj\StaticObj.cpp">
       <Filter>01. Engine\08. Object\02. StaticObj</Filter>
     </ClCompile>
-    <ClCompile Include="Object\StaticObj\MeshObject.cpp" />
+    <ClCompile Include="Object\StaticObj\MeshObject.cpp">
+      <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\WaveSimulatorScene.cpp">
+      <Filter>03. Simulator\03. Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FroKEngine.rc">

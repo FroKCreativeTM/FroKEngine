@@ -2,12 +2,13 @@
 
 #include "Game.h"
 #include "Timer.h"
-#include "Input.h"
+#include "InputManager.h"
 #include "Graphics/Camera.h"
 #include "Path/PathManager.h"
 #include "Resource/ResourceManager.h"
 #include "Sound/SoundManager.h"
 #include "Collision/CollisionManager.h"
+#include "Scene/SceneManager.h"
 
 class Core
 {
@@ -47,12 +48,12 @@ protected :
 
 	// 이 아래 메서드들은 전부 상속받는 클래스에서 실질적 구현을 할 것이다.
 	// 전부 시간 기반 처리다.
-	virtual void Input(float fDeltaTime) = 0;
-	virtual int Update(float fDeltaTime) = 0;
+	virtual void Input(float fDeltaTime);
+	virtual int Update(float fDeltaTime);
 	// 업데이트가 끝난 상태로 (충돌 전에) 후처리가 필요한 경우
-	virtual int LateUpdate(float fDeltaTime) = 0;
-	virtual void Collision(float fDeltaTime) = 0;
-	virtual void Render(float fDeltaTime) = 0;
+	virtual int LateUpdate(float fDeltaTime);
+	virtual void Collision(float fDeltaTime);
+	virtual void Render(float fDeltaTime);
 
 protected : 
 	// 여기는 Direct3D 관련 메서드를 넣습니다.
@@ -70,6 +71,43 @@ protected :
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
+
+public : 
+	ComPtr<ID3D12Device> GetDevice() const
+	{
+		return m_d3dDevice;
+	}
+
+	ComPtr<ID3D12CommandQueue>			GetCommandQueue() const
+	{
+		return m_CommandQueue;
+	}
+
+	ComPtr<ID3D12CommandAllocator>		GetDirectCmdListAlloc() const
+	{
+		return m_DirectCmdListAlloc;
+	}
+
+	ComPtr<ID3D12GraphicsCommandList>	GetCommandList() const
+	{
+		return m_CommandList;
+	}
+
+	DXGI_FORMAT GetBackBufferFormat() const
+	{
+		return m_BackBufferFormat;
+	}
+
+
+	DXGI_FORMAT GetDepthStencilFormat() const
+	{
+		return m_DepthStencilFormat;
+	}
+
+	UINT Get4xMsaaQuality() const
+	{
+		return m_4xMsaaQuality;
+	}
 
 protected : 
 	static Core*	m_pInst;

@@ -60,9 +60,8 @@ public :
 public:
 	bool Init(float x, float y, float z);
 	bool Init(const DirectX::XMFLOAT3& tPos);
-	//void Input(float fDeltaTime);
-	//void Update(float fDeltaTime);
-	//void Scroll(float x, float y);
+	void Input(float fDeltaTime);
+	void Update(float fDeltaTime);
 
 private:
 

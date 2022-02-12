@@ -2,6 +2,7 @@
 #include "../Scene/Scene.h"
 #include "../Scene/Layer.h"
 #include "../Graphics/FrameResource.h"
+#include "../WaveSimulator.h"
 
 // static
 list<Object*> Object::m_ObjList;
@@ -12,6 +13,8 @@ Object::Object()
 
 Object::Object(const Object& ref)
 {
+	*this = ref;
+	m_nRef = 1;
 }
 
 Object::~Object()
@@ -36,7 +39,7 @@ void Object::Collision(float fDeltaTime)
 {
 }
 
-void Object::Render(float fDeltaTime)
+void Object::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
 }
 

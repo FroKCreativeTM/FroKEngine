@@ -49,9 +49,9 @@ void SceneManager::Collision(float fDeltaTime)
 	m_pScene->Collision(fDeltaTime);
 }
 
-void SceneManager::Render(float fDeltaTime)
+void SceneManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
-	// m_pScene->Render(fDeltaTime);
+	m_pScene->Render(commandList, fDeltaTime);
 }
 
 SCENE_CHANGE SceneManager::ChangeScene()

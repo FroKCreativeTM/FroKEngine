@@ -70,10 +70,10 @@ ComPtr<ID3DBlob> ResourceManager::FindShader(const string& strKey)
 	return iter->second;
 }
 
-std::unique_ptr<Material> ResourceManager::BuildMaterial(string key, int nMatCBIdx, int nDiffuseSrvHeapIdx, 
+Material* ResourceManager::BuildMaterial(string key, int nMatCBIdx, int nDiffuseSrvHeapIdx, 
 	XMFLOAT4 diffuseAlbedo, XMFLOAT3 fresnelR0, float fRoughness)
 {
-	auto material = std::make_unique<Material>();
+	auto material = new Material();
 	material->Name = key;
 	material->nMatCBIdx = nMatCBIdx;
 	material->nDiffuseSrvHeapIdx = nDiffuseSrvHeapIdx;

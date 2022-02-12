@@ -25,7 +25,7 @@ public:
 	virtual int Update(float fDeltaTime);
 	virtual int LateUpdate(float fDeltaTime);
 	virtual void Collision(float fDeltaTime);
-	virtual void Render(float fDeltaTime);
+	virtual void Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime);
 
 public:
 	// 프로토타입 관련 메소드

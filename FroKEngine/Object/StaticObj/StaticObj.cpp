@@ -35,9 +35,9 @@ void StaticObj::Collision(float fDeltaTime)
 	Object::Collision(fDeltaTime);
 }
 
-void StaticObj::Render(HDC hDC, float fDeltaTime)
+void StaticObj::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
-	Object::Render(fDeltaTime);
+	Object::Render(commandList, fDeltaTime);
 }
 
 void StaticObj::Save(FILE* pFile)

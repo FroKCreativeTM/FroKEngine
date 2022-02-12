@@ -12,7 +12,7 @@ public:
 	virtual int Update(float fDeltaTime);
 	virtual int LateUpdate(float fDeltaTime);
 	virtual void Collision(float fDeltaTime);
-	virtual void Render(HDC hDC, float fDeltaTime);
+	virtual void Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime);
 	virtual MeshObject* Clone();
 	virtual void Save(FILE* pFile);
 	virtual void Load(FILE* pFile);
@@ -43,5 +43,9 @@ private :
 	// 여러 렌더가 항목이 같은 기하 구조를 참조할 수 있음을 주의하라.
 	Material* m_Mat = nullptr;
 	MeshGeometry* m_pGeometry = nullptr;
+
+private:
+	friend class Object;
+	friend class Scene;
 };
 

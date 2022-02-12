@@ -162,7 +162,7 @@
     <ClInclude Include="Graphics\Texture\DDSTextureLoader.h" />
     <ClInclude Include="Graphics\Texture\Texture.h" />
     <ClInclude Include="Graphics\UploadBuffer.h" />
-    <ClInclude Include="Input.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Object\Object.h" />
@@ -179,7 +179,9 @@
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\SceneConst.h" />
     <ClInclude Include="Scene\SceneManager.h" />
-    <ClInclude Include="Scene\WaveSimulatorScene.h" />
+    <ClInclude Include="Scene\WaveSimulatorScene.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Sound\SoundManager.h" />
     <ClInclude Include="StringConverter.h" />
     <ClInclude Include="targetver.h" />
@@ -188,7 +190,9 @@
     <ClInclude Include="Type.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Wave.h" />
-    <ClInclude Include="WaveSimulator.h" />
+    <ClInclude Include="WaveSimulator.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Collision\Collider.cpp" />
@@ -202,7 +206,7 @@
     <ClCompile Include="Graphics\FrameResource.cpp" />
     <ClCompile Include="Graphics\GeometryGenerator.cpp" />
     <ClCompile Include="Graphics\Texture\DDSTextureLoader.cpp" />
-    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="Object\Object.cpp" />
     <ClCompile Include="Object\StaticObj\MeshObject.cpp" />
@@ -213,7 +217,9 @@
     <ClCompile Include="Scene\Layer.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\SceneManager.cpp" />
-    <ClCompile Include="Scene\WaveSimulatorScene.cpp" />
+    <ClCompile Include="Scene\WaveSimulatorScene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Sound\SoundManager.cpp" />
     <ClCompile Include="StringConverter.cpp" />
     <ClCompile Include="Timer.cpp" />

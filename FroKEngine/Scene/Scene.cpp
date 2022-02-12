@@ -200,7 +200,7 @@ void Scene::Collision(float fDeltaTime)
     }
 }
 
-void Scene::Render(float fDeltaTime)
+void Scene::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
     // 레이어 리스트를 반복해서 돌려야 처리가 가능하다.
     list<Layer*>::iterator iter;
@@ -214,7 +214,7 @@ void Scene::Render(float fDeltaTime)
             continue;
         }
 
-        (*iter)->Render(fDeltaTime);
+        (*iter)->Render(commandList, fDeltaTime);
 
         // 만약 이 레이어가 죽었다면
         if (!(*iter)->GetLife())

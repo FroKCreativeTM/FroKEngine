@@ -19,7 +19,7 @@ public:
 
 	ComPtr<ID3DBlob> FindShader(const string& strKey);
 
-	std::unique_ptr<class Material> BuildMaterial(string key, int nMatCBIdx,
+	class Material* BuildMaterial(string key, int nMatCBIdx,
 		int nDiffuseSrvHeapIdx, XMFLOAT4 diffuseAlbedo, XMFLOAT3 fresnelR0,
 		float fRoughness);
 

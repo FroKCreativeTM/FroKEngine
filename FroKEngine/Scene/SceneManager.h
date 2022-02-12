@@ -14,8 +14,7 @@ public :
 	void Collision(float fDeltaTime);
 
 	// 디바이스가 필요한 경우 수정할 예정
-	void Render(float fDeltaTime); 
-
+	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime);
 
 public:
 	template <typename T>

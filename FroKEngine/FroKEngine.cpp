@@ -1,7 +1,7 @@
 ﻿// FroKEngine.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
 
-#include "WaveSimulator.h"
+#include "Core.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -21,22 +21,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int nRev;
     try 
     {
-        WaveSimulator app;
-
-        if (!app.Init(hInstance))
+        if (!Core::GetInst()->Init(hInstance))
         {
+            Core::DestroyInst();
             return 0;
         }
 
         // Reture Value를 받는다.
-        nRev = app.Run();
+        nRev = Core::GetInst()->Run();
     }
     catch (DxException& e)
     {
         MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
+        Core::DestroyInst();
         return 0;
     }
 
+    Core::DestroyInst();
     return nRev;
 }
 

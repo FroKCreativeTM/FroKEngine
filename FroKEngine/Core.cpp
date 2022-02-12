@@ -89,7 +89,7 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
     }
 
     // 인풋 매니저 초기화
-    if (!GET_SINGLE(Input)->Init(m_hWnd, false))
+    if (!GET_SINGLE(InputManager)->Init(m_hWnd))
     {
         return false;
     }
@@ -111,6 +111,13 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
     {
         return false;
     }
+
+    /* 서브 관리 클래스 초기화 */
+    if (!GET_SINGLE(SceneManager)->Init())
+    {
+        return false;
+    }
+
 
     /* 사운드 매니저 초기화 */
     if (!GET_SINGLE(SoundManager)->Init())
@@ -286,69 +293,6 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_GETMINMAXINFO:
         ((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
         ((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
-        return 0;
-
-    case WM_KEYDOWN: case WM_SYSKEYDOWN:
-        GET_SINGLE(Input)->KeyDown(wParam);
-        return 0;
-    case WM_KEYUP: case WM_SYSKEYUP:
-        if (wParam == VK_ESCAPE)
-        {
-            PostQuitMessage(0);
-        }
-        else if ((int)wParam == VK_F2)
-            // 4X MSAA
-            Set4xMsaaState(!m_4xMsaaState);
-
-        GET_SINGLE(Input)->KeyUp(wParam);
-        return 0;
-    case WM_CHAR:
-        GET_SINGLE(Input)->KeyIn(wParam);
-        return 0;
-    case WM_MOUSEMOVE:
-        GET_SINGLE(Input)->MouseIn(lParam);
-        OnMouseMove(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
-        return 0;
-    case WM_INPUT:
-        GET_SINGLE(Input)->MouseRawIn(lParam);
-        return 0;
-    case WM_LBUTTONDOWN:
-        GET_SINGLE(Input)->SetMouseLButton(true);
-        GET_SINGLE(Input)->MouseIn(lParam);
-        OnMouseDown(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
-        return 0;
-    case WM_LBUTTONUP:
-        GET_SINGLE(Input)->SetMouseLButton(false);
-        GET_SINGLE(Input)->MouseUp();
-        OnMouseUp(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
-        return 0;
-    case WM_MBUTTONDOWN:
-        GET_SINGLE(Input)->SetMouseMButton(true);
-        GET_SINGLE(Input)->MouseIn(lParam);
-        OnMouseDown(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
-        return 0;
-    case WM_MBUTTONUP:
-        GET_SINGLE(Input)->SetMouseMButton(false);
-        GET_SINGLE(Input)->MouseUp();
-        OnMouseUp(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
-        return 0;
-    case WM_RBUTTONDOWN:
-        GET_SINGLE(Input)->SetMouseRButton(true);
-        GET_SINGLE(Input)->MouseIn(lParam);
-        OnMouseDown(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
-        return 0;
-    case WM_RBUTTONUP:
-        GET_SINGLE(Input)->SetMouseRButton(false);
-        GET_SINGLE(Input)->MouseUp();
-        OnMouseUp(GET_SINGLE(Input)->GetMouseX(), GET_SINGLE(Input)->GetMouseY());
-        return 0;
-    case WM_XBUTTONDOWN: case WM_XBUTTONUP:
-        GET_SINGLE(Input)->SetMouseXButton(wParam);
-        GET_SINGLE(Input)->MouseUp();
-        return 0;
-    case WM_DEVICECHANGE:
-        // 컨트롤러
-        GET_SINGLE(Input)->CheckControllers();
         return 0;
     }
 
@@ -527,6 +471,42 @@ void Core::OnResize()
 
     m_ScissorRect = { 0, 0, static_cast<long>(m_tRS.nWidth), static_cast<long>(m_tRS.nHeight) };
     // m_CommandList->RSSetScissorRects(1, &m_ScissorRect);
+}
+
+void Core::Input(float fDeltaTime)
+{
+    GET_SINGLE(InputManager)->Update(fDeltaTime);
+    GET_SINGLE(SceneManager)->Input(fDeltaTime);
+    GET_SINGLE(Camera)->Input(fDeltaTime);
+}
+
+int Core::Update(float fDeltaTime)
+{
+    // 장면 변환이 일어나는가?
+    SCENE_CHANGE sc;
+
+    sc = GET_SINGLE(SceneManager)->Update(fDeltaTime);
+    GET_SINGLE(Camera)->Update(fDeltaTime);
+    return 0;
+}
+
+int Core::LateUpdate(float fDeltaTime)
+{
+    SCENE_CHANGE sc;
+
+    sc = GET_SINGLE(SceneManager)->LateUpdate(fDeltaTime);
+    return 0;
+}
+
+void Core::Collision(float fDeltaTime)
+{
+    GET_SINGLE(SceneManager)->Collision(fDeltaTime);
+    GET_SINGLE(CollisionManager)->Collision(fDeltaTime);
+}
+
+void Core::Render(float fDeltaTime)
+{
+    GET_SINGLE(SceneManager)->Render(m_CommandList, fDeltaTime);
 }
 
 bool Core::InitDirect3D()
@@ -849,13 +829,14 @@ Core::Core()
 
 Core::~Core()
 {
-    DESTROY_SINGLE(Input);
+    DESTROY_SINGLE(InputManager);
     DESTROY_SINGLE(SoundManager);
     DESTROY_SINGLE(Camera);
     DESTROY_SINGLE(Timer);
     DESTROY_SINGLE(PathManager);
     DESTROY_SINGLE(ResourceManager);
     DESTROY_SINGLE(CollisionManager);
+    DESTROY_SINGLE(SceneManager);
 
     if (m_d3dDevice != nullptr)
     {
