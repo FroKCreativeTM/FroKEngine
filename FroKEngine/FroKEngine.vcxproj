@@ -122,6 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
+      <DisableSpecificWarnings>26812;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -190,9 +191,6 @@
     <ClInclude Include="Type.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Wave.h" />
-    <ClInclude Include="WaveSimulator.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Collision\Collider.cpp" />

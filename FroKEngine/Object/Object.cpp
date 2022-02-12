@@ -1,8 +1,12 @@
 #include "Object.h"
-#include "../Scene/Scene.h"
 #include "../Scene/Layer.h"
+#include "../Scene/SceneManager.h"
+#include "../Scene/Scene.h"
+#include "../Resource/ResourceManager.h"
 #include "../Graphics/FrameResource.h"
-#include "../WaveSimulator.h"
+#include "../Path/PathManager.h"
+
+#include "../Collision/RectCollider.h"
 
 // static
 list<Object*> Object::m_ObjList;
@@ -27,11 +31,58 @@ void Object::Input(float fDeltaTime)
 
 int Object::Update(float fDeltaTime)
 {
+	/* 충돌체를 돌린다. */
+	list<Collider*>::iterator iter;
+	list<Collider*>::iterator iterEnd = m_ColliderList.end();
+
+	for (iter = m_ColliderList.begin(); iter != iterEnd;)
+	{
+		// 콜라이더가 비활성화 되어있다면
+		if (!(*iter)->GetEnable())
+		{
+			++iter;
+			continue;
+		}
+		(*iter)->Update(fDeltaTime);
+
+		if (!(*iter)->GetLife())
+		{
+			SAFE_RELEASE((*iter));
+			iter = m_ColliderList.erase(iter);
+			iterEnd = m_ColliderList.end();
+		}
+		else
+			++iter;
+	}
+
     return 0;
 }
 
 int Object::LateUpdate(float fDeltaTime)
 {
+	list<Collider*>::iterator iter;
+	list<Collider*>::iterator iterEnd = m_ColliderList.end();
+
+	for (iter = m_ColliderList.begin(); iter != iterEnd;)
+	{
+		// 콜라이더가 비활성화 되어있다면
+		if (!(*iter)->GetEnable())
+		{
+			++iter;
+			continue;
+		}
+		(*iter)->LateUpdate(fDeltaTime);
+
+		if (!(*iter)->GetLife())
+		{
+			SAFE_RELEASE((*iter));
+			iter = m_ColliderList.erase(iter);
+			iterEnd = m_ColliderList.end();
+		}
+		else
+			++iter;
+	}
+
     return 0;
 }
 

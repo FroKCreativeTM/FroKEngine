@@ -1,14 +1,6 @@
 #pragma once
 
 #include "Game.h"
-#include "Timer.h"
-#include "InputManager.h"
-#include "Graphics/Camera.h"
-#include "Path/PathManager.h"
-#include "Resource/ResourceManager.h"
-#include "Sound/SoundManager.h"
-#include "Collision/CollisionManager.h"
-#include "Scene/SceneManager.h"
 
 class Core
 {
@@ -41,10 +33,6 @@ protected :
 
 	virtual void CreateRtvAndDsvDescriptorHeaps();
 	virtual void OnResize();
-
-	virtual void OnMouseDown(int x, int y) {};
-	virtual void OnMouseMove(int x, int y) {};
-	virtual void OnMouseUp(int x, int y) {};
 
 	// 이 아래 메서드들은 전부 상속받는 클래스에서 실질적 구현을 할 것이다.
 	// 전부 시간 기반 처리다.

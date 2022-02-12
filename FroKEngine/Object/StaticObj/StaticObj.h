@@ -5,7 +5,6 @@
 class StaticObj : 
 	public Object
 {
-
 protected:
 	StaticObj();
 	StaticObj(const StaticObj& ref);

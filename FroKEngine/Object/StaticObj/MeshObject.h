@@ -1,5 +1,6 @@
 #pragma once
 #include "StaticObj.h"
+
 #include "../../Graphics/Material.h"
 #include "MeshGeometry.h"
 
@@ -47,5 +48,10 @@ private :
 private:
 	friend class Object;
 	friend class Scene;
+
+private : 
+	MeshObject();
+	MeshObject(const MeshObject& pMesh);
+	~MeshObject();
 };
 

@@ -58,3 +58,7 @@ void MeshObject::Save(FILE* pFile)
 void MeshObject::Load(FILE* pFile)
 {
 }
+
+MeshObject::~MeshObject()
+{
+}

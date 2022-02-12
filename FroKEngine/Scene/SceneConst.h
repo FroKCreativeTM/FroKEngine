@@ -1,6 +1,5 @@
 #pragma once
 
-
 // 장면 타입
 enum SCENE_CREATE
 {

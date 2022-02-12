@@ -148,9 +148,6 @@
     <ClInclude Include="Graphics\Material.h">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClInclude>
-    <ClInclude Include="WaveSimulator.h">
-      <Filter>03. Simulator</Filter>
-    </ClInclude>
     <ClInclude Include="Wave.h">
       <Filter>03. Simulator</Filter>
     </ClInclude>

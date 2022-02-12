@@ -1,4 +1,17 @@
 #include "WaveSimulatorScene.h"
+#include "SceneManager.h"
+#include "Layer.h"
+#include "../Graphics/Camera.h"
+#include "../Resource/ResourceManager.h"
+#include "../Graphics/UploadBuffer.h"
+#include "../Object/StaticObj/MeshObject.h"
+#include "../Graphics/GeometryGenerator.h"
+#include "../Graphics/Material.h"
+#include "../Graphics/Camera.h"
+#include "../Graphics/Texture/Texture.h"
+#include "../Wave.h"
+#include "../TreeSpriteVertex.h"
+#include "../InputManager.h"
 
 WaveSimulatorScene::WaveSimulatorScene()
 {
@@ -6,6 +19,7 @@ WaveSimulatorScene::WaveSimulatorScene()
 
 WaveSimulatorScene::~WaveSimulatorScene()
 {
+	Safe_Release_VecList(m_allRenderItems);
 }
 
 std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> WaveSimulatorScene::GetStaticSamplers()
@@ -461,7 +475,7 @@ void WaveSimulatorScene::BuildRenderItems()
 	// 레이어 생성
 	Layer* pLayer = FindLayer("Default");
 
-	MeshObject* pWaveObject = Object::CreateObj< MeshObject>("Water" , pLayer);
+	MeshObject* pWaveObject = Object::CreateObj<MeshObject>("Water", pLayer);
 	pWaveObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pWaveObject->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	pWaveObject->SetObjCBIdx(0);
@@ -472,7 +486,7 @@ void WaveSimulatorScene::BuildRenderItems()
 	pWaveObject->SetStartIdxLocation(pWaveObject->GetGeometry()->DrawArgs["grid"].StartIndexLocation);
 	pWaveObject->SetBaseVertexLocation(pWaveObject->GetGeometry()->DrawArgs["grid"].BaseVertexLocation);
 
-	MeshObject* pGridObject = Object::CreateObj< MeshObject>("Grass", pLayer);
+	MeshObject* pGridObject = Object::CreateObj<MeshObject>("Grass", pLayer);
 	pGridObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pGridObject->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	pGridObject->SetObjCBIdx(1);
@@ -504,10 +518,10 @@ void WaveSimulatorScene::BuildRenderItems()
 	pTreeSpriteObject->SetStartIdxLocation(pTreeSpriteObject->GetGeometry()->DrawArgs["points"].StartIndexLocation);
 	pTreeSpriteObject->SetBaseVertexLocation(pTreeSpriteObject->GetGeometry()->DrawArgs["points"].BaseVertexLocation);
 
-	// m_allRenderItems.push_back(std::move(wavesRitem));
-	// m_allRenderItems.push_back(std::move(gridRitem));
-	// m_allRenderItems.push_back(std::move(boxRitem));
-	// m_allRenderItems.push_back(std::move(treeSpritesRitem));
+	m_allRenderItems.push_back(std::move(pWaveObject));
+	m_allRenderItems.push_back(std::move(pGridObject));
+	m_allRenderItems.push_back(std::move(pBoxObject));
+	m_allRenderItems.push_back(std::move(pTreeSpriteObject));
 }
 
 void WaveSimulatorScene::BuildPSO()

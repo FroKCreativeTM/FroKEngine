@@ -1,20 +1,8 @@
 #pragma once
 
 #include "../Core.h"
-#include "Scene.h"
-#include "SceneManager.h"
-#include "Layer.h"
-#include "../Graphics/Camera.h"
-#include "../Resource/ResourceManager.h"
-#include "../Graphics/UploadBuffer.h"
 #include "../Graphics/FrameResource.h"
-#include "../Object/StaticObj/MeshObject.h"
-#include "../Graphics/GeometryGenerator.h"
-#include "../Graphics/Material.h"
-#include "../Graphics/Camera.h"
-#include "../Graphics/Texture/Texture.h"
-#include "../Wave.h"
-#include "../TreeSpriteVertex.h"
+#include "Scene.h"
 
 class WaveSimulatorScene : 
 	public Scene
@@ -36,7 +24,6 @@ private:
 	~WaveSimulatorScene();
 
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
-
 
 	float GetHillsHeight(float x, float z) const
 	{
@@ -72,7 +59,7 @@ private:
 	void BuildTreeSpritesGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<class MeshObject*>& ritems);
 
 private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
@@ -81,7 +68,7 @@ private:
 
 	UINT m_passCbvOffset = 0;
 
-	MeshGeometry* m_BoxGeo = nullptr;
+	struct MeshGeometry* m_BoxGeo = nullptr;
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputLayout;
 	// 기하 셰이더에 넘겨줄 
@@ -94,14 +81,13 @@ private:
 
 	UINT m_CbvSrvDescriptorSize = 0;
 
-
 	// 파도에 대한 포인터
-	Waves* m_Waves;
-	MeshObject* m_WaveRenderItem;
+	class Waves* m_Waves;
+	class MeshObject* m_WaveRenderItem;
 
 	// 마테리얼을 저장하기 위한 맵
-	std::unordered_map<std::string, Material*> m_Materials;
-	std::vector<Object*> m_allRenderItems;
+	std::unordered_map<std::string, class Material*> m_Materials;
+	std::vector<class Object*> m_allRenderItems;
 	bool m_IsWireframe = false;
 
 	// 패스 상수들을 저장해둔 구조체
@@ -112,7 +98,7 @@ private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
 
 	// 텍스처를 저장하기 위한 맵
-	std::unordered_map<std::string, Texture*> m_Textures;
+	std::unordered_map<std::string, class Texture*> m_Textures;
 
 	XMFLOAT4X4	m_World = MathHelper::Identity4x4();
 	XMFLOAT3 m_EyePos = { 0.0f, 0.0f, 0.0f };

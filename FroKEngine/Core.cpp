@@ -1,4 +1,12 @@
 #include "Core.h"
+#include "Timer.h"
+#include "InputManager.h"
+#include "Graphics/Camera.h"
+#include "Path/PathManager.h"
+#include "Resource/ResourceManager.h"
+#include "Sound/SoundManager.h"
+#include "Collision/CollisionManager.h"
+#include "Scene/SceneManager.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace std;
@@ -88,12 +96,6 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
         return false;
     }
 
-    // 인풋 매니저 초기화
-    if (!GET_SINGLE(InputManager)->Init(m_hWnd))
-    {
-        return false;
-    }
-
     // 경로관리자 초기화
     if (!GET_SINGLE(PathManager)->Init())
     {
@@ -102,6 +104,12 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
 
     // 리소스 매니저 초기화
     if (!GET_SINGLE(ResourceManager)->Init(m_d3dDevice.Get(), m_CommandList.Get()))
+    {
+        return false;
+    }
+
+    // 인풋 매니저 초기화
+    if (!GET_SINGLE(InputManager)->Init(m_hWnd))
     {
         return false;
     }
@@ -117,7 +125,6 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
     {
         return false;
     }
-
 
     /* 사운드 매니저 초기화 */
     if (!GET_SINGLE(SoundManager)->Init())
