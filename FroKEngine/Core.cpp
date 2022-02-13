@@ -114,7 +114,7 @@ bool Core::Init(HINSTANCE hInstance, int nWidth, int nHeight)
     }
 
     // 인풋 매니저 초기화
-    if (!GET_SINGLE(InputManager)->Init(m_hWnd))
+    if (!GET_SINGLE(InputManager)->Init(m_hWnd, false))
     {
         return false;
     }
@@ -305,6 +305,63 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_GETMINMAXINFO:
         ((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
         ((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+        return 0;
+
+    //case WM_KEYDOWN: case WM_SYSKEYDOWN:
+    //    GET_SINGLE(Input)->KeyDown(wParam);
+    //    return 0;
+    //case WM_KEYUP: case WM_SYSKEYUP:
+    //    if (wParam == VK_ESCAPE)
+    //    {
+    //        PostQuitMessage(0);
+    //    }
+    //    else if ((int)wParam == VK_F2)
+    //        // 4X MSAA
+    //        Set4xMsaaState(!m_4xMsaaState);
+
+    //    GET_SINGLE(Input)->KeyUp(wParam);
+    //    return 0;
+    //case WM_CHAR:
+    //    GET_SINGLE(Input)->KeyIn(wParam);
+    //    return 0;
+
+    case WM_MOUSEMOVE:
+        GET_SINGLE(InputManager)->MouseIn(lParam);
+        return 0;
+    case WM_INPUT:
+        GET_SINGLE(InputManager)->MouseRawIn(lParam);
+        return 0;
+    case WM_LBUTTONDOWN:
+        GET_SINGLE(InputManager)->SetMouseLButton(true);
+        GET_SINGLE(InputManager)->MouseIn(lParam);
+        return 0;
+    case WM_LBUTTONUP:
+        GET_SINGLE(InputManager)->SetMouseLButton(false);
+        GET_SINGLE(InputManager)->MouseUp();
+        return 0;
+    case WM_MBUTTONDOWN:
+        GET_SINGLE(InputManager)->SetMouseMButton(true);
+        GET_SINGLE(InputManager)->MouseIn(lParam);
+        return 0;
+    case WM_MBUTTONUP:
+        GET_SINGLE(InputManager)->SetMouseMButton(false);
+        GET_SINGLE(InputManager)->MouseUp();
+        return 0;
+    case WM_RBUTTONDOWN:
+        GET_SINGLE(InputManager)->SetMouseRButton(true);
+        GET_SINGLE(InputManager)->MouseIn(lParam);
+        return 0;
+    case WM_RBUTTONUP:
+        GET_SINGLE(InputManager)->SetMouseRButton(false);
+        GET_SINGLE(InputManager)->MouseUp();
+        return 0;
+    case WM_XBUTTONDOWN: case WM_XBUTTONUP:
+        GET_SINGLE(InputManager)->SetMouseXButton(wParam);
+        GET_SINGLE(InputManager)->MouseUp();
+        return 0;
+    case WM_DEVICECHANGE:
+        // 컨트롤러
+        GET_SINGLE(InputManager)->CheckControllers();
         return 0;
     }
 

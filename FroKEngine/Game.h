@@ -64,8 +64,8 @@
 
 
 // 인풋 관련 헤더
-//#include <XInput.h>
-//#pragma comment(lib, "Xinput.lib")
+#include <XInput.h>
+#pragma comment(lib, "Xinput.lib")
 
 // 매크로 선언된 헤더를 여기다가 넣는다.
 #include "Macro.h"

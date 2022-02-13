@@ -903,6 +903,73 @@ bool WaveSimulatorScene::Init()
 void WaveSimulatorScene::Input(float fDeltaTime)
 {
 	Scene::Input(fDeltaTime);
+
+	if (GET_SINGLE(InputManager)->KeyPress("Escape"))
+	{
+		GET_SINGLE(Core)->SetWindowLoop(false);
+		PostQuitMessage(0);
+	}
+
+	if (GET_SINGLE(InputManager)->KeyPress("WireFrame"))
+	{
+		m_IsWireframe = true;
+	}
+
+	if (GET_SINGLE(InputManager)->KeyUp("WireFrame"))
+	{
+		m_IsWireframe = false;
+	}
+
+	if (GET_SINGLE(InputManager)->KeyPress("MoveFront"))
+	{
+		GET_SINGLE(Camera)->Walk(20.0f * fDeltaTime);
+	}
+	if (GET_SINGLE(InputManager)->KeyPress("MoveBack"))
+	{
+		GET_SINGLE(Camera)->Walk(-20.0f * fDeltaTime);
+	}
+	if (GET_SINGLE(InputManager)->KeyPress("MoveLeft"))
+	{
+		GET_SINGLE(Camera)->Strafe(-20.0f * fDeltaTime);
+	}
+	if (GET_SINGLE(InputManager)->KeyPress("MoveRight"))
+	{
+		GET_SINGLE(Camera)->Strafe(20.0f * fDeltaTime);
+	}
+	if (GET_SINGLE(InputManager)->KeyDown("MouseLButton"))
+	{
+		OnMouseDown(GET_SINGLE(InputManager)->GetMouseX(), GET_SINGLE(InputManager)->GetMouseY());
+	}
+	if (GET_SINGLE(InputManager)->KeyPress("MouseLButton"))
+	{
+		OnMouseMove(GET_SINGLE(InputManager)->GetMouseX(), GET_SINGLE(InputManager)->GetMouseY());
+	}
+}
+
+void WaveSimulatorScene::OnMouseDown(int x, int y)
+{
+	m_LastMousePos.x = x;
+	m_LastMousePos.y = y;
+}
+
+void WaveSimulatorScene::OnMouseMove(int x, int y)
+{
+	if (GET_SINGLE(InputManager)->KeyDown("MouseLButton"))
+	{
+		// 각 픽셀이 4분의 1도에 해당하도록 합니다.
+		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_LastMousePos.x));
+		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - m_LastMousePos.y));
+
+		GET_SINGLE(Camera)->Pitch(dy);
+		GET_SINGLE(Camera)->RotateY(dx);
+	}
+
+	m_LastMousePos.x = x;
+	m_LastMousePos.y = y;
+}
+
+void WaveSimulatorScene::OnMouseUp(int x, int y)
+{
 }
 
 int WaveSimulatorScene::Update(float fDeltaTime)
@@ -1032,31 +1099,4 @@ void WaveSimulatorScene::Render(ComPtr<ID3D12GraphicsCommandList> commandList, f
 	// 명령 대기열에 명령을 추가하여 새 펜스 포인트를 설정한다.
 	// GPU 타임라인에 있으므로 GPU가 이 Signal() 이전의 모든 명령 처리를 완료할 때까지 새 펜스 포인트가 설정되지 않는다.
 	GET_SINGLE(Core)->GetCommandQueue()->Signal(GET_SINGLE(Core)->GetFence().Get(), GET_SINGLE(Core)->GetCurrentFence());
-}
-
-void WaveSimulatorScene::OnMouseDown(int x, int y)
-{
-	m_LastMousePos.x = x;
-	m_LastMousePos.y = y;
-}
-
-void WaveSimulatorScene::OnMouseMove(int x, int y)
-{
-
-	if (GET_SINGLE(InputManager)->KeyDown("MouseLButton"))
-	{
-		// 각 픽셀이 4분의 1도에 해당하도록 합니다.
-		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_LastMousePos.x));
-		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - m_LastMousePos.y));
-
-		GET_SINGLE(Camera)->Pitch(dy);
-		GET_SINGLE(Camera)->RotateY(dx);
-	}
-
-	m_LastMousePos.x = x;
-	m_LastMousePos.y = y;
-}
-
-void WaveSimulatorScene::OnMouseUp(int x, int y)
-{
 }

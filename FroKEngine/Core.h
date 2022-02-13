@@ -141,6 +141,11 @@ public :
 		return m_tRS;
 	}
 
+	void SetWindowLoop(bool b)
+	{
+		m_bLoop = b;
+	}
+
 protected : 
 	static Core*	m_pInst;
 	static bool		m_bLoop;

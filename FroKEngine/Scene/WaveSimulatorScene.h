@@ -75,6 +75,8 @@ private :
 	void BuildPSO();
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<class MeshObject*> ritem, float fDeltaTime);
 
+
+
 private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap>	m_SrvHeap = nullptr;
