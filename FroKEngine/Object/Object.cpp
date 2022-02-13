@@ -92,6 +92,7 @@ void Object::Collision(float fDeltaTime)
 
 void Object::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
+
 }
 
 Collider* Object::GetCollider(const string& strTag)

@@ -76,6 +76,11 @@ public:
 		return m_bEnable;
 	}
 
+	list<class Object*> GetObjectList() 
+	{
+		return m_ObjList;
+	}
+
 private:
 	friend class Scene;
 

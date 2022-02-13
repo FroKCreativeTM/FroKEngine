@@ -73,11 +73,10 @@ private :
 	void BuildTreeSpritesGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, float fDeltaTime);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<class MeshObject*> ritem, float fDeltaTime);
 
 private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;
-	ComPtr<ID3D12DescriptorHeap>	m_CbvHeap = nullptr;
 	ComPtr<ID3D12DescriptorHeap>	m_SrvHeap = nullptr;
 
 	UINT m_passCbvOffset = 0;
@@ -92,6 +91,9 @@ private:
 	std::vector<std::unique_ptr<FrameResource>> m_frameResources;
 	FrameResource* m_curFrameResource = nullptr;
 	int m_nCurFrameResourceIdx = 0;
+
+	// PSO 상태에 따라 달라지는 렌더링 아이템들이다.
+	std::vector<class MeshObject*> m_RenderitemLayer[(int)RenderLayer::Count];
 
 	UINT m_CbvSrvDescriptorSize = 0;
 

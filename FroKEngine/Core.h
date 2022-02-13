@@ -48,8 +48,6 @@ protected :
 	bool InitDirect3D();
 	void CreateCommandObjects();
 	void CreateSwapChain();
-	void FlushCommandQueue();
-
 
 	void CalculateFrameStats();
 
@@ -58,6 +56,8 @@ protected :
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
 public : 
+	void FlushCommandQueue();
+
 	ComPtr<ID3D12Device> GetDevice() const
 	{
 		return m_d3dDevice;

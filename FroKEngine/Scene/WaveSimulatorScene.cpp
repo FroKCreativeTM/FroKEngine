@@ -660,6 +660,9 @@ void WaveSimulatorScene::BuildRenderItems()
 	pWaveObject->SetStartIdxLocation(pWaveObject->GetGeometry()->DrawArgs["grid"].StartIndexLocation);
 	pWaveObject->SetBaseVertexLocation(pWaveObject->GetGeometry()->DrawArgs["grid"].BaseVertexLocation);
 
+	m_WaveRenderItem = pWaveObject;
+	m_RenderitemLayer[(int)RenderLayer::Transparent].push_back(pWaveObject);
+
 	MeshObject* pGridObject = Object::CreateObj<MeshObject>("Grass", pLayer);
 	pGridObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pGridObject->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
@@ -670,6 +673,8 @@ void WaveSimulatorScene::BuildRenderItems()
 	pGridObject->SetIdxCnt(pGridObject->GetGeometry()->DrawArgs["grid"].IndexCount);
 	pGridObject->SetStartIdxLocation(pGridObject->GetGeometry()->DrawArgs["grid"].StartIndexLocation);
 	pGridObject->SetBaseVertexLocation(pGridObject->GetGeometry()->DrawArgs["grid"].BaseVertexLocation);
+
+	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(pGridObject);
 
 	MeshObject* pBoxObject = Object::CreateObj<MeshObject>("Box", pLayer);
 	pBoxObject->SetWorldMatrix(MathHelper::Identity4x4());
@@ -682,6 +687,8 @@ void WaveSimulatorScene::BuildRenderItems()
 	pBoxObject->SetStartIdxLocation(pBoxObject->GetGeometry()->DrawArgs["box"].StartIndexLocation);
 	pBoxObject->SetBaseVertexLocation(pBoxObject->GetGeometry()->DrawArgs["box"].BaseVertexLocation);
 
+	m_RenderitemLayer[(int)RenderLayer::AlphaTested].push_back(pBoxObject);
+
 	MeshObject* pTreeSpriteObject = Object::CreateObj<MeshObject>("TreeSprites", pLayer);
 	pTreeSpriteObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pTreeSpriteObject->SetObjCBIdx(3);
@@ -691,6 +698,8 @@ void WaveSimulatorScene::BuildRenderItems()
 	pTreeSpriteObject->SetIdxCnt(pTreeSpriteObject->GetGeometry()->DrawArgs["points"].IndexCount);
 	pTreeSpriteObject->SetStartIdxLocation(pTreeSpriteObject->GetGeometry()->DrawArgs["points"].StartIndexLocation);
 	pTreeSpriteObject->SetBaseVertexLocation(pTreeSpriteObject->GetGeometry()->DrawArgs["points"].BaseVertexLocation);
+
+	m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites].push_back(pTreeSpriteObject);
 
 	m_allRenderItems.push_back(std::move(pWaveObject));
 	m_allRenderItems.push_back(std::move(pGridObject));
@@ -810,7 +819,8 @@ void WaveSimulatorScene::BuildPSO()
 	ThrowIfFailed(GET_SINGLE(Core)->GetDevice()->CreateGraphicsPipelineState(&treeSpriteWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["treeSprite_wireframe"])));
 }
 
-void WaveSimulatorScene::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, float fDeltaTime)
+// void WaveSimulatorScene::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, list<MeshObject*> ritem, float fDeltaTime)
+void WaveSimulatorScene::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<MeshObject*> ritem, float fDeltaTime)
 {
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	UINT matCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
@@ -818,28 +828,26 @@ void WaveSimulatorScene::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, flo
 	auto objectCB = m_curFrameResource->ObjectCB->Resource();
 	auto matCB = m_curFrameResource->MaterialCB->Resource();
 
-	list<Layer*>::iterator iter;
-	list<Layer*>::iterator iterEnd = m_LayerList.end();
-
-	for (size_t i = 0; i < ritems.size(); ++i)
+	for (auto ri : ritem)
 	{
-		auto ri = ritems[i];
+		if (ri->GetEnable())
+		{
+			ri->Render(cmdList, fDeltaTime);
 
+			CD3DX12_GPU_DESCRIPTOR_HANDLE tex(m_SrvHeap->GetGPUDescriptorHandleForHeapStart());
+			tex.Offset(ri->GetMaterial()->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);
 
+			D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() +
+				ri->GetObjCBIdx() * objCBByteSize;
+			D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() +
+				ri->GetMaterial()->nMatCBIdx * matCBByteSize;
 
-		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(m_SrvHeap->GetGPUDescriptorHandleForHeapStart());
-		tex.Offset(ri->GetMaterial()->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);
+			cmdList->SetGraphicsRootDescriptorTable(0, tex);
+			cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
+			cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
 
-		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() +
-			ri->GetObjCBIdx() * objCBByteSize;
-		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() +
-			ri->GetMaterial()->nMatCBIdx * matCBByteSize;
-
-		cmdList->SetGraphicsRootDescriptorTable(0, tex);
-		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
-		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
-
-		cmdList->DrawIndexedInstanced(ri->GetIdxCnt(), 1, ri->GetStartIdxLocation(), ri->GetBaseVertexLocation(), 0);
+			cmdList->DrawIndexedInstanced(ri->GetIdxCnt(), 1, ri->GetStartIdxLocation(), ri->GetBaseVertexLocation(), 0);
+		}
 	}
 }
 
@@ -880,6 +888,14 @@ bool WaveSimulatorScene::Init()
 	BuildRenderItems();
 	BuildFrameResources();
 	BuildPSO();
+
+	// 초기화 명령을 실행합니다.
+	ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Close());
+	ID3D12CommandList* cmdsLists[] = { GET_SINGLE(Core)->GetCommandList().Get() };
+	GET_SINGLE(Core)->GetCommandQueue()->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	// 초기화가 완료될 때까지 기다립니다.
+	GET_SINGLE(Core)->FlushCommandQueue();
 
 	return true;
 }
@@ -931,87 +947,79 @@ void WaveSimulatorScene::Render(ComPtr<ID3D12GraphicsCommandList> commandList, f
 
 	// 커맨드 리스트는 ExecuteCommandList를 통해 명령 대기열에 추가된 후 재설정할 수 있습니다.
 	// 커맨드 리스트를 재사용하면 메모리가 재사용됩니다.
-	// 기본값으로 와이어 프레임이 켜져 있습니다.
-	if (m_IsWireframe)
-	{
-		ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Reset(cmdListAlloc.Get(), m_PSOs["opaque_wireframe"].Get()));
-	}
-	else
-	{
-		ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Reset(cmdListAlloc.Get(), m_PSOs["opaque"].Get()));
-	}
+	ThrowIfFailed(commandList->Reset(cmdListAlloc.Get(), m_PSOs["opaque"].Get()));
 
 	// 뷰포트와 Scissor Rect를 설정합니다. 이것은 커맨드 리스트가 재설정될 때마다 재설정되어야 합니다.
-	GET_SINGLE(Core)->GetCommandList()->RSSetViewports(1, &GET_SINGLE(Core)->GetScreenViewport());
-	GET_SINGLE(Core)->GetCommandList()->RSSetScissorRects(1, &GET_SINGLE(Core)->GetScissorRect());
+	commandList->RSSetViewports(1, &GET_SINGLE(Core)->GetScreenViewport());
+	commandList->RSSetScissorRects(1, &GET_SINGLE(Core)->GetScissorRect());
 
 	// 리소스 사용량에 대한 상태 전환을 나타냅니다.
-	GET_SINGLE(Core)->GetCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GET_SINGLE(Core)->GetCurrentBackBuffer(),
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GET_SINGLE(Core)->GetCurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	// 백 버퍼와 깊이 버퍼를 지웁니다.
-	GET_SINGLE(Core)->GetCommandList()->ClearRenderTargetView(GET_SINGLE(Core)->GetCurrentBackBufferView(), 
+	commandList->ClearRenderTargetView(GET_SINGLE(Core)->GetCurrentBackBufferView(), 
 		(float*)&m_tMainPassCB.FogColor, 0, nullptr);
-	GET_SINGLE(Core)->GetCommandList()->ClearDepthStencilView(GET_SINGLE(Core)->GetDepthStencilView(), 
+	commandList->ClearDepthStencilView(GET_SINGLE(Core)->GetDepthStencilView(), 
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	// 렌더링할 버퍼를 지정합니다.
-	GET_SINGLE(Core)->GetCommandList()->OMSetRenderTargets(1, &GET_SINGLE(Core)->GetCurrentBackBufferView(), 
+	commandList->OMSetRenderTargets(1, &GET_SINGLE(Core)->GetCurrentBackBufferView(), 
 		true, &GET_SINGLE(Core)->GetDepthStencilView());
 
 	// 서술자 힙을 가져와서 이를 설정한다.
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_SrvHeap.Get() };
-	GET_SINGLE(Core)->GetCommandList()->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+	commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 	// 그래픽스 루트 서명을 설정합니다.
 	// SetGraphicsRootSignature을 이용하면 서술자 테이블을 가져와서 파이프라인에 묶을 수 있습니다.
-	GET_SINGLE(Core)->GetCommandList()->SetGraphicsRootSignature(m_RootSignature.Get());
+	commandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
 	// 패스당 상수 버퍼를 바인딩합니다. 이 작업은 패스당 한 번만 수행하면 됩니다.
 	auto passCB = m_curFrameResource->PassCB->Resource();
-	GET_SINGLE(Core)->GetCommandList()->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
 
-	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get(), m_RenderitemLayer[(int)RenderLayer::Transparent]);
-
-	if (m_IsWireframe)
-	{
-		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["alpha_wireframe"].Get());
-	}
-	else
-	{
-		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["alphaTested"].Get());
-	}
-	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get());
+	DrawRenderItems(commandList.Get(), m_RenderitemLayer[(int)RenderLayer::Opaque], fDeltaTime);
 
 	if (m_IsWireframe)
 	{
-		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["treeSprite_wireframe"].Get());
+		commandList->SetPipelineState(m_PSOs["alpha_wireframe"].Get());
 	}
 	else
 	{
-		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["treeSprites"].Get());
+		commandList->SetPipelineState(m_PSOs["alphaTested"].Get());
 	}
-	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites]);
+	DrawRenderItems(commandList.Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTested], fDeltaTime);
 
 	if (m_IsWireframe)
 	{
-		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["transparent_wireframe"].Get());
+		commandList->SetPipelineState(m_PSOs["treeSprite_wireframe"].Get());
 	}
 	else
 	{
-		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["transparent"].Get());
+		commandList->SetPipelineState(m_PSOs["treeSprites"].Get());
 	}
-	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get(), m_RenderitemLayer[(int)RenderLayer::Transparent]);
+	DrawRenderItems(commandList.Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites], fDeltaTime);
+
+	if (m_IsWireframe)
+	{
+		commandList->SetPipelineState(m_PSOs["transparent_wireframe"].Get());
+	}
+	else
+	{
+		commandList->SetPipelineState(m_PSOs["transparent"].Get());
+	}
+	DrawRenderItems(commandList.Get(), m_RenderitemLayer[(int)RenderLayer::Transparent], fDeltaTime);
 
 	// Indicate a state transition on the resource usage.
-	GET_SINGLE(Core)->GetCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GET_SINGLE(Core)->GetCurrentBackBuffer(),
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GET_SINGLE(Core)->GetCurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	// 리코딩 명령 완료
-	ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Close());
+	ThrowIfFailed(commandList->Close());
 
 	// 실행할 대기열에 명령 목록을 추가합니다.
-	ID3D12CommandList* cmdsLists[] = { GET_SINGLE(Core)->GetCommandList().Get() };
+	ID3D12CommandList* cmdsLists[] = { commandList.Get() };
 	GET_SINGLE(Core)->GetCommandQueue()->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	// 후면 및 전면 버퍼 교체
