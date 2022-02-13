@@ -14,6 +14,12 @@ public:
 	/* 게임 요소를 위한 메소드 */
 	virtual bool Init();
 
+	// 전부 시간 기반 처리다.
+	virtual void Input(float fDeltaTime);
+	virtual int Update(float fDeltaTime);
+	// 업데이트가 끝난 상태로 (충돌 전에) 후처리가 필요한 경우
+	virtual void Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime);
+
 private:
 	void OnMouseDown(int x, int y);
 	void OnMouseMove(int x, int y);
@@ -47,6 +53,14 @@ private :
 	// 프레임 리소스를 빌드한다.
 	void BuildFrameResources();
 
+	// 업데이트에 필요한 함수들
+	void AnimateMaterials(float fDeltaTime);
+	void UpdateCamera(float fDeltaTime);
+	void UpdateObjectCBs(float fDeltaTime);
+	void UpdateMaterialCBs(float fDeltaTime);
+	void UpdateMainPassCB(float fDeltaTime);
+	void UpdateWaves(float fDeltaTime);
+
 	// 이 부분은 레벨들을 레이어화하면 해결될 부분인 것 같다.
 	void LoadTexture();
 	void BuildDescriptorHeaps();
@@ -59,7 +73,7 @@ private :
 	void BuildTreeSpritesGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<class MeshObject*>& ritems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, float fDeltaTime);
 
 private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;

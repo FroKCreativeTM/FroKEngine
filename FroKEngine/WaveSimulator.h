@@ -51,7 +51,7 @@ private:
 	void BuildTreeSpritesGeometry();
 	void BuildRenderItems();
 	void BuildPSO();
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems, float fDeltaTime);
 
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
 
@@ -795,7 +795,8 @@ inline void WaveSimulator::BuildPSO()
 	ThrowIfFailed(m_d3dDevice->CreateGraphicsPipelineState(&treeSpriteWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["treeSprite_wireframe"])));
 }
 
-inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems)
+inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems, 
+	float fDeltaTime)
 {
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	UINT matCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
@@ -807,9 +808,7 @@ inline void WaveSimulator::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, c
 	{
 		auto ri = ritems[i];
 
-		cmdList->IASetVertexBuffers(0, 1, &ri->GetGeometry()->VertexBufferView());
-		cmdList->IASetIndexBuffer(&ri->GetGeometry()->IndexBufferView());
-		cmdList->IASetPrimitiveTopology(ri->GetPrimitiveType());
+		ri->Render(cmdList, fDeltaTime);
 
 		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(m_SrvHeap->GetGPUDescriptorHandleForHeapStart());
 		tex.Offset(ri->GetMaterial()->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);

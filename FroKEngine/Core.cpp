@@ -455,7 +455,7 @@ void Core::OnResize()
         IID_PPV_ARGS(m_DepthStencilBuffer.GetAddressOf())));
 
     // 밉 레벨이 0인 전체 리소스 형식을 사용하여 서술자 생성
-    m_d3dDevice->CreateDepthStencilView(m_DepthStencilBuffer.Get(), nullptr, DepthStencilView());
+    m_d3dDevice->CreateDepthStencilView(m_DepthStencilBuffer.Get(), nullptr, GetDepthStencilView());
 
     // 리소스가 초기화 된 상태에서 Depth 버퍼를 사용하도록 전환한다.
     // CD3DX12_RESOURCE_BARRIER는 GPU가 자원을 다 기록하지 않았거나
@@ -687,12 +687,12 @@ void Core::FlushCommandQueue()
     }
 }
 
-ID3D12Resource* Core::CurrentBackBuffer() const
+ID3D12Resource* Core::GetCurrentBackBuffer() const
 {
     return m_SwapChainBuffer[m_CurrBackBuffer].Get();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE Core::CurrentBackBufferView() const
+D3D12_CPU_DESCRIPTOR_HANDLE Core::GetCurrentBackBufferView() const
 {
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(
         m_RtvHeap->GetCPUDescriptorHandleForHeapStart(),
@@ -700,7 +700,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE Core::CurrentBackBufferView() const
         m_RtvDescriptorSize);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE Core::DepthStencilView() const
+D3D12_CPU_DESCRIPTOR_HANDLE Core::GetDepthStencilView() const
 {
     return m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 }

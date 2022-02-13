@@ -50,9 +50,6 @@ protected :
 	void CreateSwapChain();
 	void FlushCommandQueue();
 
-	ID3D12Resource* CurrentBackBuffer()const;
-	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;
-	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const;
 
 	void CalculateFrameStats();
 
@@ -95,6 +92,53 @@ public :
 	UINT Get4xMsaaQuality() const
 	{
 		return m_4xMsaaQuality;
+	}
+
+	ComPtr<IDXGISwapChain> GetSwapChain() const
+	{
+		return m_SwapChain;
+	}
+
+	D3D12_VIEWPORT	GetScreenViewport() const
+	{
+		return m_ScreenViewport;
+	}
+	D3D12_RECT		GetScissorRect() const
+	{
+		return m_ScissorRect;
+	}
+
+	ID3D12Resource* GetCurrentBackBuffer() const;
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferView()const;
+	D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView()const;
+
+	int	GetCurrBackBuffer() const
+	{
+		return m_CurrBackBuffer;
+	}
+	void SetCurrBackBuffer(int cur) 
+	{
+		m_CurrBackBuffer = cur;
+	}
+
+	int GetSwapChainBufferCount() 
+	{
+		return SwapChainBufferCount;
+	}
+
+	UINT64& GetCurrentFence() 
+	{
+		return m_CurrentFence;
+	}
+
+	ComPtr<ID3D12Fence> GetFence() const
+	{
+		return m_Fence;
+	}
+
+	RESOLUTION GetResolution() const
+	{
+		return m_tRS;
 	}
 
 protected : 

@@ -223,6 +223,9 @@
     <ClInclude Include="Scene\WaveSimulatorScene.h">
       <Filter>03. Simulator\03. Scene</Filter>
     </ClInclude>
+    <ClInclude Include="WaveSimulator.h">
+      <Filter>03. Simulator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp">

@@ -109,3 +109,6 @@ inline std::wstring AnsiToWString(const std::string & str)
 #ifndef ReleaseCom
 #define ReleaseCom(x) { if(x){ x->Release(); x = 0; } }
 #endif
+
+// 해상도를 얻어오는 매크로
+#define GET_RESOLUTION		Core::GetInst()->GetResolution()

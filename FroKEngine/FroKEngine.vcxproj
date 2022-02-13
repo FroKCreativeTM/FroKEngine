@@ -191,6 +191,7 @@
     <ClInclude Include="Type.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Wave.h" />
+    <ClInclude Include="WaveSimulator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Collision\Collider.cpp" />

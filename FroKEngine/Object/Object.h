@@ -137,7 +137,7 @@ public :
 		return m_world;
 	}
 
-	void SetWorldMatrix(XMFLOAT4X4 world)
+	void SetWorldMatrix(XMFLOAT4X4& world)
 	{
 		m_world = world;
 	}
@@ -147,12 +147,12 @@ public :
 		return m_texTransform;
 	}
 
-	void SetTexTransform(XMFLOAT4X4 texTransform)
+	void SetTexTransform(XMFLOAT4X4& texTransform)
 	{
 		m_texTransform = texTransform;
 	}
 
-	void SetTexTransform(XMMATRIX texTransform)
+	void SetTexTransform(XMMATRIX& texTransform)
 	{
 		XMStoreFloat4x4(&m_texTransform, texTransform);
 	}

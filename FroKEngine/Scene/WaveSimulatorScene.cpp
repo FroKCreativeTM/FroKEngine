@@ -12,6 +12,7 @@
 #include "../Wave.h"
 #include "../TreeSpriteVertex.h"
 #include "../InputManager.h"
+#include "../Timer.h"
 
 WaveSimulatorScene::WaveSimulatorScene()
 {
@@ -87,6 +88,179 @@ void WaveSimulatorScene::BuildFrameResources()
 			GET_SINGLE(Core)->GetDevice().Get(), 1, (UINT)m_allRenderItems.size(),
 			(UINT)m_Materials.size(), m_Waves->VertexCount()));
 	}
+}
+
+void WaveSimulatorScene::AnimateMaterials(float fDeltaTime)
+{
+	// Scroll the water material texture coordinates.
+	auto waterMat = m_Materials["water"];
+
+	float& tu = waterMat->MatTransform(3, 0);
+	float& tv = waterMat->MatTransform(3, 1);
+
+	tu += 0.1f * fDeltaTime;
+	tv += 0.02f * fDeltaTime;
+
+	if (tu >= 1.0f)
+		tu -= 1.0f;
+
+	if (tv >= 1.0f)
+		tv -= 1.0f;
+
+	waterMat->MatTransform(3, 0) = tu;
+	waterMat->MatTransform(3, 1) = tv;
+
+	// 재질이 변경되었으므로 cbuffer를 업데이트해야 합니다.
+	waterMat->nFramesDirty = gNumFrameResource;
+}
+
+void WaveSimulatorScene::UpdateCamera(float fDeltaTime)
+{
+	m_EyePos.x = m_Radius * sinf(m_Phi) * cosf(m_Theta);
+	m_EyePos.z = m_Radius * sinf(m_Phi) * sinf(m_Theta);
+	m_EyePos.y = m_Radius * cosf(m_Phi);
+
+	XMVECTOR pos = XMVectorSet(m_EyePos.x, m_EyePos.y, m_EyePos.z, 1.0f);
+	XMVECTOR target = XMVectorZero();
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+	XMStoreFloat4x4(&m_View, view);
+}
+
+void WaveSimulatorScene::UpdateObjectCBs(float fDeltaTime)
+{
+	auto curObjectCB = m_curFrameResource->ObjectCB.get();
+
+	// 상수들이 바뀌었을 때에만 cbuffer 자료를 갱신해야 한다.
+	// 이러한 갱신을 프레임 자원마다 수행해야 한다.
+	for (auto& e : m_allRenderItems)
+	{
+		int dirty = e->GetFrameDirty();
+		if (dirty > 0)
+		{
+			XMMATRIX world = XMLoadFloat4x4(&e->GetWorldMatrix());
+			XMMATRIX texTransform = XMLoadFloat4x4(&e->GetTexTransform());
+
+			ObjectConstants objConstants;
+			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
+			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(texTransform));
+
+			curObjectCB->CopyData(e->GetObjCBIdx(), objConstants);
+
+			// 다음 프레임 자원으로 넘어간다.
+			e->SetFrameDirty(dirty--);
+		}
+	}
+}
+
+void WaveSimulatorScene::UpdateMaterialCBs(float fDeltaTime)
+{
+	auto curMaterialCB = m_curFrameResource->MaterialCB.get();
+
+	for (auto& e : m_Materials)
+	{
+		// 상수들이 변했을 때만 cbuffer를 갱신한다.
+		// 이러한 갱신을 프레임 자원마다 수행해야 한다.
+		Material* mat = e.second;
+
+		if (mat->nFramesDirty > 0)
+		{
+			XMMATRIX matTransform = XMLoadFloat4x4(&mat->MatTransform);
+
+			MaterialConstants matConst;
+			matConst.DiffuseAlbedo = mat->DiffuseAlbedo;
+			matConst.FresnelR0 = mat->FresnelR0;
+			matConst.fRoughness = mat->fRoughness;
+			XMStoreFloat4x4(&matConst.MatTransform, XMMatrixTranspose(matTransform));
+
+			curMaterialCB->CopyData(mat->nMatCBIdx, matConst);
+
+			// 다음 프레임 자원으로 넘어간다.
+			mat->nFramesDirty--;
+		}
+	}
+}
+
+void WaveSimulatorScene::UpdateMainPassCB(float fDeltaTime)
+{
+	XMMATRIX view = GET_SINGLE(Camera)->GetView();
+	XMMATRIX proj = GET_SINGLE(Camera)->GetProj();
+
+	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+
+	XMStoreFloat4x4(&m_tMainPassCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&m_tMainPassCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&m_tMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&m_tMainPassCB.InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&m_tMainPassCB.InvProj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&m_tMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
+	m_tMainPassCB.EyePosW = GET_SINGLE(Camera)->GetPosition3f();
+
+	m_tMainPassCB.RenderTargetSize = XMFLOAT2((float)GET_RESOLUTION.nWidth, (float)GET_RESOLUTION.nHeight);
+	m_tMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / GET_RESOLUTION.nWidth, 1.0f / GET_RESOLUTION.nHeight);
+
+	m_tMainPassCB.NearZ = 1.0f;
+	m_tMainPassCB.FarZ = 1000.0f;
+	m_tMainPassCB.TotalTime = GET_SINGLE(Timer)->GetTotalTime();
+	m_tMainPassCB.DeltaTime = fDeltaTime;
+
+	m_tMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+
+	// m_tMainPassCB.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
+
+	XMVECTOR lightDir = -MathHelper::SphericalToCartesian(1.0f, m_fSunTheta, m_fSunPhi);
+	XMStoreFloat3(&m_tMainPassCB.Lights[0].Direction, lightDir);
+	m_tMainPassCB.Lights[0].Strength = { 0.9f, 0.9f, 0.9f };
+	m_tMainPassCB.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
+	m_tMainPassCB.Lights[1].Strength = { 0.5f, 0.5f, 0.5f };
+	m_tMainPassCB.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
+	m_tMainPassCB.Lights[2].Strength = { 0.2f, 0.2f, 0.2f };
+
+	auto curPassCB = m_curFrameResource->PassCB.get();
+	curPassCB->CopyData(0, m_tMainPassCB);
+}
+
+void WaveSimulatorScene::UpdateWaves(float fDeltaTime)
+{
+	// 매 1/4초마다 무작위 웨이브를 생성합니다.
+	static float t_base = 0.0f;
+	if ((GET_SINGLE(Timer)->GetTotalTime() - t_base) >= 0.25f)
+	{
+		t_base += 0.25f;
+
+		int i = MathHelper::Rand(4, m_Waves->RowCount() - 5);
+		int j = MathHelper::Rand(4, m_Waves->ColumnCount() - 5);
+
+		float r = MathHelper::RandF(0.2f, 0.5f);
+
+		m_Waves->Disturb(i, j, r);
+	}
+
+	// 웨이브 시뮬레이션을 업데이트합니다.
+	m_Waves->Update(fDeltaTime);
+
+	// 새 솔루션으로 웨이브 정점 버퍼를 업데이트한다.
+	auto currWavesVB = m_curFrameResource->WavesVB.get();
+	for (int i = 0; i < m_Waves->VertexCount(); ++i)
+	{
+		Vertex v;
+
+		v.Pos = m_Waves->Position(i);
+		v.Normal = m_Waves->Normal(i);
+
+		// [-w/2,w/2] --> [0,1] 매핑을 통해 위치에서 tex-coords 파생
+		v.TexC.x = 0.5f + v.Pos.x / m_Waves->Width();
+		v.TexC.y = 0.5f - v.Pos.z / m_Waves->Depth();
+
+		currWavesVB->CopyData(i, v);
+	}
+
+	// 파도 렌더 아이템의 동적 VB를 현재 프레임 VB로 설정합니다.
+	m_WaveRenderItem->GetGeometry()->VertexBufferGPU = currWavesVB->Resource();
 }
 
 void WaveSimulatorScene::LoadTexture()
@@ -636,7 +810,7 @@ void WaveSimulatorScene::BuildPSO()
 	ThrowIfFailed(GET_SINGLE(Core)->GetDevice()->CreateGraphicsPipelineState(&treeSpriteWireframePsoDesc, IID_PPV_ARGS(&m_PSOs["treeSprite_wireframe"])));
 }
 
-void WaveSimulatorScene::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<MeshObject*>& ritems)
+void WaveSimulatorScene::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, float fDeltaTime)
 {
 	UINT objCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	UINT matCBByteSize = D3DUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
@@ -644,13 +818,14 @@ void WaveSimulatorScene::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, con
 	auto objectCB = m_curFrameResource->ObjectCB->Resource();
 	auto matCB = m_curFrameResource->MaterialCB->Resource();
 
+	list<Layer*>::iterator iter;
+	list<Layer*>::iterator iterEnd = m_LayerList.end();
+
 	for (size_t i = 0; i < ritems.size(); ++i)
 	{
 		auto ri = ritems[i];
 
-		cmdList->IASetVertexBuffers(0, 1, &ri->GetGeometry()->VertexBufferView());
-		cmdList->IASetIndexBuffer(&ri->GetGeometry()->IndexBufferView());
-		cmdList->IASetPrimitiveTopology(ri->GetPrimitiveType());
+
 
 		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(m_SrvHeap->GetGPUDescriptorHandleForHeapStart());
 		tex.Offset(ri->GetMaterial()->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);
@@ -675,6 +850,16 @@ bool WaveSimulatorScene::Init()
 		return false;
 	}
 
+	// 먼저 커맨드 리스트를 초기화 한다.
+	ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Reset(GET_SINGLE(Core)->GetDirectCmdListAlloc().Get(), nullptr));
+
+	// 이 힙 유형에서 설명자의 증분 크기를 가져옵니다. 
+	// 이것은 하드웨어에 따라 다르므로 이 정보를 쿼리해야 합니다.
+	m_CbvSrvDescriptorSize = GET_SINGLE(Core)->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	// 파도에 대한 설정을 한다.
+	m_Waves = new Waves(128, 128, 1.0f, 0.03f, 4.0f, 0.2f);
+
 	// 먼저 텍스처를 불러온다. 
 	LoadTexture();
 
@@ -697,6 +882,148 @@ bool WaveSimulatorScene::Init()
 	BuildPSO();
 
 	return true;
+}
+
+void WaveSimulatorScene::Input(float fDeltaTime)
+{
+	Scene::Input(fDeltaTime);
+}
+
+int WaveSimulatorScene::Update(float fDeltaTime)
+{
+	Scene::Update(fDeltaTime);
+
+	GET_SINGLE(Camera)->UpdateViewMatrix();
+
+	m_fSunPhi = MathHelper::Clamp(m_fSunPhi, 1.0f, XM_PIDIV2);
+
+	// 원형 프레임 리소스 배열을 순환한다.
+	m_nCurFrameResourceIdx = (m_nCurFrameResourceIdx + 1) % gNumFrameResource;
+	m_curFrameResource = m_frameResources[m_nCurFrameResourceIdx].get();
+
+	// GPU가 현재 프레임 리소스의 명령 처리를 완료했는가를 판별한다
+	// 렇지 않은 경우 GPU가 이 울타리 지점까지 명령을 완료할 때까지 기다린다.
+	if (m_curFrameResource->nFence != 0 && GET_SINGLE(Core)->GetFence()->GetCompletedValue() < m_curFrameResource->nFence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(GET_SINGLE(Core)->GetFence()->SetEventOnCompletion(m_curFrameResource->nFence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+
+	AnimateMaterials(fDeltaTime);
+	UpdateObjectCBs(fDeltaTime);
+	UpdateMaterialCBs(fDeltaTime);
+	UpdateMainPassCB(fDeltaTime);
+	UpdateWaves(fDeltaTime);
+
+	return 0;
+}
+
+void WaveSimulatorScene::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
+{
+	// 먼저 커맨드 리스트 할당자를 가져온다.
+	auto cmdListAlloc = m_curFrameResource->pCmdListAlloc;
+
+	// 커맨드 기록과 관련된 메모리를 재사용합니다.
+	// 연결된 커맨드 리스트가 GPU에서 실행을 완료한 경우에만 재설정할 수 있습니다.
+	ThrowIfFailed(cmdListAlloc->Reset());
+
+	// 커맨드 리스트는 ExecuteCommandList를 통해 명령 대기열에 추가된 후 재설정할 수 있습니다.
+	// 커맨드 리스트를 재사용하면 메모리가 재사용됩니다.
+	// 기본값으로 와이어 프레임이 켜져 있습니다.
+	if (m_IsWireframe)
+	{
+		ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Reset(cmdListAlloc.Get(), m_PSOs["opaque_wireframe"].Get()));
+	}
+	else
+	{
+		ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Reset(cmdListAlloc.Get(), m_PSOs["opaque"].Get()));
+	}
+
+	// 뷰포트와 Scissor Rect를 설정합니다. 이것은 커맨드 리스트가 재설정될 때마다 재설정되어야 합니다.
+	GET_SINGLE(Core)->GetCommandList()->RSSetViewports(1, &GET_SINGLE(Core)->GetScreenViewport());
+	GET_SINGLE(Core)->GetCommandList()->RSSetScissorRects(1, &GET_SINGLE(Core)->GetScissorRect());
+
+	// 리소스 사용량에 대한 상태 전환을 나타냅니다.
+	GET_SINGLE(Core)->GetCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GET_SINGLE(Core)->GetCurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	// 백 버퍼와 깊이 버퍼를 지웁니다.
+	GET_SINGLE(Core)->GetCommandList()->ClearRenderTargetView(GET_SINGLE(Core)->GetCurrentBackBufferView(), 
+		(float*)&m_tMainPassCB.FogColor, 0, nullptr);
+	GET_SINGLE(Core)->GetCommandList()->ClearDepthStencilView(GET_SINGLE(Core)->GetDepthStencilView(), 
+		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	// 렌더링할 버퍼를 지정합니다.
+	GET_SINGLE(Core)->GetCommandList()->OMSetRenderTargets(1, &GET_SINGLE(Core)->GetCurrentBackBufferView(), 
+		true, &GET_SINGLE(Core)->GetDepthStencilView());
+
+	// 서술자 힙을 가져와서 이를 설정한다.
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_SrvHeap.Get() };
+	GET_SINGLE(Core)->GetCommandList()->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	// 그래픽스 루트 서명을 설정합니다.
+	// SetGraphicsRootSignature을 이용하면 서술자 테이블을 가져와서 파이프라인에 묶을 수 있습니다.
+	GET_SINGLE(Core)->GetCommandList()->SetGraphicsRootSignature(m_RootSignature.Get());
+
+	// 패스당 상수 버퍼를 바인딩합니다. 이 작업은 패스당 한 번만 수행하면 됩니다.
+	auto passCB = m_curFrameResource->PassCB->Resource();
+	GET_SINGLE(Core)->GetCommandList()->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+
+	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get(), m_RenderitemLayer[(int)RenderLayer::Transparent]);
+
+	if (m_IsWireframe)
+	{
+		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["alpha_wireframe"].Get());
+	}
+	else
+	{
+		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["alphaTested"].Get());
+	}
+	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get());
+
+	if (m_IsWireframe)
+	{
+		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["treeSprite_wireframe"].Get());
+	}
+	else
+	{
+		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["treeSprites"].Get());
+	}
+	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get(), m_RenderitemLayer[(int)RenderLayer::AlphaTestedTreeSprites]);
+
+	if (m_IsWireframe)
+	{
+		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["transparent_wireframe"].Get());
+	}
+	else
+	{
+		GET_SINGLE(Core)->GetCommandList()->SetPipelineState(m_PSOs["transparent"].Get());
+	}
+	DrawRenderItems(GET_SINGLE(Core)->GetCommandList().Get(), m_RenderitemLayer[(int)RenderLayer::Transparent]);
+
+	// Indicate a state transition on the resource usage.
+	GET_SINGLE(Core)->GetCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GET_SINGLE(Core)->GetCurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	// 리코딩 명령 완료
+	ThrowIfFailed(GET_SINGLE(Core)->GetCommandList()->Close());
+
+	// 실행할 대기열에 명령 목록을 추가합니다.
+	ID3D12CommandList* cmdsLists[] = { GET_SINGLE(Core)->GetCommandList().Get() };
+	GET_SINGLE(Core)->GetCommandQueue()->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	// 후면 및 전면 버퍼 교체
+	ThrowIfFailed(GET_SINGLE(Core)->GetSwapChain()->Present(0, 0));
+	GET_SINGLE(Core)->SetCurrBackBuffer((GET_SINGLE(Core)->GetCurrBackBuffer() + 1) % GET_SINGLE(Core)->GetSwapChainBufferCount());
+
+	// 이 펜스 포인트까지 명령을 표시하려면 펜스 값을 증가시킨다.
+	m_curFrameResource->nFence = ++GET_SINGLE(Core)->GetCurrentFence();
+
+	// 명령 대기열에 명령을 추가하여 새 펜스 포인트를 설정한다.
+	// GPU 타임라인에 있으므로 GPU가 이 Signal() 이전의 모든 명령 처리를 완료할 때까지 새 펜스 포인트가 설정되지 않는다.
+	GET_SINGLE(Core)->GetCommandQueue()->Signal(GET_SINGLE(Core)->GetFence().Get(), GET_SINGLE(Core)->GetCurrentFence());
 }
 
 void WaveSimulatorScene::OnMouseDown(int x, int y)

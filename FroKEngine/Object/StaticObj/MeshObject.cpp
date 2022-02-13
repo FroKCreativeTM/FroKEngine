@@ -4,51 +4,45 @@
 
 bool MeshObject::Init()
 {
-    return false;
+	// StaticObj::Init();
+
+    return true;
 }
 
 void MeshObject::Input(float fDeltaTime)
 {
+	StaticObj::Input(fDeltaTime);
 }
 
 int MeshObject::Update(float fDeltaTime)
 {
+	StaticObj::Update(fDeltaTime);
     return 0;
 }
 
 int MeshObject::LateUpdate(float fDeltaTime)
 {
+	StaticObj::LateUpdate(fDeltaTime);
     return 0;
 }
 
 void MeshObject::Collision(float fDeltaTime)
 {
+	StaticObj::Collision(fDeltaTime);
 }
 
 void MeshObject::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
-	//commandList->IASetVertexBuffers(0, 1, &GetGeometry()->VertexBufferView());
-	//commandList->IASetIndexBuffer(&GetGeometry()->IndexBufferView());
-	//commandList->IASetPrimitiveTopology(GetPrimitiveType());
+	StaticObj::Render(commandList, fDeltaTime);
 
-	//CD3DX12_GPU_DESCRIPTOR_HANDLE tex(m_SrvHeap->GetGPUDescriptorHandleForHeapStart());
-	//tex.Offset(GetMaterial()->nDiffuseSrvHeapIdx, m_CbvSrvDescriptorSize);
-
-	//D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() +
-	//	GetObjCBIdx() * objCBByteSize;
-	//D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() +
-	//	GetMaterial()->nMatCBIdx * matCBByteSize;
-
-	//commandList->SetGraphicsRootDescriptorTable(0, tex);
-	//commandList->SetGraphicsRootConstantBufferView(1, objCBAddress);
-	//commandList->SetGraphicsRootConstantBufferView(3, matCBAddress);
-
-	//commandList->DrawIndexedInstanced(GetIdxCnt(), 1, GetStartIdxLocation(), GetBaseVertexLocation(), 0);
+	commandList->IASetVertexBuffers(0, 1, &GetGeometry()->VertexBufferView());
+	commandList->IASetIndexBuffer(&GetGeometry()->IndexBufferView());
+	commandList->IASetPrimitiveTopology(GetPrimitiveType());
 }
 
 MeshObject* MeshObject::Clone()
 {
-    return nullptr;
+	return new MeshObject(*this);
 }
 
 void MeshObject::Save(FILE* pFile)
