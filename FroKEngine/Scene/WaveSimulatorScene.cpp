@@ -945,6 +945,11 @@ void WaveSimulatorScene::Input(float fDeltaTime)
 	{
 		GET_SINGLE(Camera)->Strafe(20.0f * fDeltaTime);
 	}
+	if (GET_SINGLE(InputManager)->KeyDown("MouseLButton"))
+	{
+		m_LastMousePos.x = GET_SINGLE(InputManager)->GetMouseX();
+		m_LastMousePos.y = GET_SINGLE(InputManager)->GetMouseY();
+	}
 	if (GET_SINGLE(InputManager)->KeyPress("MouseLButton"))
 	{
 		// 각 픽셀이 4분의 1도에 해당하도록 합니다.
