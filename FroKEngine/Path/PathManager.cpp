@@ -59,6 +59,12 @@ bool PathManager::Init()
 		return false;
 	}
 
+	// 데이터 경로 설정
+	if (!CreatePath(SHADER_PATH, L"Resource\\Shaders\\"))
+	{
+		return false;
+	}
+
 	return true;
 }
 

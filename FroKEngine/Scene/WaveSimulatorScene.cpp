@@ -1084,7 +1084,8 @@ void WaveSimulatorScene::Render(ComPtr<ID3D12GraphicsCommandList> commandList, f
 
 	// 후면 및 전면 버퍼 교체
 	ThrowIfFailed(GET_SINGLE(Core)->GetSwapChain()->Present(0, 0));
-	GET_SINGLE(Core)->SetCurrBackBuffer((GET_SINGLE(Core)->GetCurrBackBuffer() + 1) % GET_SINGLE(Core)->GetSwapChainBufferCount());
+	GET_SINGLE(Core)->SetCurrBackBuffer((GET_SINGLE(Core)->GetCurrBackBuffer() + 1) % 
+		GET_SINGLE(Core)->GetSwapChainBufferCount());
 
 	// 이 펜스 포인트까지 명령을 표시하려면 펜스 값을 증가시킨다.
 	m_curFrameResource->nFence = ++GET_SINGLE(Core)->GetCurrentFence();

@@ -18,6 +18,7 @@ public :
 
 	virtual bool Init(HINSTANCE hInstance, int nWidth = 800, int nHeight = 600);
 	int Run();
+	void OnResize();
 
 public :
 	virtual LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -32,7 +33,6 @@ protected :
 	void Logic();
 
 	virtual void CreateRtvAndDsvDescriptorHeaps();
-	virtual void OnResize();
 
 	// 이 아래 메서드들은 전부 상속받는 클래스에서 실질적 구현을 할 것이다.
 	// 전부 시간 기반 처리다.

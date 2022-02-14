@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 #include "../Graphics/Texture/Texture.h"
 #include "../Graphics/Material.h"
+#include "../Path/PathManager.h"
 
 DEFINITION_SINGLE(ResourceManager)
 
@@ -23,7 +24,8 @@ bool ResourceManager::Init(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCo
 }
 
 Texture* ResourceManager::LoadTexture(const string& strKey,
-    const wchar_t* pFileName)
+    const wchar_t* pFileName,
+	const string& strPathKey)
 {
 	// 먼저 텍스처를 찾는다
 	Texture* texture = FindTexture(strKey);
@@ -51,9 +53,10 @@ Texture* ResourceManager::LoadTexture(const string& strKey,
 }
 
 void ResourceManager::LoadShader(const string& strKey, const wchar_t* pFileName, 
-	const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
+	const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target,
+	const string& strPathKey)
 {
-	m_shaders[strKey] = CompileShader(pFileName, defines, entrypoint, target);
+	m_shaders[strKey] = CompileShader(pFileName, defines, entrypoint, target, strPathKey);
 }
 
 ComPtr<ID3DBlob> ResourceManager::FindShader(const string& strKey)
@@ -70,7 +73,7 @@ ComPtr<ID3DBlob> ResourceManager::FindShader(const string& strKey)
 	return iter->second;
 }
 
-Material* ResourceManager::BuildMaterial(string key, int nMatCBIdx, int nDiffuseSrvHeapIdx, 
+Material* ResourceManager::BuildMaterial(const string& key, int nMatCBIdx, int nDiffuseSrvHeapIdx,
 	XMFLOAT4 diffuseAlbedo, XMFLOAT3 fresnelR0, float fRoughness)
 {
 	auto material = new Material();
@@ -102,8 +105,12 @@ Texture* ResourceManager::FindTexture(const string& strKey)
 	return iter->second;
 }
 
-Microsoft::WRL::ComPtr<ID3DBlob> ResourceManager::CompileShader(const std::wstring& filename, 
-	const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
+Microsoft::WRL::ComPtr<ID3DBlob> ResourceManager::CompileShader(const std::string& strKey, ,
+	const wchar_t* pFileName,
+	const D3D_SHADER_MACRO* defines, 
+	const std::string& entrypoint, 
+	const std::string& target,
+	const string& strPathKey)
 {
 	UINT compileFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
@@ -111,6 +118,20 @@ Microsoft::WRL::ComPtr<ID3DBlob> ResourceManager::CompileShader(const std::wstri
 #endif
 
 	HRESULT hr = S_OK;
+
+	const wchar_t* pPath =
+		GET_SINGLE(PathManager)->FindPath(strPathKey);
+
+	wstring strPath;
+
+	if (pPath)
+	{
+		// 문자열이 아니라 NULL이 들어간다면 바로 크래시!
+		strPath = pPath;
+	}
+
+	// 풀 정보
+	strPath += pFileName;
 
 	ComPtr<ID3DBlob> byteCode = nullptr;
 	ComPtr<ID3DBlob> errors;

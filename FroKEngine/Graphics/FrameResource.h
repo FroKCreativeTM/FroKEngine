@@ -58,15 +58,23 @@ struct PassConstants
 	Light Lights[MAX_LIGHTS];
 };
 
+struct InstanceData
+{
+	DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 TexTransform = MathHelper::Identity4x4();
+	UINT MaterialIndex;
+	UINT InstancePad0;
+	UINT InstancePad1;
+	UINT InstancePad2;
+};
+
 // CPU가 한 프레임의 커맨드 리스트들을 구축하는데 필요한 자원들을 대표하는 클래스이다.
 // 응용 프로그램마다 필요한 자원이 다를 것이므로, 이런 클래스의 멤버 구성 역시 
 // 응용 프로그램마다 달라야 할 것이다.
 class FrameResource
 {
 public :
-	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt);
-	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt, UINT waveVertCount);
-	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT nObjectCnt, UINT nMaterialCount, UINT waveVertCount);
+	FrameResource(ID3D12Device* pDevice, UINT nPassCnt, UINT maxInstanceCount, UINT nObjectCnt);
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
 	~FrameResource();
@@ -84,11 +92,6 @@ public :
 	// 이 값은 GPU가 아직 이 프레임 자원들을 사용하고 있는가를 판정하는 용도이다.
 	UINT64 nFence = 0;
 
-	// GPU가 이를 참조하는 명령 처리를 완료할 때까지 동적 정점 버퍼를 업데이트할 수 없습니다.
-	// 따라서 각 프레임에는 고유한 프레임이 필요합니다.
-	std::unique_ptr<UploadBuffer<Vertex>> WavesVB = nullptr;
-	
-	// 주의 : 이 집합은 단순히 Material의 부분만 나타내는 집합이다.
-	std::unique_ptr<UploadBuffer<MaterialConstants>> MaterialCB = nullptr;
+	UploadBuffer<InstanceData>* pInstanceBuffer = nullptr;
 };
 

@@ -227,13 +227,15 @@ protected:
 	// 텍스처의 위치
 	XMFLOAT4X4 m_texTransform = MathHelper::Identity4x4();
 
+	std::vector<InstanceData> m_vecInstances;
+
 	// 물체의 자료가 변해서 상수 버퍼를 갱신해야 하는 지의 여부를 뜻하는 더티 플래그이다.
 	// FrameResource마다 물체의 cbuffer가 있으므로, FrameResource마다 갱신을 적용해야 한다.
 	// 따라서 물체의 자료를 수정할 때에는 반드시
 	// NumFrameDirty = gNumFrameResources로 설정해야한다.
 	// 그래야 각각의 프레임 자원이 갱신된다.
 	int m_nFramesDirty = gNumFrameResource;
-
+		
 	// 이 렌더 아이템의 물체 상수 버퍼에 해당하는 GPU 상수 버퍼의 색인
 	UINT m_objCBIdx = -1;
 
@@ -244,6 +246,9 @@ protected:
 	UINT	m_nIdxCnt = 0;
 	UINT	m_nStartIdxLocation = 0;
 	int		m_nBaseVertexLocation = 0;
+
+	// 콜리전 본격적으로 하기 전에 먼저 교차 판정부터 어떻게 맞춰보자
+	BoundingBox m_tBoundingBox;
 
 	// 충돌체에 대한 정보
 	list<Collider*>		m_ColliderList;

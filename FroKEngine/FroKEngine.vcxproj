@@ -149,7 +149,11 @@
     <ClInclude Include="Collision\Collider.h" />
     <ClInclude Include="Collision\CollisionFlag.h" />
     <ClInclude Include="Collision\CollisionManager.h" />
+    <ClInclude Include="Collision\DebugDraw.h" />
+    <ClInclude Include="Collision\pch.h" />
+    <ClInclude Include="Collision\PrimitiveBatch.h" />
     <ClInclude Include="Collision\RectCollider.h" />
+    <ClInclude Include="Collision\VertexTypes.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="ErrorLogger.h" />
@@ -175,6 +179,7 @@
     <ClInclude Include="Ref.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Resource\ResourceManager.h" />
+    <ClInclude Include="Scene\InstanceTestScene.h" />
     <ClInclude Include="Scene\Layer.h" />
     <ClInclude Include="Scene\LayerConst.h" />
     <ClInclude Include="Scene\Scene.h" />
@@ -196,7 +201,11 @@
   <ItemGroup>
     <ClCompile Include="Collision\Collider.cpp" />
     <ClCompile Include="Collision\CollisionManager.cpp" />
+    <ClCompile Include="Collision\DebugDraw.cpp" />
+    <ClCompile Include="Collision\pch.cpp" />
+    <ClCompile Include="Collision\PrimitiveBatch.cpp" />
     <ClCompile Include="Collision\RectCollider.cpp" />
+    <ClCompile Include="Collision\VertexTypes.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
@@ -213,6 +222,7 @@
     <ClCompile Include="Path\PathManager.cpp" />
     <ClCompile Include="Ref.cpp" />
     <ClCompile Include="Resource\ResourceManager.cpp" />
+    <ClCompile Include="Scene\InstanceTestScene.cpp" />
     <ClCompile Include="Scene\Layer.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\SceneManager.cpp" />
@@ -232,17 +242,11 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Graphics\Shader\BlendDefault.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="Graphics\Shader\color.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Graphics\Shader\Default.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="Graphics\Shader\GeometryShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Graphics\Shader\LightingUtils.hlsl">
@@ -251,6 +255,17 @@
     <FxCompile Include="Graphics\Shader\TexDefault.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\BlendDefault.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\InstancingTest.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

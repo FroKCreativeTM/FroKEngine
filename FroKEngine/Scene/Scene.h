@@ -84,6 +84,9 @@ public:
 	static class Object* FindPrototype(const string& strTag, SCENE_CREATE sc);
 	static void ChangePrototype();
 
+private : 
+	virtual void OnResize();
+
 private:
 	// 원본 객체(프로토타입)을 관리
 	// 복사할 용도, 

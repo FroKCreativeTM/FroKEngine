@@ -521,7 +521,8 @@ void Core::OnResize()
     m_ScreenViewport.MaxDepth = 1.0f;
 
     m_ScissorRect = { 0, 0, static_cast<long>(m_tRS.nWidth), static_cast<long>(m_tRS.nHeight) };
-    // m_CommandList->RSSetScissorRects(1, &m_ScissorRect);
+    
+    GET_SINGLE(SceneManager)->OnResize();
 }
 
 void Core::Input(float fDeltaTime)

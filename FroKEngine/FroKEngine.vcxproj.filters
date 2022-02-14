@@ -92,6 +92,15 @@
     <Filter Include="01. Engine\08. Object\02. StaticObj\01. Geometry">
       <UniqueIdentifier>{493e98dd-a9b6-443f-b408-076077785fb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03. Simulator\03. Scene\01. Wave">
+      <UniqueIdentifier>{4f51dfa9-7bc6-42b1-b8f1-e7c1294cb4a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Simulator\03. Scene\02. Instancing">
+      <UniqueIdentifier>{a0519a76-d89d-45b8-a631-ff8978f751a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Engine\11. Collsion\00. Debug">
+      <UniqueIdentifier>{950d94f1-4eca-47f4-af5c-75f87f5a131c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -220,11 +229,26 @@
     <ClInclude Include="Object\StaticObj\MeshObject.h">
       <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\WaveSimulatorScene.h">
-      <Filter>03. Simulator\03. Scene</Filter>
-    </ClInclude>
     <ClInclude Include="WaveSimulator.h">
       <Filter>03. Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\WaveSimulatorScene.h">
+      <Filter>03. Simulator\03. Scene\01. Wave</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\InstanceTestScene.h">
+      <Filter>03. Simulator\03. Scene\02. Instancing</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\pch.h">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\PrimitiveBatch.h">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\VertexTypes.h">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\DebugDraw.h">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -307,7 +331,22 @@
       <Filter>01. Engine\08. Object\02. StaticObj\01. Geometry</Filter>
     </ClCompile>
     <ClCompile Include="Scene\WaveSimulatorScene.cpp">
-      <Filter>03. Simulator\03. Scene</Filter>
+      <Filter>03. Simulator\03. Scene\01. Wave</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\InstanceTestScene.cpp">
+      <Filter>03. Simulator\03. Scene\02. Instancing</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\pch.cpp">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\PrimitiveBatch.cpp">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\VertexTypes.cpp">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\DebugDraw.cpp">
+      <Filter>01. Engine\11. Collsion\00. Debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -336,11 +375,14 @@
     <FxCompile Include="Graphics\Shader\TexDefault.hlsl">
       <Filter>01. Engine\04. Graphics\03. Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Graphics\Shader\BlendDefault.hlsl">
+    <FxCompile Include="Resource\Shaders\InstancingTest.hlsl">
       <Filter>03. Simulator\01. Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Graphics\Shader\GeometryShader.hlsl">
+    <FxCompile Include="Resource\Shaders\BlendDefault.hlsl">
       <Filter>03. Simulator\01. Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

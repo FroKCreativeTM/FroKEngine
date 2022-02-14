@@ -268,3 +268,7 @@ void Scene::ChangePrototype()
     m_mapPrototype[SC_CURRENT] = m_mapPrototype[SC_NEXT];
     m_mapPrototype[SC_NEXT].clear();
 }
+
+void Scene::OnResize()
+{
+}
