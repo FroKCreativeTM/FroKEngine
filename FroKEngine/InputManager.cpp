@@ -35,6 +35,10 @@ InputManager::InputManager() :
 
 InputManager::~InputManager()
 {
+	if (m_mouseCaptured) {
+		ReleaseCapture();
+	}
+
 	Safe_Delete_Map(m_mapKey);
 }
 
@@ -46,6 +50,8 @@ bool InputManager::Init(HWND hWnd, bool capture)
 		m_Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 		m_Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 		m_Rid[0].dwFlags = RIDEV_INPUTSINK;
+
+		m_Rid[0].hwndTarget = hWnd;
 
 		m_hWnd = hWnd;
 

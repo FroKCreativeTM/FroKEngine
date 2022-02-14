@@ -20,10 +20,10 @@ public:
 	// 업데이트가 끝난 상태로 (충돌 전에) 후처리가 필요한 경우
 	virtual void Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime);
 
-private:
-	void OnMouseDown(int x, int y);
-	void OnMouseMove(int x, int y);
-	void OnMouseUp(int x, int y);
+// private:
+// 	static void OnMouseDown(int x, int y);
+// 	static void OnMouseMove(int x, int y);
+// 	static void OnMouseUp(int x, int y);
 
 private :
 	WaveSimulatorScene();
@@ -74,8 +74,6 @@ private :
 	void BuildRenderItems();
 	void BuildPSO();
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<class MeshObject*> ritem, float fDeltaTime);
-
-
 
 private:
 	ComPtr<ID3D12RootSignature>		m_RootSignature = nullptr;

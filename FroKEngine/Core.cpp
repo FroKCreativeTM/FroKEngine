@@ -307,24 +307,6 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
         return 0;
 
-    //case WM_KEYDOWN: case WM_SYSKEYDOWN:
-    //    GET_SINGLE(Input)->KeyDown(wParam);
-    //    return 0;
-    //case WM_KEYUP: case WM_SYSKEYUP:
-    //    if (wParam == VK_ESCAPE)
-    //    {
-    //        PostQuitMessage(0);
-    //    }
-    //    else if ((int)wParam == VK_F2)
-    //        // 4X MSAA
-    //        Set4xMsaaState(!m_4xMsaaState);
-
-    //    GET_SINGLE(Input)->KeyUp(wParam);
-    //    return 0;
-    //case WM_CHAR:
-    //    GET_SINGLE(Input)->KeyIn(wParam);
-    //    return 0;
-
     case WM_MOUSEMOVE:
         GET_SINGLE(InputManager)->MouseIn(lParam);
         return 0;

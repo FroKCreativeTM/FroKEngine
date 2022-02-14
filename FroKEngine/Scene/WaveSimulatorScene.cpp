@@ -20,6 +20,15 @@ WaveSimulatorScene::WaveSimulatorScene()
 
 WaveSimulatorScene::~WaveSimulatorScene()
 {
+	Safe_Delete_Map(m_Textures);
+	Safe_Delete_Map(m_Geometries);
+	Safe_Delete_Map(m_Materials);
+
+	for (size_t i = 0; i < (int)RenderLayer::Count; i++)
+	{
+		Safe_Release_VecList(m_RenderitemLayer[i]);
+	}
+
 	Safe_Release_VecList(m_allRenderItems);
 }
 
@@ -936,41 +945,20 @@ void WaveSimulatorScene::Input(float fDeltaTime)
 	{
 		GET_SINGLE(Camera)->Strafe(20.0f * fDeltaTime);
 	}
-	if (GET_SINGLE(InputManager)->KeyDown("MouseLButton"))
-	{
-		OnMouseDown(GET_SINGLE(InputManager)->GetMouseX(), GET_SINGLE(InputManager)->GetMouseY());
-	}
 	if (GET_SINGLE(InputManager)->KeyPress("MouseLButton"))
 	{
-		OnMouseMove(GET_SINGLE(InputManager)->GetMouseX(), GET_SINGLE(InputManager)->GetMouseY());
-	}
-}
-
-void WaveSimulatorScene::OnMouseDown(int x, int y)
-{
-	m_LastMousePos.x = x;
-	m_LastMousePos.y = y;
-}
-
-void WaveSimulatorScene::OnMouseMove(int x, int y)
-{
-	if (GET_SINGLE(InputManager)->KeyDown("MouseLButton"))
-	{
 		// 각 픽셀이 4분의 1도에 해당하도록 합니다.
-		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_LastMousePos.x));
-		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - m_LastMousePos.y));
+		float dx = XMConvertToRadians(0.25f * static_cast<float>(GET_SINGLE(InputManager)->GetMouseX() - m_LastMousePos.x));
+		float dy = XMConvertToRadians(0.25f * static_cast<float>(GET_SINGLE(InputManager)->GetMouseY() - m_LastMousePos.y));
 
 		GET_SINGLE(Camera)->Pitch(dy);
 		GET_SINGLE(Camera)->RotateY(dx);
+
+		m_LastMousePos.x = GET_SINGLE(InputManager)->GetMouseX();
+		m_LastMousePos.y = GET_SINGLE(InputManager)->GetMouseY();
 	}
-
-	m_LastMousePos.x = x;
-	m_LastMousePos.y = y;
 }
 
-void WaveSimulatorScene::OnMouseUp(int x, int y)
-{
-}
 
 int WaveSimulatorScene::Update(float fDeltaTime)
 {
