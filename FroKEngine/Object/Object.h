@@ -2,7 +2,6 @@
 
 #include "../Ref.h"
 #include "../Collision/Collider.h"
-#include "../Scene/Layer.h"
 
 using namespace std;
 
@@ -19,19 +18,9 @@ public :
 		this->m_pScene = pScene;
 	}
 
-	void SetLayer(class Layer* pLayer)
-	{
-		this->m_pLayer = pLayer;
-	}
-
 	class Scene* GetScene() const 
 	{
 		return m_pScene;
-	}
-
-	class Layer* GetLayer() const
-	{
-		return m_pLayer;
 	}
 
 protected :
@@ -103,14 +92,12 @@ public:
 	// 굉장히 다양한 타입의 오브젝트를 만들기 위한 
 	// 템플릿 타입의 메소드이다.
 	template <typename T>
-	static T* CreateObj(const string& strTag,
-		class Layer* pLayer = nullptr);
+	static T* CreateObj(const string& strTag);
 	// 생성된 프로토타입의 복사를 생성한다.
 	// 템플릿으로 만들 이유도 없다.
 	static Object* CreateCloneObj(const string& strProtoKey,
 		const string& strTag,
-		SCENE_CREATE sc,
-		class Layer* pLayer = nullptr);
+		SCENE_CREATE sc);
 
 // 오브젝트 자료 다루기 
 public:
@@ -129,7 +116,6 @@ public :
 protected:
 	// 자기가 속한 장면과 레이어를 알게 한다.
 	class Scene* m_pScene;
-	class Layer* m_pLayer;
 
 public : 
 	XMFLOAT4X4 GetWorldMatrix()
@@ -264,8 +250,7 @@ private:
 };
 
 template <typename T>
-inline static T* Object::CreateObj(const string& strTag,
-	Layer* pLayer)
+inline static T* Object::CreateObj(const string& strTag)
 {
 	T* pObj = new T;
 
@@ -277,11 +262,6 @@ inline static T* Object::CreateObj(const string& strTag,
 		return nullptr;
 	}
 
-	if (pLayer)
-	{
-		pLayer->AddObj(pObj);
-	}
-
 	AddObj(pObj);
 
 	return pObj;
@@ -291,8 +271,8 @@ template<typename T>
 inline void Object::AddCollisionFunction(const string& strTag,
 	COLLISION_STATE eState, T* pObj, void(T::* pFunc)(Collider*, Collider*, float))
 {
-	list<CCollider*>::iterator iter;
-	list<CCollider*>::iterator iterEnd = m_ColliderList.end();
+	list<Collider*>::iterator iter;
+	list<Collider*>::iterator iterEnd = m_ColliderList.end();
 
 	for (iter = m_ColliderList.begin(); iter != iterEnd; ++iter)
 	{

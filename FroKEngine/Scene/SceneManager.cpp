@@ -1,6 +1,7 @@
 #include "SceneManager.h"
 #include "Scene.h"
-#include "WaveSimulatorScene.h"
+// #include "WaveSimulatorScene.h"
+#include "InstanceTestScene.h"
 
 DEFINITION_SINGLE(SceneManager)
 
@@ -21,7 +22,7 @@ SceneManager::~SceneManager()
 bool SceneManager::Init()
 {
 	// 기본 장면은 무조건 하나 만들어둔다.
-	CreateScene<WaveSimulatorScene>(SC_CURRENT);
+	CreateScene<InstanceTestScene>(SC_CURRENT);
 
 	return true;
 }
@@ -52,6 +53,14 @@ void SceneManager::Collision(float fDeltaTime)
 void SceneManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList, float fDeltaTime)
 {
 	m_pScene->Render(commandList, fDeltaTime);
+}
+
+void SceneManager::OnResize()
+{
+	if (m_pScene)
+	{
+		m_pScene->OnResize();
+	}
 }
 
 SCENE_CHANGE SceneManager::ChangeScene()

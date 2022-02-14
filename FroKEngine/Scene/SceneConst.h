@@ -14,3 +14,12 @@ enum class SCENE_CHANGE : int
 	SC_NONE,
 	SC_CHANGE
 };
+
+enum class RenderLayer : int
+{
+	Opaque = 0,		// 불투명체
+	Transparent,
+	AlphaTested,
+	AlphaTestedTreeSprites,
+	Count
+};

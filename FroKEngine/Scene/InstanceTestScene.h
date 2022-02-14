@@ -23,7 +23,6 @@ public:
 private:
 	virtual void OnResize() override;
 
-	void OnKeyboardInput(float fDeltaTime);
 	void AnimateMaterials(float fDeltaTime);
 	void UpdateInstanceData(float fDeltaTime);
 	void UpdateMaterialBuffer(float fDeltaTime);
@@ -53,7 +52,7 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap> m_SrvDescriptorHeap = nullptr;
 
-	std::unordered_map<std::string, class MeshObject*> m_Geometries;
+	std::unordered_map<std::string, class MeshGeometry*> m_Geometries;
 	std::unordered_map<std::string, class Material*> m_Materials;
 	std::unordered_map<std::string, class Texture*> m_Textures;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>> m_Shaders;

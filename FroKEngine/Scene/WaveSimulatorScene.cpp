@@ -655,10 +655,7 @@ void WaveSimulatorScene::BuildTreeSpritesGeometry()
 
 void WaveSimulatorScene::BuildRenderItems()
 {
-	// 레이어 생성
-	Layer* pLayer = FindLayer("Default");
-
-	MeshObject* pWaveObject = Object::CreateObj<MeshObject>("Water", pLayer);
+	MeshObject* pWaveObject = Object::CreateObj<MeshObject>("Water");
 	pWaveObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pWaveObject->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	pWaveObject->SetObjCBIdx(0);
@@ -672,7 +669,7 @@ void WaveSimulatorScene::BuildRenderItems()
 	m_WaveRenderItem = pWaveObject;
 	m_RenderitemLayer[(int)RenderLayer::Transparent].push_back(pWaveObject);
 
-	MeshObject* pGridObject = Object::CreateObj<MeshObject>("Grass", pLayer);
+	MeshObject* pGridObject = Object::CreateObj<MeshObject>("Grass");
 	pGridObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pGridObject->SetTexTransform(XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	pGridObject->SetObjCBIdx(1);
@@ -685,7 +682,7 @@ void WaveSimulatorScene::BuildRenderItems()
 
 	m_RenderitemLayer[(int)RenderLayer::Opaque].push_back(pGridObject);
 
-	MeshObject* pBoxObject = Object::CreateObj<MeshObject>("Box", pLayer);
+	MeshObject* pBoxObject = Object::CreateObj<MeshObject>("Box");
 	pBoxObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pBoxObject->SetTexTransform(XMMatrixScaling(3.0f, 2.0f, -9.0f));
 	pBoxObject->SetObjCBIdx(2);
@@ -698,7 +695,7 @@ void WaveSimulatorScene::BuildRenderItems()
 
 	m_RenderitemLayer[(int)RenderLayer::AlphaTested].push_back(pBoxObject);
 
-	MeshObject* pTreeSpriteObject = Object::CreateObj<MeshObject>("TreeSprites", pLayer);
+	MeshObject* pTreeSpriteObject = Object::CreateObj<MeshObject>("TreeSprites");
 	pTreeSpriteObject->SetWorldMatrix(MathHelper::Identity4x4());
 	pTreeSpriteObject->SetObjCBIdx(3);
 	pTreeSpriteObject->SetMaterial(m_Materials["treeSprites"]);

@@ -71,9 +71,6 @@
     <Filter Include="01. Engine\09. Path">
       <UniqueIdentifier>{4ec7b72a-99de-4389-b85e-9fee65d58ab5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Engine\07. Scene\01. Layer">
-      <UniqueIdentifier>{e31de124-56f8-4c1f-8f53-0f7aede58996}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03. Simulator\03. Scene">
       <UniqueIdentifier>{9eae3c54-1930-454c-8c18-02be94686520}</UniqueIdentifier>
     </Filter>
@@ -196,14 +193,8 @@
     <ClInclude Include="Scene\SceneConst.h">
       <Filter>01. Engine\07. Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\Layer.h">
-      <Filter>01. Engine\07. Scene\01. Layer</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\ResourceManager.h">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\LayerConst.h">
-      <Filter>01. Engine\07. Scene\01. Layer</Filter>
     </ClInclude>
     <ClInclude Include="Sound\SoundManager.h">
       <Filter>01. Engine\10. Sound</Filter>
@@ -249,6 +240,9 @@
     </ClInclude>
     <ClInclude Include="Collision\DebugDraw.h">
       <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\StaticObj\SkullObject.h">
+      <Filter>01. Engine\08. Object\02. StaticObj</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -303,9 +297,6 @@
     <ClCompile Include="Path\PathManager.cpp">
       <Filter>01. Engine\09. Path</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\Layer.cpp">
-      <Filter>01. Engine\07. Scene\01. Layer</Filter>
-    </ClCompile>
     <ClCompile Include="Resource\ResourceManager.cpp">
       <Filter>01. Engine\04. Graphics\04. Resource</Filter>
     </ClCompile>
@@ -347,6 +338,9 @@
     </ClCompile>
     <ClCompile Include="Collision\DebugDraw.cpp">
       <Filter>01. Engine\11. Collsion\00. Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\StaticObj\SkullObject.cpp">
+      <Filter>01. Engine\08. Object\02. StaticObj</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

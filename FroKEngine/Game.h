@@ -87,7 +87,6 @@
 
 // 씬/레이어/매니저 관련 상수
 #include "Scene/SceneConst.h"
-#include "Scene/LayerConst.h"
 
 // 충돌 관련 플래그
 #include "Collision/CollisionFlag.h"

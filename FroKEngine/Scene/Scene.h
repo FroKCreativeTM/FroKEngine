@@ -7,15 +7,6 @@ using namespace std;
 
 class Scene
 {
-public:
-	/* 레이어와 관련된 메소드 */
-	class Layer* CreateLayer(const string& strTag,
-		int nZOrder = 0);
-	class Layer* FindLayer(const string& strTag);
-
-public:
-	// 전역 함수이다!!!!(list의 sort caller가 callee로 전역함수를 원한다.)
-	static bool LayerSort(class Layer* pL1, class Layer* pL2);
 
 public:
 	/* 게임 요소를 위한 메소드 */
@@ -59,13 +50,7 @@ protected:
 	Scene();
 	virtual ~Scene() = 0;	// 순수 가상함수로!
 
-
-// 오브젝트 자체를 레이어에 배치할 것이다.
-// 레이어는 리스트로 보관하자.
 protected:
-	// 이 방식을 이용하면 장면이 날아가면 그 장면에 종속된 모든
-	// 레이어들도 함께 날아간다.
-	list<class Layer*> m_LayerList;
 	SCENE_CREATE		m_eSceneType;
 
 public:

@@ -52,13 +52,7 @@ public:
 		return m_pScene;
 	}
 
-	void OnResize()
-	{
-		if (m_pScene)
-		{
-			m_pScene->OnResize();
-		}
-	}
+	void OnResize();
 
 private:
 	SCENE_CHANGE ChangeScene();
