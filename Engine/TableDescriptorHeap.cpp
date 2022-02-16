@@ -33,6 +33,15 @@ void TableDescriptorHeap::SetCBV(D3D12_CPU_DESCRIPTOR_HANDLE srcHandle, CBV_REGI
 	DEVICE->CopyDescriptors(1, &destHandle, &destRange, 1, &srcHandle, &srcRange, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
+void TableDescriptorHeap::SetSRV(D3D12_CPU_DESCRIPTOR_HANDLE srcHandle, SRV_REGISTER reg)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE destHandle = GetCPUHandle(reg);
+
+	uint32 destRange = 1;
+	uint32 srcRange = 1;
+	DEVICE->CopyDescriptors(1, &destHandle, &destRange, 1, &srcHandle, &srcRange, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+}
+
 // 램에 있던 테이블을 레지스터로 보낸다.
 void TableDescriptorHeap::CommitTable()
 {
@@ -48,10 +57,15 @@ void TableDescriptorHeap::CommitTable()
 // 레지스터 번호를 받아서 그에 맞는 CPU 핸들을 반환한다.
 D3D12_CPU_DESCRIPTOR_HANDLE TableDescriptorHeap::GetCPUHandle(CBV_REGISTER reg)
 {
-	return GetCPUHandle(static_cast<uint32>(reg));
+	return GetCPUHandle(static_cast<uint8>(reg));
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE TableDescriptorHeap::GetCPUHandle(uint32 reg)
+D3D12_CPU_DESCRIPTOR_HANDLE TableDescriptorHeap::GetCPUHandle(SRV_REGISTER reg)
+{
+	return GetCPUHandle(static_cast<uint8>(reg));
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE TableDescriptorHeap::GetCPUHandle(uint8 reg)
 {
 	// 시작 핸들 주소를 가져온다.
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = _descHeap->GetCPUDescriptorHandleForHeapStart();

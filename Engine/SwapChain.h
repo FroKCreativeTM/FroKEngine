@@ -35,7 +35,7 @@ public :
 
 private : 
 	void CreateSwapChain(const WindowInfo& info, ComPtr<IDXGIFactory> dxgi, ComPtr<ID3D12CommandQueue> cmdQueue);
-	void CreateRtv(ComPtr<ID3D12Device> device);
+	void CreateRTV(ComPtr<ID3D12Device> device);
 
 private :
 	ComPtr<IDXGISwapChain>	_swapChain;

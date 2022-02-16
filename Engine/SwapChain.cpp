@@ -5,7 +5,7 @@
 void SwapChain::Init(const WindowInfo& info, ComPtr<ID3D12Device> device, ComPtr<IDXGIFactory> dxgi, ComPtr<ID3D12CommandQueue> cmdQueue)
 {
 	CreateSwapChain(info, dxgi, cmdQueue);
-	CreateRtv(device);
+	CreateRTV(device);
 }
 
 void SwapChain::Present()
@@ -50,7 +50,7 @@ void SwapChain::CreateSwapChain(const WindowInfo& info, ComPtr<IDXGIFactory> dxg
 
 }
 
-void SwapChain::CreateRtv(ComPtr<ID3D12Device> device)
+void SwapChain::CreateRTV(ComPtr<ID3D12Device> device)
 {
 	// Descriptor (DX12) = View (~DX11)
 	// [서술자 힙]으로 RTV 생성

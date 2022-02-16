@@ -78,16 +78,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Engine\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Engine\;$(SolutionDir)Library\Include\;$(IncludePath)</IncludePath>
     <ReferencePath>$(SolutionDir)Output\;$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(SolutionDir)Output\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Output\;$(SolutionDir)Library\Lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Output\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Engine\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Engine\;$(SolutionDir)Library\Include\;$(IncludePath)</IncludePath>
     <ReferencePath>$(SolutionDir)Output\;$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(SolutionDir)Output\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Output\;$(SolutionDir)Library\Lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Output\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -130,6 +130,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,6 +148,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
