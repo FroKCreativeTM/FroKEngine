@@ -44,17 +44,28 @@ using Vec3 = XMFLOAT3;
 using Vec4 = XMFLOAT4;
 using Matrix = XMMATRIX;
 
+enum class CBV_REGISTER
+{
+	b0,
+	b1,
+	b2,
+	b3,
+	b4,
+	END
+};
+
+enum
+{
+	SWAP_CHAIN_BUFFER_COUNT = 2,
+	CBV_REGISTER_COUNT = 5
+};
+
 struct WindowInfo
 {
 	HWND hwnd;		// 출력 윈도우
 	int32 width;	// 너비
 	int32 height;	// 높이
 	bool windowed;	// 창모드인가.
-};
-
-enum
-{
-	SWAP_CHAIN_BUFFER_COUNT = 2
 };
 
 struct Vertex
