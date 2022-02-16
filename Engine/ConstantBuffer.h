@@ -9,10 +9,10 @@ public:
 	void Init(uint32 size, uint32 count);
 
 	void Clear();
-	void PushData(int32 rootParamIndex, void* buffer, uint32 size);
+	D3D12_CPU_DESCRIPTOR_HANDLE PushData(int32 rootParamIndex, void* buffer, uint32 size);
 
 	D3D12_GPU_VIRTUAL_ADDRESS	GetGpuVirtualAddress(uint32 index);
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle();
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(uint32 index);
 
 private:
 	void CreateBuffer();
@@ -27,7 +27,7 @@ private:
 	// 상수 버퍼 뷰에 대한 정보가 담긴 디스크립터 힙
 	ComPtr<ID3D12DescriptorHeap>	_cbvHeap;
 	D3D12_CPU_DESCRIPTOR_HANDLE		_cpuHandleBegin = {};
-	uint32							_handleInIncrementSize = 0;	// 각 핸들 간의 간격
+	uint32							_handleIncrementSize = 0;	// 각 핸들 간의 간격
 
 	uint32							_currentIndex = 0;
 };
