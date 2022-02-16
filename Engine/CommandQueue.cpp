@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CommandQueue.h"
 #include "SwapChain.h"
+#include "Engine.h"
 
 CommandQueue::~CommandQueue()
 {
@@ -25,7 +26,6 @@ void CommandQueue::Init(ComPtr<ID3D12Device> device, shared_ptr<SwapChain> swapC
 	// DIRECT or BUNDLE
 	// Allocator
 	// 초기 상태 (그리기 명령은 nullptr 지정)
-	// _cmdAlloc는 Queue의 메모리를 관리해주는 것이라 보면 된다.
 	device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, _cmdAlloc.Get(), nullptr, IID_PPV_ARGS(&_cmdList));
 
 	// CommandList는 Close / Open 상태가 있는데
@@ -70,6 +70,9 @@ void CommandQueue::RenderBegin(const D3D12_VIEWPORT* vp, const D3D12_RECT* rect)
 		_swapChain->GetBackRTVBuffer().Get(), // (★)
 		D3D12_RESOURCE_STATE_PRESENT,				// 화면 출력(★)
 		D3D12_RESOURCE_STATE_RENDER_TARGET);		// 외주 결과물(★)
+	
+	_cmdList->SetGraphicsRootSignature(ROOT_SIGNATURE.Get());
+	GEngine->GetCB()->Clear();
 
 	_cmdList->ResourceBarrier(1, &barrier);
 

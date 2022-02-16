@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "SwapChain.h"
+#include "Engine.h"
 
 void SwapChain::Init(const WindowInfo& info, ComPtr<ID3D12Device> device, ComPtr<IDXGIFactory> dxgi, ComPtr<ID3D12CommandQueue> cmdQueue)
 {
