@@ -1,15 +1,27 @@
 #pragma once
 
+enum class CONSTANT_BUFFER_TYPE : uint8
+{
+	TRANSFORM,
+	MATERIAL,
+	END
+};
+
+enum
+{
+	CONSTANT_BUFFER_COUNT = static_cast<uint8>(CONSTANT_BUFFER_TYPE::END)
+};
+
 class ConstantBuffer
 {
 public:
 	ConstantBuffer();
 	~ConstantBuffer();
 
-	void Init(uint32 size, uint32 count);
+	void Init(CBV_REGISTER reg, uint32 size, uint32 count);
 
 	void Clear();
-	D3D12_CPU_DESCRIPTOR_HANDLE PushData(int32 rootParamIndex, void* buffer, uint32 size);
+	void PushData(void* buffer, uint32 size);
 
 	D3D12_GPU_VIRTUAL_ADDRESS	GetGpuVirtualAddress(uint32 index);
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(uint32 index);
@@ -28,6 +40,8 @@ private:
 	ComPtr<ID3D12DescriptorHeap>	_cbvHeap;
 	D3D12_CPU_DESCRIPTOR_HANDLE		_cpuHandleBegin = {};
 	uint32							_handleIncrementSize = 0;	// 각 핸들 간의 간격
+
+	CBV_REGISTER			_reg = {};
 
 	uint32							_currentIndex = 0;
 };

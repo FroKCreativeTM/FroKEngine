@@ -24,24 +24,27 @@ enum class KEY_STATE
 
 enum
 {
-	KEY_TYPE_COUNT = static_cast<int32>(UINT8_MAX),
+	KEY_TYPE_COUNT = static_cast<int32>(UINT8_MAX + 1),
 	KEY_STATE_COUNT = static_cast<int32>(KEY_STATE::END),
 };
 
 class Input
 {
-public : 
+public:
 	void Init(HWND hwnd);
 	void Update();
 
+	// 누르고 있을 때
 	bool GetButton(KEY_TYPE key) { return GetState(key) == KEY_STATE::PRESS; }
-	bool GetButtonWodn(KEY_TYPE key) { return GetState(key) == KEY_STATE::DOWN; }
+	// 맨 처음 눌렀을 때
+	bool GetButtonDown(KEY_TYPE key) { return GetState(key) == KEY_STATE::DOWN; }
+	// 맨 처음 눌렀다 뗐을 때
 	bool GetButtonUp(KEY_TYPE key) { return GetState(key) == KEY_STATE::UP; }
 
-private : 
+private:
 	inline KEY_STATE GetState(KEY_TYPE key) { return _states[static_cast<uint8>(key)]; }
 
-private : 
+private:
 	HWND _hwnd;
 	vector<KEY_STATE> _states;
 };

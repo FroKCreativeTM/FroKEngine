@@ -13,6 +13,9 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{d7904a44-7a34-433d-b645-bcb02ad8752d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject">
+      <UniqueIdentifier>{0ad3fabb-be68-432e-a611-400648d9e992}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -59,6 +62,24 @@
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRenderer.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="MonoBehaviour.cpp">
+      <Filter>GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,9 +131,27 @@
     <ClInclude Include="Timer.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="MonoBehaviour.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Resources\Shaders\default.hlsli">
+    <None Include="..\Resources\Shader\default.hlsli">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

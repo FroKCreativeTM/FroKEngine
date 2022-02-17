@@ -105,10 +105,6 @@ struct Vertex
 	Vec2 uv;
 };
 
-struct Transform
-{
-	Vec4 offset;
-};
 
 #define DEVICE				GEngine->GetDevice()->GetDevice()
 #define CMD_LIST			GEngine->GetCmdQueue()->GetCmdList()
@@ -117,6 +113,8 @@ struct Transform
 
 #define INPUT				GEngine->GetInput()
 #define DELTA_TIME			GEngine->GetTimer()->GetDeltaTime()
+
+#define CONST_BUFFER(type)	GEngine->GetConstantBuffer(type)
 
 // 전역으로 쓰려면 선언하자.
 extern unique_ptr<class Engine> GEngine;
