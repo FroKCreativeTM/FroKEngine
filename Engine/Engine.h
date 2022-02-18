@@ -17,11 +17,7 @@ class Engine
 {
 public : 
 	void Init(const WindowInfo& info);
-
-public : 
 	void Update();
-	void LateUpdate();
-	void ResizeWindow(int32 width, int32 height);
 
 public :
 	shared_ptr<Device> GetDevice() { return _device; }
@@ -33,12 +29,14 @@ public :
 
 	shared_ptr<ConstantBuffer> GetConstantBuffer(CONSTANT_BUFFER_TYPE type) { return _constantBuffers[static_cast<uint8>(type)]; }
 
-	const WindowInfo& GetWindow() const { return _window; }
+	const WindowInfo& GetWindow() { return _window; }
 
 private :
 	void Render();
 	void RenderBegin();
 	void RenderEnd();
+
+	void ResizeWindow(int32 width, int32 height);
 
 private : 
 	void ShowFps();

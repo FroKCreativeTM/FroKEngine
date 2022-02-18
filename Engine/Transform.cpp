@@ -19,7 +19,6 @@ Transform::~Transform()
 void Transform::FinalUpdate()
 {
 	Matrix matScale = Matrix::CreateScale(_localScale);
-	// Áü¹ú¶ô
 	Matrix matRotation = Matrix::CreateRotationX(_localRotation.x);
 	matRotation *= Matrix::CreateRotationY(_localRotation.y);
 	matRotation *= Matrix::CreateRotationZ(_localRotation.z);
@@ -42,5 +41,5 @@ void Transform::PushData()
 	// Projection	: 
 
 	Matrix matWVP = _matWorld * Camera::S_MatView * Camera::S_MatProjection;
-	CONST_BUFFER(CONSTANT_BUFFER_TYPE::TRANSFORM)->PushData(&_matWorld, sizeof(_matWorld));
+	CONST_BUFFER(CONSTANT_BUFFER_TYPE::TRANSFORM)->PushData(&matWVP, sizeof(matWVP));
 }

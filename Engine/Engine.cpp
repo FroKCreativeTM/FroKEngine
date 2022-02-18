@@ -48,10 +48,6 @@ void Engine::Update()
 	ShowFps();
 }
 
-void Engine::LateUpdate()
-{
-}
-
 void Engine::Render()
 {
 	RenderBegin();

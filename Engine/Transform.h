@@ -4,14 +4,15 @@
 
 class Transform : public Component
 {
-public :
+public:
 	Transform();
 	virtual ~Transform();
 
 	virtual void FinalUpdate() override;
 	void PushData();
 
-public : 
+public:
+	// Parent 기준
 	const Vec3& GetLocalPosition() { return _localPosition; }
 	const Vec3& GetLocalRotation() { return _localRotation; }
 	const Vec3& GetLocalScale() { return _localScale; }
@@ -23,25 +24,23 @@ public :
 	Vec3 GetUp() { return _matWorld.Up(); }
 	Vec3 GetLook() { return _matWorld.Backward(); }
 
-	void SetLocalPosition(const Vec3& pos) { _localPosition = pos; }
-	void SetLocalRotation(const Vec3& rot) { _localRotation = rot; }
+	void SetLocalPosition(const Vec3& position) { _localPosition = position; }
+	void SetLocalRotation(const Vec3& rotation) { _localRotation = rotation; }
 	void SetLocalScale(const Vec3& scale) { _localScale = scale; }
 
-public : 
+public:
 	void SetParent(shared_ptr<Transform> parent) { _parent = parent; }
 	weak_ptr<Transform> GetParent() { return _parent; }
 
 private:
-	// TODO : World 위치 관련
+	// Parent 기준
 	Vec3 _localPosition = {};
 	Vec3 _localRotation = {};
 	Vec3 _localScale = { 1.f, 1.f, 1.f };
 
-	// 좌표계
 	Matrix _matLocal = {};
 	Matrix _matWorld = {};
 
-	// 부모
 	weak_ptr<Transform> _parent;
 };
 

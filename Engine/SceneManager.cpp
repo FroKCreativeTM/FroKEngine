@@ -9,6 +9,8 @@
 #include "Transform.h"
 #include "Camera.h"
 
+#include "TestCameraScript.h"
+
 void SceneManager::Update()
 {
 	if (_activeScene == nullptr)
@@ -113,8 +115,8 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 #pragma region Camera
 	shared_ptr<GameObject> camera = make_shared<GameObject>();
 	camera->AddComponent(make_shared<Transform>());
-	camera->AddComponent(make_shared<Camera>());
-	// camera->AddComponent(make_shared<Camera>());
+	camera->AddComponent(make_shared<Camera>()); // Near=1, Far=1000, FOV=45µµ
+	camera->AddComponent(make_shared<TestCameraScript>());
 	camera->GetTransform()->SetLocalPosition(Vec3(0.f, 100.f, 0.f));
 	scene->AddGameObject(camera);
 #pragma endregion
