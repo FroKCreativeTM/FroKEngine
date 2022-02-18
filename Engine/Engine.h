@@ -33,6 +33,8 @@ public :
 
 	shared_ptr<ConstantBuffer> GetConstantBuffer(CONSTANT_BUFFER_TYPE type) { return _constantBuffers[static_cast<uint8>(type)]; }
 
+	const WindowInfo& GetWindow() const { return _window; }
+
 private :
 	void Render();
 	void RenderBegin();

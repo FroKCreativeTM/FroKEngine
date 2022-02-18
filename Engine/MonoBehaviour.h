@@ -10,5 +10,8 @@ public:
 
 public:
 
+
+private : 
+	virtual void FinalUpdate() sealed {};
 };
 

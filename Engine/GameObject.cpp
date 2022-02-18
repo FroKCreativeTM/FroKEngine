@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "Transform.h"
 #include "MeshRenderer.h"
+#include "Camera.h"
 #include "MonoBehaviour.h"
 
 GameObject::GameObject()
@@ -12,10 +13,10 @@ GameObject::~GameObject()
 {
 }
 
-void GameObject::Init()
-{
-	AddComponent(make_shared<Transform>());
-}
+// void GameObject::Init()
+// {
+// 	AddComponent(make_shared<Transform>());
+// }
 
 void GameObject::Awake()
 {
@@ -73,12 +74,41 @@ void GameObject::LateUpdate()
 	}
 }
 
+void GameObject::FinalUpdate()
+{
+	for (shared_ptr<Component>& component : _components)
+	{
+		if (component)
+			component->FinalUpdate();
+	}
+	// 스크립트는 FinalUpdate를 사용하지 않습니다.
+	// FinalUpdate는 오직 엔진만 접근해서 사용하는 함수입니다.
+}
+
+
+shared_ptr<Component> GameObject::GetFixedComponent(COMPONENT_TYPE type)
+{
+	uint8 index = static_cast<uint8>(type);
+	assert(index < FIXED_COMPONENT_COUNT);
+	return _components[index];
+}
+
 shared_ptr<Transform> GameObject::GetTransform()
 {
-	// 인덱스 번호를 호출해서
-	// 트랜스폼에 대한 컴포넌트를 반환한다.
-	uint8 index = static_cast<uint8>(COMPONENT_TYPE::TRANSFORM);
-	return static_pointer_cast<Transform>(_components[index]);
+	shared_ptr<Component> component = GetFixedComponent(COMPONENT_TYPE::TRANSFORM);
+	return static_pointer_cast<Transform>(component);
+}
+
+shared_ptr<MeshRenderer> GameObject::GetMeshRenderer()
+{
+	shared_ptr<Component> component = GetFixedComponent(COMPONENT_TYPE::MESH_RENDERER);
+	return static_pointer_cast<MeshRenderer>(component);
+}
+
+shared_ptr<Camera> GameObject::GetCamera()
+{
+	shared_ptr<Component> component = GetFixedComponent(COMPONENT_TYPE::CAMERA);
+	return static_pointer_cast<Camera>(component);
 }
 
 void GameObject::AddComponent(shared_ptr<Component> component)

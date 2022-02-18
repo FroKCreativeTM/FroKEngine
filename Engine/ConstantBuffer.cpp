@@ -90,7 +90,6 @@ void ConstantBuffer::PushData(void* buffer, uint32 size)
 	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = GetCpuHandle(_currentIndex);
 	GEngine->GetTableDescHeap()->SetCBV(cpuHandle, _reg);
 
-
 	_currentIndex++;
 }
 

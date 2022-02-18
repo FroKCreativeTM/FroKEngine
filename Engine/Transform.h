@@ -2,20 +2,46 @@
 
 #include "Component.h"
 
-struct TransformMatrix
-{
-	Vec4 offset;
-};
-
 class Transform : public Component
 {
 public :
 	Transform();
 	virtual ~Transform();
 
-	// TODO : 온갖 Parent/Child 관계
+	virtual void FinalUpdate() override;
+	void PushData();
+
+public : 
+	const Vec3& GetLocalPosition() { return _localPosition; }
+	const Vec3& GetLocalRotation() { return _localRotation; }
+	const Vec3& GetLocalScale() { return _localScale; }
+
+	const Matrix& GetLocalToWorldMatrix() { return _matWorld; }
+	const Vec3& GetWorldPosition() { return _matWorld.Translation(); }
+
+	Vec3 GetRight() { return _matWorld.Right(); }
+	Vec3 GetUp() { return _matWorld.Up(); }
+	Vec3 GetLook() { return _matWorld.Backward(); }
+
+	void SetLocalPosition(const Vec3& pos) { _localPosition = pos; }
+	void SetLocalRotation(const Vec3& rot) { _localRotation = rot; }
+	void SetLocalScale(const Vec3& scale) { _localScale = scale; }
+
+public : 
+	void SetParent(shared_ptr<Transform> parent) { _parent = parent; }
+	weak_ptr<Transform> GetParent() { return _parent; }
 
 private:
 	// TODO : World 위치 관련
+	Vec3 _localPosition = {};
+	Vec3 _localRotation = {};
+	Vec3 _localScale = { 1.f, 1.f, 1.f };
+
+	// 좌표계
+	Matrix _matLocal = {};
+	Matrix _matWorld = {};
+
+	// 부모
+	weak_ptr<Transform> _parent;
 };
 
