@@ -1,4 +1,5 @@
 #pragma once
+#include "Object.h"
 
 class Shader;
 class Texture;
@@ -27,9 +28,12 @@ struct MaterialParams
 // 이것이 바로 머터리얼이다.
 // 참고로 텍스처는 하나만 넣는 식이 아니라
 // 다양한 맵 등을 넣어줄 수 있다.
-class Material
+class Material : public Object
 {
 public:
+	Material();
+	virtual ~Material();
+
 	shared_ptr<Shader> GetShader() { return _shader; }
 
 	void SetShader(shared_ptr<Shader> shader) { _shader = shader; }
