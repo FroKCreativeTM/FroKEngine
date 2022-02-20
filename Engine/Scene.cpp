@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "Scene.h"
 #include "GameObject.h"
+#include "Camera.h"
+#include "Engine.h"
+#include "ConstantBuffer.h"
+#include "Light.h"
 
 void Scene::Awake()
 {
@@ -44,6 +48,40 @@ void Scene::FinalUpdate()
 	{
 		gameObject->FinalUpdate();
 	}
+}
+
+void Scene::Render()
+{
+	// 한 프레임당 한 번씩 조명을 세팅한다.
+	PushLightData();
+
+	for (auto gameObject : _gameObjects)
+	{
+		if (gameObject->GetCamera() == nullptr)
+			continue;
+
+		gameObject->GetCamera()->Render();
+	}
+}
+
+void Scene::PushLightData()
+{
+	LightParams lightParams = {};
+
+	for (auto& gameObject : _gameObjects)
+	{
+		// 게임 오브젝트가 Light 컴포넌트를 들고 있지 않다면
+		if (gameObject->GetLight() == nullptr)
+			continue;
+
+		const LightInfo& lightInfo = gameObject->GetLight()->GetLightInfo();
+
+		lightParams.lights[lightParams.lightCount] = lightInfo;
+		lightParams.lightCount++;
+	}
+
+	// 상수 버퍼에 넣어준다.
+	CONST_BUFFER(CONSTANT_BUFFER_TYPE::GLOBAL)->SetGlobalData(&lightParams, sizeof(lightParams));
 }
 
 void Scene::AddGameObject(shared_ptr<GameObject> gameObject)

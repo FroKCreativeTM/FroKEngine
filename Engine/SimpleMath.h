@@ -359,6 +359,7 @@ namespace DirectX
 
             // Assignment operators
             Vector4& operator= (const XMVECTORF32& F) noexcept { x = F.f[0]; y = F.f[1]; z = F.f[2]; w = F.f[3]; return *this; }
+            Vector4& operator= (const Vector3& V) noexcept { x = V.x; y = V.y; z = V.z; w = 0.f; return *this; };
             Vector4& operator+= (const Vector4& V) noexcept;
             Vector4& operator-= (const Vector4& V) noexcept;
             Vector4& operator*= (const Vector4& V) noexcept;
