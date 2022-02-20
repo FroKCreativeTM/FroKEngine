@@ -5,18 +5,14 @@
 #include "Camera.h"
 #include "MonoBehaviour.h"
 
-GameObject::GameObject()
+GameObject::GameObject() : Object(OBJECT_TYPE::GAMEOBJECT)
 {
 }
 
 GameObject::~GameObject()
 {
-}
 
-// void GameObject::Init()
-// {
-// 	AddComponent(make_shared<Transform>());
-// }
+}
 
 void GameObject::Awake()
 {
