@@ -140,6 +140,10 @@ public:								\
 struct TransformParams
 {
 	// world view projection
+	Matrix matWorld;
+	Matrix matView;
+	Matrix matProjection;
+	Matrix matWV;
 	Matrix matWVP;
 };
 
