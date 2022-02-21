@@ -1,6 +1,41 @@
 #include "pch.h"
 #include "Resources.h"
 
+void Resources::Init()
+{
+	CreateDefaultShader();
+}
+
+shared_ptr<Mesh> Resources::LoadRectangleMesh()
+{
+	shared_ptr<Mesh> findMesh = Get<Mesh>(L"Rectangle");
+	if (findMesh)
+		return findMesh;
+
+	float w2 = 0.5f;
+	float h2 = 0.5f;
+
+	vector<Vertex> vec(4);
+
+	// 앞면
+	vec[0] = Vertex(Vec3(-w2, -h2, 0), Vec2(0.0f, 1.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(1.0f, 0.0f, 0.0f));
+	vec[1] = Vertex(Vec3(-w2, +h2, 0), Vec2(0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(1.0f, 0.0f, 0.0f));
+	vec[2] = Vertex(Vec3(+w2, +h2, 0), Vec2(1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(1.0f, 0.0f, 0.0f));
+	vec[3] = Vertex(Vec3(+w2, -h2, 0), Vec2(1.0f, 1.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(1.0f, 0.0f, 0.0f));
+
+	vector<uint32> idx(6);
+
+	// 앞면
+	idx[0] = 0; idx[1] = 1; idx[2] = 2;
+	idx[3] = 0; idx[4] = 2; idx[5] = 3;
+
+	shared_ptr<Mesh> mesh = make_shared<Mesh>();
+	mesh->Init(vec, idx);
+	Add(L"Rectangle", mesh);
+
+	return mesh;
+}
+
 shared_ptr<Mesh> Resources::LoadCubeMesh()
 {
 	shared_ptr<Mesh> findMesh = Get<Mesh>(L"Cube");
@@ -189,4 +224,31 @@ shared_ptr<Mesh> Resources::LoadSphereMesh()
 	Add(L"Sphere", mesh);
 
 	return mesh;
+}
+
+void Resources::CreateDefaultShader()
+{
+	// Skybox
+	{
+		ShaderInfo info =
+		{
+			RASTERIZER_TYPE::CULL_NONE,
+			DEPTH_STENCIL_TYPE::LESS_EQUAL
+		};
+
+		shared_ptr<Shader> shader = make_shared<Shader>();
+		shader->Init(L"..\\Resources\\Shader\\skybox.fx", info);
+		Add<Shader>(L"Skybox", shader);
+	}
+
+	// Forward (Forward)
+	{
+		ShaderInfo info =
+		{
+		};
+
+		shared_ptr<Shader> shader = make_shared<Shader>();
+		shader->Init(L"..\\Resources\\Shader\\forward.fx", info);
+		Add<Shader>(L"Forward", shader);
+	}
 }

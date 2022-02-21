@@ -7,7 +7,7 @@ public:
 	Texture();
 	virtual ~Texture();
 
-	void Init(const wstring& path);
+	virtual void Load(const wstring& path) override;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() { return _srvHandle; }
 

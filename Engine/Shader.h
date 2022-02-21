@@ -1,7 +1,7 @@
 #pragma once
 #include "Object.h"
 
-enum class RASTERIZE_TYPE
+enum class RASTERIZER_TYPE
 {
 	CULL_NONE,		// 무시하지 않고 전부 연산
 	CULL_FRONT,		// 시계 방향 무시
@@ -19,7 +19,7 @@ enum class DEPTH_STENCIL_TYPE
 
 struct ShaderInfo
 {
-	RASTERIZE_TYPE rasterizeType = RASTERIZE_TYPE::CULL_BACK;
+	RASTERIZER_TYPE rasterizeType = RASTERIZER_TYPE::CULL_BACK;
 	DEPTH_STENCIL_TYPE depthStencilType = DEPTH_STENCIL_TYPE::LESS;
 };
 

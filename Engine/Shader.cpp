@@ -40,19 +40,19 @@ void Shader::Init(const wstring& path, ShaderInfo info)
 
 	switch (info.rasterizeType)
 	{
-	case RASTERIZE_TYPE::CULL_BACK:
+	case RASTERIZER_TYPE::CULL_BACK:
 		_pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 		_pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 		break;
-	case RASTERIZE_TYPE::CULL_FRONT:
+	case RASTERIZER_TYPE::CULL_FRONT:
 		_pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 		_pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 		break;
-	case RASTERIZE_TYPE::CULL_NONE:
+	case RASTERIZER_TYPE::CULL_NONE:
 		_pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 		_pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 		break;
-	case RASTERIZE_TYPE::WIREFRAME:
+	case RASTERIZER_TYPE::WIREFRAME:
 		_pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 		_pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 		break;
