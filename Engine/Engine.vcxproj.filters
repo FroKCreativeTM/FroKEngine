@@ -114,6 +114,9 @@
     <ClCompile Include="Light.cpp">
       <Filter>Object\Component</Filter>
     </ClCompile>
+    <ClCompile Include="Frustum.cpp">
+      <Filter>Object\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -204,6 +207,9 @@
       <Filter>Object\Component</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
+      <Filter>Object\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Frustum.h">
       <Filter>Object\Component</Filter>
     </ClInclude>
   </ItemGroup>
