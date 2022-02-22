@@ -14,6 +14,8 @@ Shader::~Shader()
 
 void Shader::Init(const wstring& path, ShaderInfo info)
 {
+	_info = info;
+
 	CreateVertexShader(path, "VS_Main", "vs_5_0");
 	CreatePixelShader(path, "PS_Main", "ps_5_0");
 
@@ -36,7 +38,21 @@ void Shader::Init(const wstring& path, ShaderInfo info)
 	_pipelineDesc.NumRenderTargets = 1;
 	_pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	_pipelineDesc.SampleDesc.Count = 1;
-	_pipelineDesc.DSVFormat = GEngine->GetDepthStencilBuffer()->GetDSVFormat();
+	_pipelineDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT; // depth·Î float »ç¿ë
+
+	switch (info.shaderType)
+	{
+	case SHADER_TYPE::DEFERRED:
+		_pipelineDesc.NumRenderTargets = RENDER_TARGET_G_BUFFER_GROUP_MEMBER_COUNT;
+		_pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT; // POSITION
+		_pipelineDesc.RTVFormats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT; // NORMAL
+		_pipelineDesc.RTVFormats[2] = DXGI_FORMAT_R8G8B8A8_UNORM; // COLOR
+		break;
+	case SHADER_TYPE::FORWARD:
+		_pipelineDesc.NumRenderTargets = 1;
+		_pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		break;
+	}
 
 	switch (info.rasterizeType)
 	{

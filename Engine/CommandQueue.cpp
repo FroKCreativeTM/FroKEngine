@@ -69,9 +69,11 @@ void CommandQueue::RenderBegin(const D3D12_VIEWPORT* vp, const D3D12_RECT* rect)
 	_cmdAlloc->Reset();
 	_cmdList->Reset(_cmdAlloc.Get(), nullptr);
 
+	uint8 backIndex = _swapChain->GetBackBufferIndex();
+
 	// 스왑 체인과 같이 노는 것으로 보면 된다.
 	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-		_swapChain->GetBackRTVBuffer().Get(), // (★)
+		GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)->GetRTTexture(backIndex)->GetTex2D().Get(),
 		D3D12_RESOURCE_STATE_PRESENT,				// 화면 출력(★)
 		D3D12_RESOURCE_STATE_RENDER_TARGET);		// 외주 결과물(★)
 	
@@ -92,20 +94,14 @@ void CommandQueue::RenderBegin(const D3D12_VIEWPORT* vp, const D3D12_RECT* rect)
 	_cmdList->RSSetViewports(1, vp);
 	_cmdList->RSSetScissorRects(1, rect);
 
-	// 렌더링할 버퍼를 지정한다.
-	D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = _swapChain->GetBackRTV();
-	_cmdList->ClearRenderTargetView(backBufferView, Colors::Black, 0, nullptr);
-
-	// 깊이/스텐실 뷰 설정
-	D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = GEngine->GetDepthStencilBuffer()->GetDSVCpuHandle();
-	_cmdList->OMSetRenderTargets(1, &backBufferView, FALSE, &depthStencilView);
-	_cmdList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);;
 }
 
 void CommandQueue::RenderEnd()
 {
+	uint8 backIndex = _swapChain->GetBackBufferIndex();
+
 	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-		_swapChain->GetBackRTVBuffer().Get(),
+		GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)->GetRTTexture(backIndex)->GetTex2D().Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, // 외주 결과물
 		D3D12_RESOURCE_STATE_PRESENT); // 화면 출력
 
@@ -118,9 +114,6 @@ void CommandQueue::RenderEnd()
 
 	_swapChain->Present();
 
-	// 프레임 커맨드가 끝날때까지 기다린다.
-	// 이 대기는 비효율적이며 단순성을 위해 수행된다.
-	// 나중에 프레임당 기다릴 필요가 없도록 렌더링 코드를 구성하는 방법을 보여줄 것이다.
 	WaitSync();
 
 	_swapChain->SwapIndex();
