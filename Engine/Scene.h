@@ -12,6 +12,8 @@ public:
 
 	// 시작과 업데이트가 전부 끝나고 난 뒤 Render가 실행된다.
 	void Render();
+	void RenderLights();
+	void RenderFinal();
 
 private : 
 	// 조명을 버퍼에 넣는 역할을 하는 메서드이다.
@@ -25,5 +27,7 @@ public:
 
 private:
 	vector<shared_ptr<GameObject>> _gameObjects;
+	vector<shared_ptr<class Camera>>	_cameras;
+	vector<shared_ptr<class Light>>		_lights;
 };
 

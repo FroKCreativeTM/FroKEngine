@@ -98,7 +98,7 @@ void Texture::Create(DXGI_FORMAT format, uint32 width, uint32 height,
 	}
 	else if (resFlags & D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)
 	{
-		resourceStates = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_RENDER_TARGET;
+		resourceStates = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
 		float arrFloat[4] = { clearColor.x, clearColor.y, clearColor.z, clearColor.w };
 		optimizedClearValue = CD3DX12_CLEAR_VALUE(format, arrFloat);
 	}
