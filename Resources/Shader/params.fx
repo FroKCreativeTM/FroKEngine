@@ -53,6 +53,10 @@ cbuffer MATERIAL_PARAMS : register(b2)
     float2 g_vec2_1;
     float2 g_vec2_2;
     float2 g_vec2_3;
+    float4 g_vec4_0;
+    float4 g_vec4_1;
+    float4 g_vec4_2;
+    float4 g_vec4_3;
 };
 
 Texture2D g_tex_0 : register(t0);

@@ -15,6 +15,9 @@
     <Filter Include="소스 파일\Game">
       <UniqueIdentifier>{29b0d250-e622-4857-b836-72f0cf82fd02}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\Scene">
+      <UniqueIdentifier>{1a9395ce-5c55-499d-bbee-f5b84ba91d67}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">

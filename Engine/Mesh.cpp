@@ -19,10 +19,8 @@ void Mesh::Init(vector<Vertex>& vertexBuffer, const vector<uint32>& indexBuffer)
 	CreateIndexBuffer(indexBuffer);
 }
 
-void Mesh::Render()
+void Mesh::Render(uint32 instanceCount)
 {
-	// 삼각형 기본 도형을 이용한다.
-	GRAPHICS_CMD_LIST->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// 슬롯은 먼저 0으로
 	GRAPHICS_CMD_LIST->IASetVertexBuffers(0, 1, &_vertexBufferView); // Slot: (0~15)
 	// 인덱스 버퍼도 넘겨주자.
@@ -31,9 +29,8 @@ void Mesh::Render()
 	// 세팅한 데이터를 보내자.
 	GEngine->GetGraphicsDescHeap()->CommitTable();
 
-	// 이 인스턴스를 그린다. (인스턴싱 아직 안 함)
-	// CMD_LIST->DrawInstanced(_vertexCount, 1, 0, 0);
-	GRAPHICS_CMD_LIST->DrawIndexedInstanced(_indexCount, 1, 0, 0, 0);
+	// 인덱스 카운트와 인스턴스 카운트를 건내준다.
+	GRAPHICS_CMD_LIST->DrawIndexedInstanced(_indexCount, instanceCount, 0, 0, 0);
 }
 
 void Mesh::CreateVertexBuffer(const vector<Vertex>& vertexBuffer)

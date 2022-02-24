@@ -57,6 +57,7 @@ private:
 	// Render 함수를 각각으로 나눴다.
 	vector<shared_ptr<GameObject>>	_vecDeferred;
 	vector<shared_ptr<GameObject>>	_vecForward;
+	vector<shared_ptr<GameObject>>	_vecParticle;
 
 public : 
 	// TEMP
