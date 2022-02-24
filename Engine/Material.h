@@ -52,7 +52,9 @@ public:
 	
 	void SetVec2(uint8 index, Vec2 value) { _params.SetVec2(index, value); }
 
-	void PushData();
+	void PushGraphicsData();
+	void PushComputeData();
+	void Dispatch(uint32 x, uint32 y, uint32 z);
 
 private:
 	shared_ptr<Shader>	_shader;
