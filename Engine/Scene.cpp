@@ -106,7 +106,7 @@ void Scene::RenderFinal()
 	int8 backIndex = GEngine->GetSwapChain()->GetBackBufferIndex();
 	GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)->OMSetRenderTargets(1, backIndex);
 
-	GET_SINGLE(Resources)->Get<Material>(L"Final")->PushData();
+	GET_SINGLE(Resources)->Get<Material>(L"Final")->PushGraphicsData();
 	GET_SINGLE(Resources)->Get<Mesh>(L"Rectangle")->Render();
 }
 
@@ -125,7 +125,7 @@ void Scene::PushLightData()
 		lightParams.lightCount++;
 	}
 
-	CONST_BUFFER(CONSTANT_BUFFER_TYPE::GLOBAL)->SetGlobalData(&lightParams, sizeof(lightParams));
+	CONST_BUFFER(CONSTANT_BUFFER_TYPE::GLOBAL)->SetGraphicsGloablData(&lightParams, sizeof(lightParams));
 }
 
 void Scene::AddGameObject(shared_ptr<GameObject> gameObject)

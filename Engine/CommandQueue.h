@@ -3,10 +3,14 @@
 class SwapChain;
 class DescriptorHeap;
 
-class CommandQueue
+// ********************************
+// GraphicsCommandQueue
+// ********************************
+
+class GraphicsCommandQueue
 {
 public :
-	~CommandQueue();
+	~GraphicsCommandQueue();
 
 	void Init(ComPtr<ID3D12Device> device, shared_ptr<SwapChain> swapChain);
 	void WaitSync();
@@ -17,7 +21,7 @@ public :
 	void FlushResourceCommandQueue();
 
 	ComPtr<ID3D12CommandQueue> GetCmdQueue() { return _cmdQueue; }
-	ComPtr<ID3D12GraphicsCommandList>	GetCmdList() { return _cmdList; }
+	ComPtr<ID3D12GraphicsCommandList>	GetGraphicsCmdList() { return _cmdList; }
 	ComPtr<ID3D12GraphicsCommandList>	GetResourceCmdList() { return _resCmdList; }
 
 
@@ -46,3 +50,34 @@ private:
 	shared_ptr<DescriptorHeap>	_descHeap;
 };
 
+
+// ********************************
+// ComputeCommandQueue
+// ********************************
+
+class ComputeCommandQueue
+{
+public:
+	~ComputeCommandQueue();
+
+	void Init(ComPtr<ID3D12Device> device);
+	void WaitSync();
+	void FlushComputeCommandQueue();
+
+	ComPtr<ID3D12CommandQueue> GetCmdQueue() { return _cmdQueue; }
+	ComPtr<ID3D12GraphicsCommandList>	GetComputeCmdList() { return _cmdList; }
+
+
+private:
+	// [외주 목록]에 일감을 차곡차곡 기록했다가 한 방에 요청하는 것
+	ComPtr<ID3D12CommandQueue>			_cmdQueue;
+	ComPtr<ID3D12CommandAllocator>		_cmdAlloc;
+	ComPtr<ID3D12GraphicsCommandList>	_cmdList;
+
+	ComPtr<ID3D12Fence>					_fence;
+	uint32								_fenceValue = 0;
+	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
+
+	shared_ptr<SwapChain>		_swapChain;
+	shared_ptr<DescriptorHeap>	_descHeap;
+};
