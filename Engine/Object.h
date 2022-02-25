@@ -29,6 +29,8 @@ public:
 	void SetName(const wstring& name) { _name = name; }
 	const wstring& GetName() { return _name; }
 
+	uint32 GetID() { return _id; }
+
 	// TODO : Instantiate
 
 protected:
@@ -39,5 +41,8 @@ protected:
 protected:
 	OBJECT_TYPE _objectType = OBJECT_TYPE::NONE;
 	wstring _name;
+
+protected : 
+	uint32 _id;
 };
 

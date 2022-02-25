@@ -123,6 +123,12 @@
     <ClCompile Include="ParticleSystem.cpp">
       <Filter>Object\Component</Filter>
     </ClCompile>
+    <ClCompile Include="InstancingBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="InstancingManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -223,6 +229,12 @@
     </ClInclude>
     <ClInclude Include="ParticleSystem.h">
       <Filter>Object\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="InstancingBuffer.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="InstancingManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
