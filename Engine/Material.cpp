@@ -62,3 +62,14 @@ void Material::Dispatch(uint32 x, uint32 y, uint32 z)
 
 	GEngine->GetComputeCmdQueue()->FlushComputeCommandQueue();
 }
+
+shared_ptr<Material> Material::Clone()
+{
+	shared_ptr<Material> material = make_shared<Material>();
+
+	material->SetShader(_shader);
+	material->_params = _params;
+	material->_textures = _textures;
+
+	return material;
+}

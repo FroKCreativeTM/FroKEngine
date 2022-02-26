@@ -7,6 +7,7 @@
 #include "SceneManager.h"
 #include "Light.h"
 #include "Resources.h"
+#include "InstancingManager.h"
 
 void Engine::Init(const WindowInfo& info)
 {
@@ -50,6 +51,7 @@ void Engine::Update()
 	GET_SINGLE(Input)->Update();
 	GET_SINGLE(Timer)->Update();
 	GET_SINGLE(SceneManager)->Update();
+	GET_SINGLE(InstancingManager)->ClearBuffer();
 
 	Render();
 
