@@ -17,6 +17,7 @@ public:
 	void SetMaterial(shared_ptr<Material> material) { _material = material; }
 
 	void Render();
+	void RenderShadow();
 
 private:
 	shared_ptr<Mesh> _mesh;

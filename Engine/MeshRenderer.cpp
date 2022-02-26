@@ -20,3 +20,7 @@ void MeshRenderer::Render()
 	_material->PushGraphicsData();
 	_mesh->Render();
 }
+
+void MeshRenderer::RenderShadow()
+{
+}

@@ -113,3 +113,48 @@ void Camera::Render_Forward()
 		gameObject->GetParticleSystem()->Render();
 	}
 }
+
+void Camera::SortShadowObject()
+{
+	shared_ptr<Scene> scene = GET_SINGLE(SceneManager)->GetActiveScene();
+	const vector<shared_ptr<GameObject>>& gameObjects = scene->GetGameObjects();
+
+	_vecShadow.clear();
+
+	for (auto& gameObject : gameObjects)
+	{
+		if (gameObject->GetMeshRenderer() == nullptr)
+			continue;
+
+		// 움직이지 않는 물체인가
+		// 일단은 움직이는 물체만 그림자를 그려줄 것이다.
+		if (gameObject->IsStatic())
+			continue;
+
+		if (IsCulled(gameObject->GetLayerIndex()))
+			continue;
+
+		if (gameObject->GetCheckFrustum())
+		{
+			if (_frustum.ContainsSphere(
+				gameObject->GetTransform()->GetWorldPosition(),
+				gameObject->GetTransform()->GetBoundingSphereRadius()) == false)
+			{
+				continue;
+			}
+		}
+
+		_vecShadow.push_back(gameObject);
+	}
+}
+
+void Camera::Render_Shadow()
+{
+	S_MatView = _matView;
+	S_MatProjection = _matProjection;
+
+	for (auto& gameObject : _vecShadow)
+	{
+		gameObject->GetMeshRenderer()->RenderShadow();
+	}
+}

@@ -3,9 +3,17 @@
 #include "Transform.h"
 #include "Engine.h"
 #include "Resources.h"
+#include "Camera.h"
+#include "Texture.h"
+#include "SceneManager.h"
 
 Light::Light() : Component(COMPONENT_TYPE::LIGHT)
 {
+	_shadowCamera = make_shared<GameObject>();
+	_shadowCamera->AddComponent(make_shared<Transform>());
+	_shadowCamera->AddComponent(make_shared<Camera>());
+	uint8 layerIndex = GET_SINGLE(SceneManager)->LayerNameToIndex(L"UI");
+	_shadowCamera->GetCamera()->SetCullingMaskLayerOnOff(layerIndex, true); // UI는 안 찍음
 }
 
 Light::~Light()
@@ -15,6 +23,13 @@ Light::~Light()
 void Light::FinalUpdate()
 {
 	_lightInfo.pos = GetTransform()->GetWorldPosition();
+
+	// 빛의 업데이트가 있으면 같이 이동한다.
+	_shadowCamera->GetTransform()->SetLocalPosition(GetTransform()->GetLocalPosition());
+	_shadowCamera->GetTransform()->SetLocalRotation(GetTransform()->GetLocalRotation());
+	_shadowCamera->GetTransform()->SetLocalScale(GetTransform()->GetLocalScale());
+
+	_shadowCamera->FinalUpdate();
 }
 
 void Light::Render()
@@ -36,6 +51,12 @@ void Light::Render()
 	}
 
 	_volumeMesh->Render();
+}
+
+void Light::RenderShadow()
+{
+	_shadowCamera->GetCamera()->SortShadowObject();
+	_shadowCamera->GetCamera()->Render_Shadow();
 }
 
 void Light::SetLightType(LIGHT_TYPE type)

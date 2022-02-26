@@ -43,6 +43,7 @@ public :
 
 	virtual void FinalUpdate() override;
 	void Render();
+	void RenderShadow();
 
 public : 
 	const LightInfo& GetLightInfo() { return _lightInfo; }
@@ -65,5 +66,8 @@ private :
 	int8 _lightIndex = -1;
 	shared_ptr<class Mesh> _volumeMesh;
 	shared_ptr<class Material> _lightMaterial;
+
+	// 빛이 있는 곳에서 같이 있으면서 그림자가 있을 방향을 찍는다.
+	shared_ptr<GameObject> _shadowCamera;
 };
 
