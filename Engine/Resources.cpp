@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Resources.h"
 #include "Engine.h"
+#include "MeshData.h"
 
 void Resources::Init()
 {
@@ -32,7 +33,7 @@ shared_ptr<Mesh> Resources::LoadRectangleMesh()
 	idx[3] = 0; idx[4] = 2; idx[5] = 3;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
-	mesh->Init(vec, idx);
+	mesh->Create(vec, idx);
 	Add(L"Rectangle", mesh);
 
 	return mesh;
@@ -103,7 +104,7 @@ shared_ptr<Mesh> Resources::LoadCubeMesh()
 	idx[33] = 20; idx[34] = 22; idx[35] = 23;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
-	mesh->Init(vec, idx);
+	mesh->Create(vec, idx);
 	Add(L"Cube", mesh);
 
 	return mesh;
@@ -222,7 +223,7 @@ shared_ptr<Mesh> Resources::LoadSphereMesh()
 	}
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
-	mesh->Init(vec, idx);
+	mesh->Create(vec, idx);
 	Add(L"Sphere", mesh);
 
 	return mesh;
@@ -241,7 +242,7 @@ shared_ptr<Mesh> Resources::LoadPointMesh()
 	idx[0] = 0;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
-	mesh->Init(vec, idx);
+	mesh->Create(vec, idx);
 	Add(L"Point", mesh);
 
 	return mesh;
@@ -289,12 +290,12 @@ shared_ptr<Mesh> Resources::LoadTerrainMesh(int32 sizeX, int32 sizeZ)
 	shared_ptr<Mesh> findMesh = Get<Mesh>(L"Terrain");
 	if (findMesh)
 	{
-		findMesh->Init(vec, idx);
+		findMesh->Create(vec, idx);
 		return findMesh;
 	}
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
-	mesh->Init(vec, idx);
+	mesh->Create(vec, idx);
 	Add(L"Terrain", mesh);
 	return mesh;
 }
@@ -315,6 +316,21 @@ shared_ptr<Texture> Resources::CreateTextureFromResource(const wstring& name, Co
 	Add(name, texture);
 
 	return texture;
+}
+
+shared_ptr<MeshData> Resources::LoadFBX(const wstring& path)
+{
+	wstring key = path;
+
+	shared_ptr<MeshData> meshData = Get<MeshData>(key);
+	if (meshData)
+		return meshData;
+
+	meshData = MeshData::LoadFromFBX(path);
+	meshData->SetName(key);
+	Add(key, meshData);
+
+	return meshData;
 }
 
 void Resources::CreateDefaultShader()
@@ -553,6 +569,13 @@ void Resources::CreateDefaultShader()
 		shader->CreateGraphicsShader(L"..\\Resources\\Shader\\terrain.fx", info, arg);
 		Add<Shader>(L"Terrain", shader);
 	}
+
+	// ComputeAnimation
+	{
+		shared_ptr<Shader> shader = make_shared<Shader>();
+		shader->CreateComputeShader(L"..\\Resources\\Shader\\animation.fx", "CS_Main", "cs_5_0");
+		Add<Shader>(L"ComputeAnimation", shader);
+	}
 }
 
 void Resources::CreateDefaultMaterial()
@@ -660,5 +683,14 @@ void Resources::CreateDefaultMaterial()
 		material->SetShader(shader);
 		material->SetTexture(0, texture);
 		Add<Material>(L"Terrain", material);
+	}
+
+	// ComputeAnimation
+	{
+		shared_ptr<Shader> shader = GET_SINGLE(Resources)->Get<Shader>(L"ComputeAnimation");
+		shared_ptr<Material> material = make_shared<Material>();
+		material->SetShader(shader);
+
+		Add<Material>(L"ComputeAnimation", material);
 	}
 }

@@ -41,7 +41,7 @@ enum class BLEND_TYPE : uint8
 struct ShaderInfo
 {
 	SHADER_TYPE shaderType = SHADER_TYPE::FORWARD;
-	RASTERIZER_TYPE rasterizeType = RASTERIZER_TYPE::CULL_BACK;
+	RASTERIZER_TYPE rasterizerType = RASTERIZER_TYPE::CULL_BACK;
 	DEPTH_STENCIL_TYPE depthStencilType = DEPTH_STENCIL_TYPE::LESS;
 	BLEND_TYPE blendType = BLEND_TYPE::DEFAULT;
 	D3D_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -65,7 +65,7 @@ public:
 	virtual ~Shader();
 
 	void CreateGraphicsShader(const wstring& path, ShaderInfo info = ShaderInfo(), ShaderArg arg = ShaderArg());
-	void CreateComputeShader(const wstring& path, const string name , const string version);
+	void CreateComputeShader(const wstring& path, const string& name, const string& version);
 	void Update();
 
 	SHADER_TYPE GetShaderType() { return _info.shaderType; }

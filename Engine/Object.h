@@ -9,6 +9,7 @@ enum class OBJECT_TYPE : uint8
 	MESH,
 	SHADER,
 	TEXTURE,
+	MESH_DATA,
 
 	END
 };

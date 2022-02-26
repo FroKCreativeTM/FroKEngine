@@ -1,12 +1,13 @@
 #pragma once
 
+// 구조체화 된 데이터를 읽어서 버퍼에 넣게 하기 위한 클래스입니다.
 class StructuredBuffer
 {
 public:
 	StructuredBuffer();
 	~StructuredBuffer();
 
-	void Init(uint32 elementSize, uint32 elementCount);
+	void Init(uint32 elementSize, uint32 elementCount, void* initialData = nullptr);
 
 	void PushGraphicsData(SRV_REGISTER reg);
 	void PushComputeSRVData(SRV_REGISTER reg);
@@ -18,6 +19,13 @@ public:
 	void SetResourceState(D3D12_RESOURCE_STATES state) { _resourceState = state; }
 	D3D12_RESOURCE_STATES GetResourceState() { return _resourceState; }
 	ComPtr<ID3D12Resource> GetBuffer() { return _buffer; }
+
+	uint32	GetElementSize() { return _elementSize; }
+	uint32	GetElementCount() { return _elementCount; }
+	UINT	GetBufferSize() { return _elementSize * _elementCount; }
+
+private:
+	void CopyInitialData(uint64 bufferSize, void* initialData);
 
 private:
 	ComPtr<ID3D12Resource>			_buffer;
