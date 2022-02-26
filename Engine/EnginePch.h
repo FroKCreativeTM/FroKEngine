@@ -159,13 +159,14 @@ public:								\
 
 struct TransformParams
 {
-	// world view projection
 	Matrix matWorld;
 	Matrix matView;
 	Matrix matProjection;
 	Matrix matWV;
 	Matrix matWVP;
+	Matrix matViewInv;
 };
+
 
 // 전역으로 쓰려면 선언하자.
 extern unique_ptr<class Engine> GEngine;

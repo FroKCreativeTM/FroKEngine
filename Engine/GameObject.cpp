@@ -6,6 +6,7 @@
 #include "Light.h"
 #include "MonoBehaviour.h"
 #include "ParticleSystem.h"
+#include "Terrain.h"
 
 GameObject::GameObject() : Object(OBJECT_TYPE::GAMEOBJECT)
 {
@@ -119,6 +120,12 @@ shared_ptr<ParticleSystem> GameObject::GetParticleSystem()
 {
 	shared_ptr<Component> component = GetFixedComponent(COMPONENT_TYPE::PARTICLE_SYSTEM);
 	return static_pointer_cast<ParticleSystem>(component);
+}
+
+shared_ptr<Terrain> GameObject::GetTerrain()
+{
+	shared_ptr<Component> component = GetFixedComponent(COMPONENT_TYPE::TERRAIN);
+	return static_pointer_cast<Terrain>(component);
 }
 
 void GameObject::AddComponent(shared_ptr<Component> component)

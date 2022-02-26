@@ -12,15 +12,21 @@ Shader::~Shader()
 
 }
 
-void Shader::CreateGraphicsShader(const wstring& path, ShaderInfo info, const string& vs, const string& ps, const string& gs)
+void Shader::CreateGraphicsShader(const wstring& path, ShaderInfo info, ShaderArg arg)
 {
 	_info = info;
 
-	CreateVertexShader(path, vs, "vs_5_0");
-	CreatePixelShader(path, ps, "ps_5_0");
+	CreateVertexShader(path, arg.vs, "vs_5_0");
+	CreatePixelShader(path, arg.ps, "ps_5_0");
 
-	if (gs.empty() == false)
-		CreateGeometryShader(path, gs, "gs_5_0");
+	if (arg.hs.empty() == false)
+		CreateHullShader(path, arg.hs, "hs_5_0");
+
+	if (arg.ds.empty() == false)
+		CreateDomainShader(path, arg.ds, "ds_5_0");
+
+	if (arg.gs.empty() == false)
+		CreateGeometryShader(path, arg.gs, "gs_5_0");
 
 	D3D12_INPUT_ELEMENT_DESC desc[] =
 	{
@@ -78,6 +84,13 @@ void Shader::CreateGraphicsShader(const wstring& path, ShaderInfo info, const st
 	case SHADER_TYPE::PARTICLE:
 		_graphicsPipelineDesc.NumRenderTargets = 1;
 		_graphicsPipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		break;
+	case SHADER_TYPE::COMPUTE:
+		_graphicsPipelineDesc.NumRenderTargets = 0;
+		break;
+	case SHADER_TYPE::SHADOW:
+		_graphicsPipelineDesc.NumRenderTargets = 1;
+		_graphicsPipelineDesc.RTVFormats[0] = DXGI_FORMAT_R32_FLOAT;
 		break;
 	}
 
@@ -208,6 +221,17 @@ void Shader::CreateVertexShader(const wstring& path, const string& name, const s
 {
 	CreateShader(path, name, version, _vsBlob, _graphicsPipelineDesc.VS);
 }
+
+void Shader::CreateHullShader(const wstring& path, const string& name, const string& version)
+{
+	CreateShader(path, name, version, _hsBlob, _graphicsPipelineDesc.HS);
+}
+
+void Shader::CreateDomainShader(const wstring& path, const string& name, const string& version)
+{
+	CreateShader(path, name, version, _dsBlob, _graphicsPipelineDesc.DS);
+}
+
 
 void Shader::CreatePixelShader(const wstring& path, const string& name, const string& version)
 {

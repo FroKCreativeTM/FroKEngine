@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "Transform.h"
 #include "InstancingManager.h"
+#include "Resources.h"
 
 MeshRenderer::MeshRenderer() : Component(COMPONENT_TYPE::MESH_RENDERER)
 {
@@ -36,4 +37,12 @@ uint64 MeshRenderer::GetInstanceID()
 
 	InstanceID instanceID{ _mesh->GetID(), _material->GetID() };
 	return instanceID.id;
+}
+
+// 한 물체당 그림자를 그린다.
+void MeshRenderer::RenderShadow()
+{
+	GetTransform()->PushData();
+	GET_SINGLE(Resources)->Get<Material>(L"Shadow")->PushGraphicsData();
+	_mesh->Render();
 }

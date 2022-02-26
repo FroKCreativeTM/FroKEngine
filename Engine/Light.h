@@ -46,9 +46,11 @@ public :
 	void RenderShadow();
 
 public : 
+	LIGHT_TYPE GetLightType() { return static_cast<LIGHT_TYPE>(_lightInfo.lightType); }
+
 	const LightInfo& GetLightInfo() { return _lightInfo; }
 
-	void SetLightDirection(const Vec3& direction) { _lightInfo.direction = direction; }
+	void SetLightDirection(Vec3 direction);
 	
 	void SetDiffuse(const Vec3& diffuse) { _lightInfo.color.diffuse= diffuse; }
 	void SetAmbient(const Vec3& ambient) { _lightInfo.color.ambient = ambient; }

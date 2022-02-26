@@ -67,7 +67,7 @@ void GraphicsCommandQueue::WaitSync()
 	}
 }
 
-void GraphicsCommandQueue::RenderBegin(const D3D12_VIEWPORT* vp, const D3D12_RECT* rect)
+void GraphicsCommandQueue::RenderBegin()
 {
 	// 캐패시티가 그대로인 벡터를 비우는 느낌이라 보면 된다.
 	_cmdAlloc->Reset();
@@ -92,12 +92,6 @@ void GraphicsCommandQueue::RenderBegin(const D3D12_VIEWPORT* vp, const D3D12_REC
 	_cmdList->SetDescriptorHeaps(1, &descHeap);	// CommitTable이 정상 작동
 
 	_cmdList->ResourceBarrier(1, &barrier);
-
-	// 뷰포트와 가위 사각형을 설정한다. 
-	// 이것은 명령 목록이 재설정될 때마다 재설정되어야 한다.
-	_cmdList->RSSetViewports(1, vp);
-	_cmdList->RSSetScissorRects(1, rect);
-
 }
 
 void GraphicsCommandQueue::RenderEnd()

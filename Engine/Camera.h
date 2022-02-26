@@ -40,6 +40,16 @@ public :
 	void SetCullingMask(uint32 mask) { _cullingMask = mask; }
 	bool IsCulled(uint8 layer) { return (_cullingMask & (1 << layer)) != 0; }
 
+	void SetNear(float value) { _near = value; }
+	void SetFar(float value) { _far = value; }
+	void SetFOV(float value) { _fov = value; }
+	void SetScale(float value) { _scale = value; }
+	void SetWidth(float value) { _width = value; }
+	void SetHeight(float value) { _height = value; }
+
+	Matrix& GetViewMatrix() { return _matView; }
+	Matrix& GetProjectionMatrix() { return _matProjection; }
+
 private : 
 	PROJECTION_TYPE _type = PROJECTION_TYPE::PERSPECTIVE;
 
@@ -47,6 +57,9 @@ private :
 	float _far = 1000.f;
 	float _fov = XM_PI / 4.f;
 	float _scale = 1.f;
+	// 그림자는 그림자용 버퍼가 클 수록 정밀해진다.
+	float _width = 0.f;
+	float _height = 0.f;
 
 	Matrix _matView = {};
 	Matrix _matProjection = {};

@@ -46,12 +46,25 @@ void RenderTargetGroup::Create(RENDER_TARGET_GROUP_TYPE groupType, vector<Render
 
 void RenderTargetGroup::OMSetRenderTargets(uint32 count, uint32 offset)
 {
+	D3D12_VIEWPORT vp = D3D12_VIEWPORT{ 0.f, 0.f, _rtVec[0].target->GetWidth(),
+		_rtVec[0].target->GetHeight(), 0.f, 1.f };
+	D3D12_RECT rect = D3D12_RECT{ 0,0,static_cast<LONG>(_rtVec[0].target->GetWidth()), static_cast<LONG>(_rtVec[0].target->GetHeight()) };
+
+	GRAPHICS_CMD_LIST->RSSetViewports(1, &vp);
+	GRAPHICS_CMD_LIST->RSSetScissorRects(1, &rect);
+
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_rtvHeapBegin, offset * _rtvHeapSize);
 	GRAPHICS_CMD_LIST->OMSetRenderTargets(count, &rtvHandle, FALSE/*1∞≥*/, &_dsvHeapBegin);
 }
 
 void RenderTargetGroup::OMSetRenderTargets()
 {
+	D3D12_VIEWPORT vp = D3D12_VIEWPORT{ 0.f, 0.f, _rtVec[0].target->GetWidth() , _rtVec[0].target->GetHeight(), 0.f, 1.f };
+	D3D12_RECT rect = D3D12_RECT{ 0, 0, static_cast<LONG>(_rtVec[0].target->GetWidth()),  static_cast<LONG>(_rtVec[0].target->GetHeight()) };
+
+	GRAPHICS_CMD_LIST->RSSetViewports(1, &vp);
+	GRAPHICS_CMD_LIST->RSSetScissorRects(1, &rect);
+
 	GRAPHICS_CMD_LIST->OMSetRenderTargets(_rtCount, &_rtvHeapBegin, TRUE/*¥Ÿ¡ﬂ*/, &_dsvHeapBegin);
 }
 

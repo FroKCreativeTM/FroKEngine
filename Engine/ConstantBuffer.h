@@ -23,7 +23,7 @@ public:
 
 	void Clear();
 	void PushGraphicsData(void* buffer, uint32 size);
-	void SetGraphicsGloablData(void* buffer, uint32 size);
+	void SetGraphicsGlobalData(void* buffer, uint32 size);
 	void PushComputeData(void* buffer, uint32 size);
 
 	D3D12_GPU_VIRTUAL_ADDRESS	GetGpuVirtualAddress(uint32 index);

@@ -31,6 +31,11 @@ public:
 	void SetLocalRotation(const Vec3& rotation) { _localRotation = rotation; }
 	void SetLocalScale(const Vec3& scale) { _localScale = scale; }
 
+	void LookAt(const Vec3& dir);
+
+	static bool CloseEnough(const float& a, const float& b, const float& epsilon = std::numeric_limits<float>::epsilon());
+	static Vec3 DecomposeRotationMatrix(const Matrix& rotation);
+
 public:
 	void SetParent(shared_ptr<Transform> parent) { _parent = parent; }
 	weak_ptr<Transform> GetParent() { return _parent; }

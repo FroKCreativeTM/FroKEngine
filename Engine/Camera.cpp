@@ -16,7 +16,8 @@ Matrix Camera::S_MatProjection;
 
 Camera::Camera() : Component(COMPONENT_TYPE::CAMERA)
 {
-
+	_width = static_cast<float>(GEngine->GetWindow().width);
+	_height = static_cast<float>(GEngine->GetWindow().height);
 }
 
 Camera::~Camera()
@@ -28,13 +29,10 @@ void Camera::FinalUpdate()
 {
 	_matView = GetTransform()->GetLocalToWorldMatrix().Invert();
 
-	float width = static_cast<float>(GEngine->GetWindow().width);
-	float height = static_cast<float>(GEngine->GetWindow().height);
-
 	if (_type == PROJECTION_TYPE::PERSPECTIVE)
-		_matProjection = ::XMMatrixPerspectiveFovLH(_fov, width / height, _near, _far);
+		_matProjection = ::XMMatrixPerspectiveFovLH(_fov, _width / _height, _near, _far);
 	else
-		_matProjection = ::XMMatrixOrthographicLH(width * _scale, height * _scale, _near, _far);
+		_matProjection = ::XMMatrixOrthographicLH(_width * _scale, _height * _scale, _near, _far);
 
 	_frustum.FinalUpdate();
 }

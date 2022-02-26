@@ -1,5 +1,5 @@
-#ifndef __SHADOW_FX__
-#define __SHADOW_FX__
+#ifndef _SHADOW_FX_
+#define _SHADOW_FX_
 
 #include "params.fx"
 
@@ -14,10 +14,9 @@ struct VS_OUT
     float4 clipPos : POSITION;
 };
 
-// 그림자가 적용되는 모든 물체는 이 셰이더들이 적용된다.
 VS_OUT VS_Main(VS_IN input)
 {
-    VS_OUT output = (VS_OUT) 0;
+    VS_OUT output = (VS_OUT) 0.f;
 
     output.pos = mul(float4(input.pos, 1.f), g_matWVP);
     output.clipPos = output.pos;

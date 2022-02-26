@@ -28,6 +28,8 @@ void Texture::Load(const wstring& path)
 	if (FAILED(hr))
 		assert(nullptr);
 
+	_desc = _tex2D->GetDesc();
+
 	vector<D3D12_SUBRESOURCE_DATA> subResources;
 
 	hr = ::PrepareUpload(DEVICE.Get(),
@@ -125,13 +127,13 @@ void Texture::CreateFromResource(ComPtr<ID3D12Resource> tex2D)
 {
 	_tex2D = tex2D;
 
-	D3D12_RESOURCE_DESC desc = tex2D->GetDesc();
+	_desc = tex2D->GetDesc();
 
 	// 주요 조합
 	// - DSV 단독 (조합X)
 	// - SRV
 	// - RTV + SRV : RTV를 사용할 때 deffered shader를 사용한다.(ex. CCTV 구현)
-	if (desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)
+	if (_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)
 	{
 		// DSV
 		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -146,7 +148,7 @@ void Texture::CreateFromResource(ComPtr<ID3D12Resource> tex2D)
 	}
 	else
 	{
-		if (desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)
+		if (_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)
 		{
 			// RTV
 			D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -160,7 +162,7 @@ void Texture::CreateFromResource(ComPtr<ID3D12Resource> tex2D)
 			DEVICE->CreateRenderTargetView(_tex2D.Get(), nullptr, rtvHeapBegin);
 		}
 
-		if (desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+		if (_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
 		{
 			// RTV
 			D3D12_DESCRIPTOR_HEAP_DESC uavHeapDesc = {};

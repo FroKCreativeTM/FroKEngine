@@ -28,9 +28,9 @@ public:
 
 	void Render();
 	void Render(shared_ptr<class InstancingBuffer>& buffer);
+	void RenderShadow();
 
 	uint64 GetInstanceID();
-	void RenderShadow();
 
 private:
 	shared_ptr<Mesh> _mesh;

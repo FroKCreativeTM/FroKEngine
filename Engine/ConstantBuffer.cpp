@@ -106,7 +106,7 @@ void ConstantBuffer::PushComputeData(void* buffer, uint32 size)
 	_currentIndex++;
 }
 
-void ConstantBuffer::SetGraphicsGloablData(void* buffer, uint32 size)
+void ConstantBuffer::SetGraphicsGlobalData(void* buffer, uint32 size)
 {
 	assert(_elementSize == ((size + 255) & ~255));
 	::memcpy(&_mappedBuffer[0], buffer, size);	// 무조건 0번에 
