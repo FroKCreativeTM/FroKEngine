@@ -25,6 +25,9 @@
     <Filter Include="Object\Resource">
       <UniqueIdentifier>{518684bc-1a36-4347-ace8-9ca2176cbc22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\Component\Collider">
+      <UniqueIdentifier>{7462018a-83b5-491a-ab43-a0c749aa86cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -131,6 +134,15 @@
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>Object\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseCollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="SphereCollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionManager.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +253,15 @@
     </ClInclude>
     <ClInclude Include="Terrain.h">
       <Filter>Object\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseCollider.h">
+      <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="SphereCollider.h">
+      <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

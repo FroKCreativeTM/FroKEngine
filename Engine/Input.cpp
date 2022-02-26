@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Input.h"
+#include "Engine.h"
 
 void Input::Init(HWND hwnd)
 {
@@ -46,4 +47,8 @@ void Input::Update()
 				state = KEY_STATE::NONE;
 		}
 	}
+
+	// 스크린 상 마우스 좌표를 가져온다.
+	::GetCursorPos(&_mousePos);
+	::ScreenToClient(GEngine->GetWindow().hwnd, &_mousePos);
 }
