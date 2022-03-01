@@ -19,6 +19,9 @@ public:
 	BaseCollider(ColliderType colliderType);
 	virtual ~BaseCollider();
 
+	// virtual void FinalUpdate() override;
+	virtual bool Collision(BaseCollider* pDst);
+
 public:
 	// 크게 Box, Sphere, Frustum, OrientBox, Triangle, Ray, Plane, Capsule(일단 구현할 수 있는 거부터 차례대로 구현)
 	
@@ -81,6 +84,8 @@ public:
 public:
 	bool GetTriggerd() const { return _isTriggerd; }
 	void SetTriggered(bool b) { _isTriggerd = b; }
+
+	ColliderType GetColliderType() { return _colliderType; }
 
 protected :
 	bool _isTriggerd = true;

@@ -1,7 +1,10 @@
 #include "pch.h"
 #include "SphereCollider.h"
+#include "BoxCollider.h"
+
 #include "GameObject.h"
 #include "Transform.h"
+
 
 SphereCollider::SphereCollider() : BaseCollider(ColliderType::Sphere)
 {
@@ -11,6 +14,19 @@ SphereCollider::SphereCollider() : BaseCollider(ColliderType::Sphere)
 SphereCollider::~SphereCollider()
 {
 
+}
+
+bool SphereCollider::Collision(BaseCollider* pDst)
+{
+	switch (pDst->GetColliderType())
+	{
+	case ColliderType::Sphere:
+		return CollisionSphereToSphere(GetBoundingSphere(), ((SphereCollider*)pDst)->GetBoundingSphere());
+	case ColliderType::Box:
+		return CollisionBoxToSphere(((BoxCollider*)pDst)->GetBoundingBox(), GetBoundingSphere());
+	}
+
+	return false;
 }
 
 void SphereCollider::FinalUpdate()

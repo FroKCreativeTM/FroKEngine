@@ -7,7 +7,10 @@ public:
 	SphereCollider();
 	virtual ~SphereCollider();
 
+	virtual bool Collision(BaseCollider* pDst) override;
 	virtual void FinalUpdate() override;
+
+public :
 
 	void SetRadius(float radius) { _radius = radius; }
 	void SetCenter(Vec3 center) { _center = center; }

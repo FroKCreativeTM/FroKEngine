@@ -194,7 +194,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		obj->AddComponent(make_shared<SphereCollider>());
 		obj->AddComponent(make_shared<RigidBody>());
 		obj->GetTransform()->SetLocalScale(Vec3(100.f, 100.f, 100.f));
-		obj->GetTransform()->SetLocalPosition(Vec3(600.f, 0.f, 1000.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(700.f, 0.f, 1000.f));
 		obj->AddComponent(make_shared<TestObjectScript>());
 		obj->SetStatic(false);
 		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();

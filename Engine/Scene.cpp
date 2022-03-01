@@ -7,6 +7,8 @@
 #include "Light.h"
 #include "Resources.h"
 
+#include "CollisionManager.h"
+
 void Scene::Awake()
 {
 	// shared_ptr<GameObject> : 레퍼런스 카운트 1 증가
@@ -32,6 +34,11 @@ void Scene::Update()
 	for (const shared_ptr<GameObject>& gameObject : _gameObjects)
 	{
 		gameObject->Update();
+
+		if (gameObject->GetCollider() != nullptr && gameObject->GetLife())
+		{
+			GET_SINGLE(CollisionManager)->AddObject(gameObject);
+		}
 	}
 }
 

@@ -2,11 +2,14 @@
 #include "Engine.h"
 #include "Material.h"
 #include "Transform.h"
-#include "Input.h"
-#include "Timer.h"
-#include "SceneManager.h"
 #include "Light.h"
+
+// 매니저들
+#include "Timer.h"
+#include "Input.h"
 #include "Resources.h"
+#include "SceneManager.h"
+#include "CollisionManager.h"
 #include "InstancingManager.h"
 #include "Audio.h"
 
@@ -54,6 +57,8 @@ void Engine::Update()
 	GET_SINGLE(Timer)->Update();
 	GET_SINGLE(SceneManager)->Update();
 	GET_SINGLE(InstancingManager)->ClearBuffer();
+
+	GET_SINGLE(CollisionManager)->Update();
 
 	Render();
 

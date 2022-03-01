@@ -20,7 +20,7 @@ void CollisionManager::AddObject(shared_ptr<GameObject> pObj)
 	}
 }
 
-void CollisionManager::FinalUpdate()
+void CollisionManager::Update()
 {
 	// 두 개의 충돌체가 있어야 충돌한다.
 	if (m_CollisionList.size() < 2)
@@ -52,7 +52,7 @@ void CollisionManager::FinalUpdate()
 
 bool CollisionManager::Collision(GameObject pSrc, GameObject pDst)
 {
-	return true;
+	return pSrc.GetCollider()->Collision(pDst.GetCollider().get());
 }
 
 shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY)

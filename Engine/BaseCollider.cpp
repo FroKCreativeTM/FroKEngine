@@ -12,6 +12,11 @@ BaseCollider::~BaseCollider()
 
 }
 
+bool BaseCollider::Collision(BaseCollider* pDst)
+{
+	return false;
+}
+
 bool BaseCollider::CollisionBoxToBox(const BoundingBox& src, const BoundingBox& dst)
 {
 	return src.Intersects(dst);

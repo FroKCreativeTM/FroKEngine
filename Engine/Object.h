@@ -32,6 +32,9 @@ public:
 
 	uint32 GetID() { return _id; }
 
+	bool GetLife() { return _alive; }
+	void SetLife(bool b) { _alive = b; }
+
 	// TODO : Instantiate
 
 protected:
@@ -42,6 +45,7 @@ protected:
 protected:
 	OBJECT_TYPE _objectType = OBJECT_TYPE::NONE;
 	wstring _name;
+	bool _alive;
 
 protected : 
 	uint32 _id;

@@ -11,6 +11,8 @@ public:
 
 	void SetCenter(Vec3 center) { _center = center; }
 
+	BoundingBox GetBoundingBox() { return _boundingBox; }
+
 private:
 	// Local ±‚¡ÿ
 	Vec3		_center = Vec3(0, 0, 0);

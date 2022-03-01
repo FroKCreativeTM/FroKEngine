@@ -17,17 +17,23 @@ void TestObjectScript::LateUpdate()
 {
 	Vec3 pos = GetTransform()->GetLocalPosition();
 
-	if (INPUT->GetButton(KEY_TYPE::W))
-		pos += GetTransform()->GetWorldPosition() * _speed * DELTA_TIME;
+	if (INPUT->GetButton(KEY_TYPE::I))
+		pos.x += GetTransform()->GetWorldPosition().x * _speed * DELTA_TIME;
 
-	if (INPUT->GetButton(KEY_TYPE::S))
-		pos -= GetTransform()->GetWorldPosition() * _speed * DELTA_TIME;
+	if (INPUT->GetButton(KEY_TYPE::K))
+		pos.x -= GetTransform()->GetWorldPosition().x * _speed * DELTA_TIME;
 
-	if (INPUT->GetButton(KEY_TYPE::A))
-		pos -= GetTransform()->GetWorldPosition() * _speed * DELTA_TIME;
+	if (INPUT->GetButton(KEY_TYPE::J))
+		pos.y -= GetTransform()->GetWorldPosition().y * _speed * DELTA_TIME;
 
-	if (INPUT->GetButton(KEY_TYPE::D))
-		pos += GetTransform()->GetWorldPosition() * _speed * DELTA_TIME;
+	if (INPUT->GetButton(KEY_TYPE::L))
+		pos.y += GetTransform()->GetWorldPosition().y * _speed * DELTA_TIME;
+
+	if (INPUT->GetButton(KEY_TYPE::J))
+		pos.z -= GetTransform()->GetWorldPosition().z * _speed * DELTA_TIME;
+
+	if (INPUT->GetButton(KEY_TYPE::L))
+		pos.z += GetTransform()->GetWorldPosition().z * _speed * DELTA_TIME;
 
 	GetTransform()->SetLocalPosition(pos);
 }
