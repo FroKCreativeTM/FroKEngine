@@ -17,6 +17,7 @@
 #include "Resources.h"
 #include "ParticleSystem.h"
 
+#include "RigidBody.h"
 #include "SphereCollider.h"
 #include "BoxCollider.h"
 
@@ -43,6 +44,14 @@ void SceneManager::LoadScene(wstring sceneName)
 	// TODO : 파일에서 Scene 정보 로드
 
 	_activeScene = LoadTestScene();
+
+	_activeScene->Awake();
+	_activeScene->Start();
+}
+
+void SceneManager::LoadScene(shared_ptr<Scene> scene)
+{
+	_activeScene = scene;
 
 	_activeScene->Awake();
 	_activeScene->Start();
@@ -206,6 +215,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		shared_ptr<GameObject> obj = make_shared<GameObject>();
 		obj->AddComponent(make_shared<Transform>());
 		obj->AddComponent(make_shared<SphereCollider>());
+		obj->AddComponent(make_shared<RigidBody>());
 		obj->GetTransform()->SetLocalScale(Vec3(100.f, 100.f, 100.f));
 		obj->GetTransform()->SetLocalPosition(Vec3(500.f, 0.f, 1000.f));
 		obj->SetStatic(false);
@@ -220,6 +230,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		}
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetRadius(0.5f);
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
+		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetUseGravity(true);
 		obj->AddComponent(meshRenderer);
 		scene->AddGameObject(obj);
 	}
@@ -229,6 +240,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 	{
 		shared_ptr<GameObject> obj = make_shared<GameObject>();
 		obj->AddComponent(make_shared<Transform>());
+		obj->AddComponent(make_shared<BoxCollider>());
 		obj->AddComponent(make_shared<Terrain>());
 		obj->AddComponent(make_shared<MeshRenderer>());
 
@@ -237,6 +249,8 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		obj->SetStatic(true);
 		obj->GetTerrain()->Init(64, 64);
 		obj->SetCheckFrustum(false);
+
+		dynamic_pointer_cast<BoxCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
 
 		scene->AddGameObject(obj);
 	}
@@ -271,7 +285,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		obj->SetLayerIndex(GET_SINGLE(SceneManager)->LayerNameToIndex(L"UI")); // UI
 		obj->AddComponent(make_shared<Transform>());
 		obj->GetTransform()->SetLocalScale(Vec3(100.f, 100.f, 100.f));
-		obj->GetTransform()->SetLocalPosition(Vec3(-350.f + (i * 120), 250.f, 500.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(-550.f + (i * 120), 250.f, 500.f));
 		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
 		{
 			shared_ptr<Mesh> mesh = GET_SINGLE(Resources)->LoadRectangleMesh();

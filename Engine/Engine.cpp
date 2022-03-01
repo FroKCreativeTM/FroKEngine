@@ -8,6 +8,7 @@
 #include "Light.h"
 #include "Resources.h"
 #include "InstancingManager.h"
+#include "Audio.h"
 
 void Engine::Init(const WindowInfo& info)
 {
@@ -44,6 +45,7 @@ void Engine::Init(const WindowInfo& info)
 	GET_SINGLE(Input)->Init(info.hwnd);
 	GET_SINGLE(Timer)->Init();
 	GET_SINGLE(Resources)->Init();
+	// GET_SINGLE(Audio)->Init();
 }
 
 void Engine::Update()
@@ -70,6 +72,21 @@ void Engine::Render()
 
 void Engine::ResizeWindow(int32 width, int32 height)
 {
+	//assert(_device);
+	//assert(_swapChain);
+	//assert(_graphicsCmdQueue);
+	//assert(_computeCmdQueue);
+
+	//// FlushCommandQueue
+	//_graphicsCmdQueue->WaitSync();
+	//_computeCmdQueue->WaitSync();
+
+	//// 커맨드 리스트들을 먼저 리셋 시킨다.
+	//_graphicsCmdQueue->Reset();
+	//_computeCmdQueue->Reset();
+
+	//_swapChain->Reset();
+
 	_window.width = width;
 	_window.height = height;
 
@@ -77,6 +94,107 @@ void Engine::ResizeWindow(int32 width, int32 height)
 	::AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
 	::SetWindowPos(_window.hwnd, 0, 100, 100, width, height, 0);
 
+	/*
+    // 하나라도 완성되지 않았다면 에러를 발생할 것이다.
+    assert(m_d3dDevice);
+    assert(m_SwapChain);
+    assert(m_DirectCmdListAlloc);
+
+    // 자원을 변화시키기 전에는 flush가 필요하다.
+    FlushCommandQueue();
+
+    // 커맨드 리스트를 먼저 리셋시킨다.
+    ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
+
+    // 우리가 다시 생성할 이전 자원을 전부 해제한다.
+    for (int i = 0; i < SwapChainBufferCount; ++i)
+    {
+        m_SwapChainBuffer[i].Reset();
+    }
+    // Depth/Stencil 버퍼를 리셋한다.
+    m_DepthStencilBuffer.Reset();
+
+    // 스왑 체인의 크기를 다시 지정한다.
+    ThrowIfFailed(m_SwapChain->ResizeBuffers(
+        SwapChainBufferCount,
+        m_tRS.nWidth, m_tRS.nHeight,
+        m_BackBufferFormat,
+        DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+
+    // 현재 백 버퍼를 0으로 초기화 한다.
+    m_CurrBackBuffer = 0;
+
+    // Render targer view 서술자 힙을 가져와서 핸들에 저장한다.
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(m_RtvHeap->GetCPUDescriptorHandleForHeapStart());
+    for (UINT i = 0; i < SwapChainBufferCount; i++)
+    {
+        // Swap chain의 i번째 버퍼를 가져온다.
+        ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_SwapChainBuffer[i])));
+        // 그 버퍼에 대한 Render Target View를 생성한다.
+        m_d3dDevice->CreateRenderTargetView(m_SwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+        // 힙의 다음 항목으로 넘어간다.
+        rtvHeapHandle.Offset(1, m_RtvDescriptorSize);
+    }
+
+    // depth/stencil 버퍼와 뷰를 생성한다.
+    D3D12_RESOURCE_DESC depthStencilDesc;
+    depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    depthStencilDesc.Alignment = 0;
+    depthStencilDesc.Width = m_tRS.nWidth;
+    depthStencilDesc.Height = m_tRS.nHeight;
+    depthStencilDesc.DepthOrArraySize = 1;
+    depthStencilDesc.MipLevels = 1;
+    depthStencilDesc.Format = m_DepthStencilFormat;
+    depthStencilDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
+    depthStencilDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
+    depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+    // D3D12_CLEAR_VALUE는 특정 자원을 지우기 위해(즉 완전 초기화)서 
+    // 이를 서술하기 위한 타입이다.
+    D3D12_CLEAR_VALUE optClear;
+    optClear.Format = m_DepthStencilFormat;
+    optClear.DepthStencil.Depth = 1.0f;
+    optClear.DepthStencil.Stencil = 0;
+    ThrowIfFailed(m_d3dDevice->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &depthStencilDesc,
+        D3D12_RESOURCE_STATE_COMMON,
+        &optClear,
+        IID_PPV_ARGS(m_DepthStencilBuffer.GetAddressOf())));
+
+    // 밉 레벨이 0인 전체 리소스 형식을 사용하여 서술자 생성
+    m_d3dDevice->CreateDepthStencilView(m_DepthStencilBuffer.Get(), nullptr, GetDepthStencilView());
+
+    // 리소스가 초기화 된 상태에서 Depth 버퍼를 사용하도록 전환한다.
+    // CD3DX12_RESOURCE_BARRIER는 GPU가 자원을 다 기록하지 않았거나
+    // 기록조차 시작하지 않았을 때 이에 접근하는 것 즉 Resource Hazard를 방지한다.
+    m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_DepthStencilBuffer.Get(),
+        D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
+    // 리사이즈 명령을 실행한다.
+    ThrowIfFailed(m_CommandList->Close());
+    ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
+    // _countof(cmdsLists) : 배열에 있는 명령 목록 수
+    // cmdsLists : 명령 목록들의 배열의 첫 원소를 가리키는 포인터
+    m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+    // 리사이징이 완료될 때까지 기다린다.
+    FlushCommandQueue();
+
+    // 뷰포트 변환을 클라이언트 영역을 포함하도록  업데이트 한다.
+    m_ScreenViewport.TopLeftX = 0;
+    m_ScreenViewport.TopLeftY = 0;
+    m_ScreenViewport.Width = static_cast<float>(m_tRS.nWidth);
+    m_ScreenViewport.Height = static_cast<float>(m_tRS.nHeight);
+    m_ScreenViewport.MinDepth = 0.0f;
+    m_ScreenViewport.MaxDepth = 1.0f;
+
+    m_ScissorRect = { 0, 0, static_cast<long>(m_tRS.nWidth), static_cast<long>(m_tRS.nHeight) };
+    
+    GET_SINGLE(SceneManager)->OnResize();
+	*/
 }
 
 void Engine::RenderBegin()

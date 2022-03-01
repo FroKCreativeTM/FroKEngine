@@ -43,7 +43,4 @@ void SwapChain::CreateSwapChain(const WindowInfo& info, ComPtr<IDXGIFactory> dxg
 
 	// 당연히 화면을 다루는 경우니까 dxgi로
 	dxgi->CreateSwapChain(cmdQueue.Get(), &sd, &_swapChain);
-
-
-
 }

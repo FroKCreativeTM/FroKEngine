@@ -141,9 +141,6 @@
     <ClCompile Include="SphereCollider.cpp">
       <Filter>Object\Component\Collider</Filter>
     </ClCompile>
-    <ClCompile Include="CollisionManager.cpp">
-      <Filter>Manager</Filter>
-    </ClCompile>
     <ClCompile Include="FBXLoader.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -158,6 +155,15 @@
     </ClCompile>
     <ClCompile Include="BoxCollider.cpp">
       <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBody.cpp">
+      <Filter>Object\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -275,9 +281,6 @@
     <ClInclude Include="SphereCollider.h">
       <Filter>Object\Component\Collider</Filter>
     </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>Manager</Filter>
-    </ClInclude>
     <ClInclude Include="FBXLoader.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -292,6 +295,15 @@
     </ClInclude>
     <ClInclude Include="BoxCollider.h">
       <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBody.h">
+      <Filter>Object\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

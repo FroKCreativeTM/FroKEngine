@@ -23,5 +23,9 @@ void SphereCollider::FinalUpdate()
 
 bool SphereCollider::Intersects(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
 {
-	return _boundingSphere.Intersects(rayOrigin, rayDir, OUT distance);
+	// 콜리더 옵션이 켜져 있는 경우에만 실행되게
+	if (_isTriggerd)	
+		return _boundingSphere.Intersects(rayOrigin, rayDir, OUT distance);
+	else
+		return false;
 }

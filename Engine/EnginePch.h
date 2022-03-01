@@ -31,10 +31,17 @@ using namespace DirectX;
 using namespace DirectX::PackedVector;
 using namespace Microsoft::WRL;
 
+// 텍스처 관련
 #include <DirectXTex/DirectXTex.h>
 #include <DirectXTex/DirectXTex.inl>
 
+// 메시 데이터 관련
 #include "FBX/fbxsdk.h"
+
+// 사운드 관련
+#include "FMOD/fmod.hpp"
+using namespace FMOD;
+using namespace std;
 
 // 각종 lib
 #pragma comment(lib, "d3d12")
@@ -57,6 +64,8 @@ using namespace Microsoft::WRL;
 #pragma comment(lib, "FBX\\release\libxml2-md.lib")
 #pragma comment(lib, "FBX\\release\\zlib-md.lib")
 #endif
+
+#pragma comment(lib, "FMOD/fmod64_vc")
 
 // 각종 typedef
 // 기본 타입이 아니라 따로 별칭을 둔 것
@@ -168,6 +177,8 @@ public:								\
 
 #define INPUT							GET_SINGLE(Input)
 #define DELTA_TIME						GET_SINGLE(Timer)->GetDeltaTime()
+
+#define SAFE_DELETE(p) if(p) { delete p; p = nullptr; }
 
 #define CONST_BUFFER(type)		GEngine->GetConstantBuffer(type)
 

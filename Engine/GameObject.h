@@ -11,6 +11,7 @@ class ParticleSystem;
 class Terrain;
 class BaseCollider;
 class Animator;
+class RigidBody;
 
 // shared_from_this를 쓰기 위한 물건
 class GameObject : public Object, public enable_shared_from_this<GameObject>
@@ -37,6 +38,7 @@ public:
 	shared_ptr<Terrain> GetTerrain();
 	shared_ptr<BaseCollider> GetCollider();
 	shared_ptr<Animator> GetAnimator();
+	shared_ptr<RigidBody> GetRigidBody();
 
 	void AddComponent(shared_ptr<Component> component);
 

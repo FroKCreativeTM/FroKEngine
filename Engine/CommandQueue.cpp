@@ -130,6 +130,11 @@ void GraphicsCommandQueue::FlushResourceCommandQueue()
 	_resCmdList->Reset(_resCmdAlloc.Get(), nullptr);
 }
 
+void GraphicsCommandQueue::Reset()
+{
+	_cmdList->Reset(_cmdAlloc.Get(), nullptr);
+}
+
 // ********************************
 // ComputeCommandQueue
 // ********************************
@@ -179,4 +184,9 @@ void ComputeCommandQueue::FlushComputeCommandQueue()
 	_cmdList->Reset(_cmdAlloc.Get(), nullptr);
 
 	COMPUTE_CMD_LIST->SetComputeRootSignature(COMPUTE_ROOT_SIGNATURE.Get());
+}
+
+void ComputeCommandQueue::Reset()
+{
+	_cmdList->Reset(_cmdAlloc.Get(), nullptr);
 }

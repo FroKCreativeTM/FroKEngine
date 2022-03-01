@@ -20,11 +20,11 @@ public :
 	
 	void FlushResourceCommandQueue();
 
+	void Reset();
+
 	ComPtr<ID3D12CommandQueue> GetCmdQueue() { return _cmdQueue; }
 	ComPtr<ID3D12GraphicsCommandList>	GetGraphicsCmdList() { return _cmdList; }
 	ComPtr<ID3D12GraphicsCommandList>	GetResourceCmdList() { return _resCmdList; }
-
-
 
 private: 
 	// CommandQueue : DX12ø° µÓ¿Â
@@ -62,7 +62,10 @@ public:
 
 	void Init(ComPtr<ID3D12Device> device);
 	void WaitSync();
+
 	void FlushComputeCommandQueue();
+
+	void Reset();
 
 	ComPtr<ID3D12CommandQueue> GetCmdQueue() { return _cmdQueue; }
 	ComPtr<ID3D12GraphicsCommandList>	GetComputeCmdList() { return _cmdList; }

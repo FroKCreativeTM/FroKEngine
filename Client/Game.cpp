@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Engine.h"
 #include "SceneManager.h"
+#include "TestScene.h"
 
 void Game::Init(const WindowInfo& info)
 {

@@ -7,6 +7,8 @@ public :
 	void Present();
 	void SwapIndex();
 
+	void Reset();
+
 	ComPtr<IDXGISwapChain> GetSwapChain() { return _swapChain; }
 	uint8 GetBackBufferIndex() { return _backBufferIndex; }
 

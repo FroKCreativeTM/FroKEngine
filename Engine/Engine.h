@@ -33,12 +33,12 @@ public :
 
 	const WindowInfo& GetWindow() { return _window; }
 
+	void ResizeWindow(int32 width, int32 height);
+
 private :
 	void Render();
 	void RenderBegin();
 	void RenderEnd();
-
-	void ResizeWindow(int32 width, int32 height);
 
 private : 
 	void ShowFps();

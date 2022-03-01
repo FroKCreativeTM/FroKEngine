@@ -241,7 +241,6 @@ LRESULT Core::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             else if (wParam == SIZE_RESTORED)
             {
-
                 // 최소화 상태로 복원?
                 if (m_Minimized)
                 {

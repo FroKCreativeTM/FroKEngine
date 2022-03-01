@@ -24,5 +24,8 @@ void BoxCollider::FinalUpdate()
 
 bool BoxCollider::Intersects(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
 {
-	return _boundingBox.Intersects(rayOrigin, rayDir, OUT distance);
+	if (_isTriggerd)
+		return _boundingBox.Intersects(rayOrigin, rayDir, OUT distance);
+	else
+		return false;
 }
