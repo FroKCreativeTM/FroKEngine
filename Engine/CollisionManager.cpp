@@ -12,6 +12,49 @@
 #include "SceneManager.h"
 #include "Scene.h"
 
+void CollisionManager::AddObject(shared_ptr<GameObject> pObj)
+{
+	if (pObj->GetCollider())
+	{
+		m_CollisionList.push_back(pObj);
+	}
+}
+
+void CollisionManager::FinalUpdate()
+{
+	// 두 개의 충돌체가 있어야 충돌한다.
+	if (m_CollisionList.size() < 2)
+	{
+		m_CollisionList.clear();
+		return;
+	}
+
+	/* 이중 루프를 돌면서 모든 충돌체간 처리를 담당할 것이다. */
+	list<shared_ptr<GameObject>>::iterator iter;
+	list<shared_ptr<GameObject>>::iterator iterEnd = m_CollisionList.end();
+	--iterEnd;
+
+	for (iter = m_CollisionList.begin(); iter != iterEnd; ++iter)
+	{
+		list<shared_ptr<GameObject>>::iterator innerIter = iter;
+		++innerIter;
+		list<shared_ptr<GameObject>>::iterator innerIterEnd = m_CollisionList.end();
+
+		for (; innerIter != innerIterEnd; ++innerIter)
+		{
+			Collision(*(iter)->get(), *(innerIter)->get());
+		}
+	}
+
+	// 오브젝트간 충돌 처리를 한다.
+	m_CollisionList.clear();
+}
+
+bool CollisionManager::Collision(GameObject pSrc, GameObject pDst)
+{
+	return true;
+}
+
 shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY)
 {
 	shared_ptr<Camera> camera = GET_SINGLE(SceneManager)->GetActiveScene()->GetMainCamera();
@@ -51,8 +94,8 @@ shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY
 		float distance = 0.f;
 
 		// 충돌 실패
-		if (gameObject->GetCollider()->Intersects(rayOrigin, rayDir, OUT distance) == false)
-			continue;
+		// if (gameObject->GetCollider()->CollisionSphereToRay(dynamic_pointer_cast<SphereCollider>(gameObject->GetCollider())->, rayOrigin, rayDir, OUT distance) == false)
+		// 	continue;
 
 		if (distance < minDistance)
 		{

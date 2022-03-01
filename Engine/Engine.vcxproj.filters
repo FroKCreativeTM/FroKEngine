@@ -171,6 +171,12 @@
     <ClCompile Include="CollisionManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="FrustumCollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="TestObjectScript.cpp">
+      <Filter>Object\Test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -316,6 +322,12 @@
     </ClInclude>
     <ClInclude Include="CollisionManager.h">
       <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="FrustumCollider.h">
+      <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="TestObjectScript.h">
+      <Filter>Object\Test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

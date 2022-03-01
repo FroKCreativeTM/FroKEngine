@@ -17,6 +17,11 @@ enum class KEY_TYPE
 	Z = 'Z',
 	C = 'C',
 
+	I = 'I',
+	J = 'J',
+	K = 'K',
+	L = 'L',
+
 	KEY_1 = '1',
 	KEY_2 = '2',
 	KEY_3 = '3',

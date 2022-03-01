@@ -185,6 +185,7 @@
     <ClInclude Include="EnginePch.h" />
     <ClInclude Include="FBXLoader.h" />
     <ClInclude Include="Frustum.h" />
+    <ClInclude Include="FrustumCollider.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InstancingBuffer.h" />
@@ -214,6 +215,7 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TestCameraScript.h" />
     <ClInclude Include="TestDragon.h" />
+    <ClInclude Include="TestObjectScript.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transform.h" />
@@ -234,6 +236,7 @@
     <ClCompile Include="EnginePch.cpp" />
     <ClCompile Include="FBXLoader.cpp" />
     <ClCompile Include="Frustum.cpp" />
+    <ClCompile Include="FrustumCollider.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="InstancingBuffer.cpp" />
@@ -268,6 +271,7 @@
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TestCameraScript.cpp" />
     <ClCompile Include="TestDragon.cpp" />
+    <ClCompile Include="TestObjectScript.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />

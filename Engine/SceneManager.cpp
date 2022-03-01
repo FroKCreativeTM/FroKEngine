@@ -13,7 +13,9 @@
 #include "Terrain.h"
 
 #include "TestCameraScript.h"
+#include "TestObjectScript.h"
 #include "TestDragon.h"
+
 #include "Resources.h"
 #include "ParticleSystem.h"
 
@@ -179,7 +181,34 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		}
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetRadius(0.5f);
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
-		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetUseGravity(true);
+		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetUseGravity(false);
+		obj->AddComponent(meshRenderer);
+		scene->AddGameObject(obj);
+	}
+#pragma endregion
+
+#pragma region Object2
+	{
+		shared_ptr<GameObject> obj = make_shared<GameObject>();
+		obj->AddComponent(make_shared<Transform>());
+		obj->AddComponent(make_shared<SphereCollider>());
+		obj->AddComponent(make_shared<RigidBody>());
+		obj->GetTransform()->SetLocalScale(Vec3(100.f, 100.f, 100.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(600.f, 0.f, 1000.f));
+		obj->AddComponent(make_shared<TestObjectScript>());
+		obj->SetStatic(false);
+		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
+		{
+			shared_ptr<Mesh> sphereMesh = GET_SINGLE(Resources)->LoadSphereMesh();
+			meshRenderer->SetMesh(sphereMesh);
+		}
+		{
+			shared_ptr<Material> material = GET_SINGLE(Resources)->Get<Material>(L"GameObject");
+			meshRenderer->SetMaterial(material->Clone());
+		}
+		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetRadius(0.5f);
+		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
+		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetUseGravity(false);
 		obj->AddComponent(meshRenderer);
 		scene->AddGameObject(obj);
 	}

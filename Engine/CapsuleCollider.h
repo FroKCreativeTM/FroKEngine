@@ -16,7 +16,6 @@ public:
 	virtual ~CapsuleCollider();
 
 	virtual void FinalUpdate() override;
-	virtual bool Intersects(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance) override;
 
 	void SetRadius(float radius) { _radius = radius; }
 	void SetCenter(Vec3 center) { _center = center; }
