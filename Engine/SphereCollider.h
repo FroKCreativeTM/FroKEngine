@@ -15,7 +15,7 @@ public:
 
 private:
 	// Local ±‚¡ÿ
-	float		_radius = 1.f;
+	float		_radius = 0.5f;
 	Vec3		_center = Vec3(0, 0, 0);
 
 	BoundingSphere _boundingSphere;

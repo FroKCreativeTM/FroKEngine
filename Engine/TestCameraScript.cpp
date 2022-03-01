@@ -6,6 +6,7 @@
 #include "Input.h"
 #include "Timer.h"
 #include "SceneManager.h"
+#include "CollisionManager.h"
 
 TestCameraScript::TestCameraScript()
 {
@@ -62,9 +63,8 @@ void TestCameraScript::LateUpdate()
 	if (INPUT->GetButtonDown(KEY_TYPE::LBUTTON))
 	{
 		const POINT& pos = INPUT->GetMousePos();
-		GET_SINGLE(SceneManager)->Pick(pos.x, pos.y);
+		GET_SINGLE(CollisionManager)->Pick(pos.x, pos.y);
 	}
-
 
 	GetTransform()->SetLocalPosition(pos);
 }

@@ -15,6 +15,7 @@ public:
 private:
 	// Local ±‚¡ÿ
 	Vec3		_center = Vec3(0, 0, 0);
+	Vec3		_size = Vec3(1.f, 1.f, 1.f);
 
 	BoundingBox _boundingBox;
 };

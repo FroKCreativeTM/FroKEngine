@@ -159,10 +159,16 @@
     <ClCompile Include="RigidBody.cpp">
       <Filter>Object\Component</Filter>
     </ClCompile>
-    <ClCompile Include="Physics.cpp">
+    <ClCompile Include="Audio.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="Audio.cpp">
+    <ClCompile Include="CapsuleCollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="OrientBoxCollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
@@ -299,10 +305,16 @@
     <ClInclude Include="RigidBody.h">
       <Filter>Object\Component</Filter>
     </ClInclude>
-    <ClInclude Include="Physics.h">
+    <ClInclude Include="Audio.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="Audio.h">
+    <ClInclude Include="CapsuleCollider.h">
+      <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="OrientBoxCollider.h">
+      <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>

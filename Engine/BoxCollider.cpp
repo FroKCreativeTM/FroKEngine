@@ -17,9 +17,8 @@ void BoxCollider::FinalUpdate()
 
 	Vec3 scale = GetGameObject()->GetTransform()->GetLocalScale();
 
-	_boundingBox.Extents.x = scale.x;
-	_boundingBox.Extents.y = scale.y;
-	_boundingBox.Extents.z = scale.z;
+	_size = scale;
+	_boundingBox.Extents = scale;
 }
 
 bool BoxCollider::Intersects(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
