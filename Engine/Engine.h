@@ -58,6 +58,8 @@ private :
 	shared_ptr<GraphicsDescriptorHeap> _graphicsDescHeap;
 	shared_ptr<ComputeDescriptorHeap> _computeDescHeap;
 
+	ID3D12DescriptorHeap* g_pd3dRtvDescHeap = NULL;
+
 	vector<shared_ptr<ConstantBuffer>> _constantBuffers;
 	array<shared_ptr<RenderTargetGroup>, RENDER_TARGET_GROUP_COUNT> _rtGroups;
 };

@@ -198,6 +198,9 @@
     <ClCompile Include="..\Library\Include\ImGui\imgui.cpp">
       <Filter>Utils\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -373,6 +376,9 @@
     </ClInclude>
     <ClInclude Include="..\Library\Include\ImGui\imconfig.h">
       <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

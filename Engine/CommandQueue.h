@@ -48,6 +48,12 @@ private:
 
 	shared_ptr<SwapChain>		_swapChain;
 	shared_ptr<DescriptorHeap>	_descHeap;
+
+	// ImGui 테스트용(나중에 옮김)
+private : 
+	ID3D12DescriptorHeap* _pd3dRtvDescHeap = NULL;
+	D3D12_CPU_DESCRIPTOR_HANDLE _mainRenderTargetDescriptor[2] = {};
+	ID3D12DescriptorHeap* _pd3dSrvDescHeap = NULL;
 };
 
 

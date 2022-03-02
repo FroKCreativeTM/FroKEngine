@@ -12,6 +12,7 @@
 #include "CollisionManager.h"
 #include "InstancingManager.h"
 #include "Audio.h"
+// #include "UIManager.h"
 
 void Engine::Init(const WindowInfo& info)
 {
@@ -48,6 +49,8 @@ void Engine::Init(const WindowInfo& info)
 	GET_SINGLE(Input)->Init(info.hwnd);
 	GET_SINGLE(Timer)->Init();
 	GET_SINGLE(Resources)->Init();
+	// GET_SINGLE(UIManager)->Init(info.hwnd, _swapChain, _graphicsDescHeap);
+
 
 	// ImGui Init
 	IMGUI_CHECKVERSION();
@@ -56,8 +59,8 @@ void Engine::Init(const WindowInfo& info)
 
 	ImGui::StyleColorsDark();
 
-	ImGui_ImplWin32_Init(_window.hwnd);
-	ImGui_ImplDX12_Init(_device->GetDevice().Get(), _swapChain->GetDescription().BufferCount,
+	ImGui_ImplWin32_Init(info.hwnd);
+	ImGui_ImplDX12_Init(DEVICE.Get(), _swapChain->GetDescription().BufferCount,
 		DXGI_FORMAT_R8G8B8A8_UNORM, _graphicsDescHeap->GetDescriptorHeap().Get(),
 		_graphicsDescHeap->GetDescriptorHeap().Get()->GetCPUDescriptorHandleForHeapStart(),
 		_graphicsDescHeap->GetDescriptorHeap().Get()->GetGPUDescriptorHandleForHeapStart());
