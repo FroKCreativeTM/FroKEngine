@@ -43,6 +43,11 @@ using namespace Microsoft::WRL;
 using namespace FMOD;
 using namespace std;
 
+// ImGui 관련
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx12.h"
+
 // 각종 lib
 #pragma comment(lib, "d3d12")
 #pragma comment(lib, "dxgi")
