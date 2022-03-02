@@ -41,6 +41,8 @@ void SwapChain::CreateSwapChain(const WindowInfo& info, ComPtr<IDXGIFactory> dxg
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // 전면 후면 버퍼 교체 시 이전 프레임 정보 버림
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
+	_desc = sd;
+
 	// 당연히 화면을 다루는 경우니까 dxgi로
 	dxgi->CreateSwapChain(cmdQueue.Get(), &sd, &_swapChain);
 }

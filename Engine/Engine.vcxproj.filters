@@ -28,6 +28,9 @@
     <Filter Include="Object\Component\Collider">
       <UniqueIdentifier>{7462018a-83b5-491a-ab43-a0c749aa86cf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\ImGui">
+      <UniqueIdentifier>{6e33dd07-bc56-4cfa-a416-cdfb36b8a6b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -176,6 +179,24 @@
     </ClCompile>
     <ClCompile Include="TestObjectScript.cpp">
       <Filter>Object\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\Include\ImGui\imgui_draw.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\Include\ImGui\imgui_impl_dx12.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\Include\ImGui\imgui_impl_win32.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\Include\ImGui\imgui_tables.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\Include\ImGui\imgui_widgets.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\Include\ImGui\imgui.cpp">
+      <Filter>Utils\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -328,6 +349,30 @@
     </ClInclude>
     <ClInclude Include="TestObjectScript.h">
       <Filter>Object\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imgui.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imgui_impl_dx12.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imgui_impl_win32.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imgui_internal.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imstb_rectpack.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imstb_textedit.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imstb_truetype.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\ImGui\imconfig.h">
+      <Filter>Utils\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

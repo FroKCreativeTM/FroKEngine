@@ -164,11 +164,12 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 #pragma region Object
 	{
 		shared_ptr<GameObject> obj = make_shared<GameObject>();
+		obj->SetName(L"Object1");
 		obj->AddComponent(make_shared<Transform>());
 		obj->AddComponent(make_shared<SphereCollider>());
 		obj->AddComponent(make_shared<RigidBody>());
 		obj->GetTransform()->SetLocalScale(Vec3(100.f, 100.f, 100.f));
-		obj->GetTransform()->SetLocalPosition(Vec3(500.f, 0.f, 1000.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(100.f, 200.f, 300.f));
 		obj->SetStatic(false);
 		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
 		{
@@ -190,11 +191,12 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 #pragma region Object2
 	{
 		shared_ptr<GameObject> obj = make_shared<GameObject>();
+		obj->SetName(L"Object2");
 		obj->AddComponent(make_shared<Transform>());
 		obj->AddComponent(make_shared<SphereCollider>());
 		obj->AddComponent(make_shared<RigidBody>());
 		obj->GetTransform()->SetLocalScale(Vec3(100.f, 100.f, 100.f));
-		obj->GetTransform()->SetLocalPosition(Vec3(700.f, 0.f, 1000.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(300.f, 200.f, 300.f));
 		obj->AddComponent(make_shared<TestObjectScript>());
 		obj->SetStatic(false);
 		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
@@ -223,7 +225,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		obj->AddComponent(make_shared<MeshRenderer>());
 
 		obj->GetTransform()->SetLocalScale(Vec3(50.f, 250.f, 50.f));
-		obj->GetTransform()->SetLocalPosition(Vec3(-100.f, -200.f, 300.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 0.f));
 		obj->SetStatic(true);
 		obj->GetTerrain()->Init(64, 64);
 		obj->SetCheckFrustum(false);

@@ -75,6 +75,18 @@ void Scene::Render()
 	RenderLights();
 	RenderFinal();
 	RenderForward();
+	{
+		D3D12_RESOURCE_BARRIER barrier = {};
+		const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
+		GRAPHICS_CMD_LIST->ClearRenderTargetView(g_mainRenderTargetDescriptor[backBufferIdx], clear_color_with_alpha, 0, NULL);
+		GRAPHICS_CMD_LIST->OMSetRenderTargets(1, &g_mainRenderTargetDescriptor[backBufferIdx], FALSE, NULL);
+		GRAPHICS_CMD_LIST->SetDescriptorHeaps(1, &g_pd3dSrvDescHeap);
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), g_pd3dCommandList);
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		g_pd3dCommandList->ResourceBarrier(1, &barrier);
+		g_pd3dCommandList->Close();
+	}
 }
 
 void Scene::ClearRTV()

@@ -98,11 +98,12 @@ void GraphicsCommandQueue::RenderEnd()
 {
 	uint8 backIndex = _swapChain->GetBackBufferIndex();
 
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), GetGraphicsCmdList().Get());
+
 	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)->GetRTTexture(backIndex)->GetTex2D().Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, // 외주 결과물
 		D3D12_RESOURCE_STATE_PRESENT); // 화면 출력
-
 	_cmdList->ResourceBarrier(1, &barrier);
 	_cmdList->Close();
 
