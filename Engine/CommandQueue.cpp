@@ -3,6 +3,8 @@
 #include "SwapChain.h"
 #include "Engine.h"
 
+#include "TableDescriptorHeap.h"
+
 // ********************************
 // GraphicsCommandQueue
 // ********************************
@@ -44,25 +46,6 @@ void GraphicsCommandQueue::Init(ComPtr<ID3D12Device> device, shared_ptr<SwapChai
 	// - CPU와 GPU의 동기화 수단으로 쓰인다
 	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence));
 	_fenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
-
-
-	/// ImGui용!!!! 나중에 옮길 것!
-	{
-		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		desc.NumDescriptors = 2;
-		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		desc.NodeMask = 1;
-		DEVICE->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&_pd3dRtvDescHeap));
-
-		SIZE_T rtvDescriptorSize = DEVICE->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = _pd3dRtvDescHeap->GetCPUDescriptorHandleForHeapStart();
-		for (UINT i = 0; i < 2; i++)
-		{
-			_mainRenderTargetDescriptor[i] = rtvHandle;
-			rtvHandle.ptr += rtvDescriptorSize;
-		}
-	}
 }
 
 void GraphicsCommandQueue::WaitSync()
@@ -121,16 +104,6 @@ void GraphicsCommandQueue::RenderEnd()
 		GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)->GetRTTexture(backIndex)->GetTex2D().Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, // 외주 결과물
 		D3D12_RESOURCE_STATE_PRESENT); // 화면 출력
-	_cmdList->ResourceBarrier(1, &barrier);
-
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
-	GRAPHICS_CMD_LIST->ClearRenderTargetView(_mainRenderTargetDescriptor[backIndex], clear_color_with_alpha, 0, NULL);
-	GRAPHICS_CMD_LIST->OMSetRenderTargets(1, &_mainRenderTargetDescriptor[backIndex], FALSE, NULL);
-	GRAPHICS_CMD_LIST->SetDescriptorHeaps(1, &_pd3dSrvDescHeap);
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), _cmdList.Get());
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	_cmdList->ResourceBarrier(1, &barrier);
 
 	_cmdList->Close();

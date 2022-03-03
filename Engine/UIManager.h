@@ -21,7 +21,7 @@ class UIManager
 	DECLARE_SINGLE(UIManager)
 
 public:
-	void Init(HWND hwnd, shared_ptr<SwapChain> swapchain, shared_ptr<GraphicsDescriptorHeap> graphicsDescHeap);
+	void Init(HWND hwnd, shared_ptr<Device> device, shared_ptr<SwapChain> swapchain, shared_ptr<GraphicsDescriptorHeap> graphicsDescHeap);
 
 	void Update();
 	void Render();

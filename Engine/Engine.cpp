@@ -12,7 +12,6 @@
 #include "CollisionManager.h"
 #include "InstancingManager.h"
 #include "Audio.h"
-// #include "UIManager.h"
 
 void Engine::Init(const WindowInfo& info)
 {
@@ -50,20 +49,6 @@ void Engine::Init(const WindowInfo& info)
 	GET_SINGLE(Timer)->Init();
 	GET_SINGLE(Resources)->Init();
 	// GET_SINGLE(UIManager)->Init(info.hwnd, _swapChain, _graphicsDescHeap);
-
-
-	// ImGui Init
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-
-	ImGui::StyleColorsDark();
-
-	ImGui_ImplWin32_Init(info.hwnd);
-	ImGui_ImplDX12_Init(DEVICE.Get(), _swapChain->GetDescription().BufferCount,
-		DXGI_FORMAT_R8G8B8A8_UNORM, _graphicsDescHeap->GetDescriptorHeap().Get(),
-		_graphicsDescHeap->GetDescriptorHeap().Get()->GetCPUDescriptorHandleForHeapStart(),
-		_graphicsDescHeap->GetDescriptorHeap().Get()->GetGPUDescriptorHandleForHeapStart());
 }
 
 void Engine::Update()
@@ -103,22 +88,6 @@ void Engine::ResizeWindow(int32 width, int32 height)
 void Engine::RenderBegin()
 {
 	_graphicsCmdQueue->RenderBegin();
-
-	ImGui_ImplDX12_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-
-	{
-		ImGui::Begin("Test");
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::End();
-	}
-
-	ImGui::Render();
 }
 
 void Engine::RenderEnd()
