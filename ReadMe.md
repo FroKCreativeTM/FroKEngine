@@ -14,4 +14,4 @@
 예전 코드이기 때문에 사용하지 않으며, Engine library가 완성되는 즉시 삭제될 예정입니다.
 
 ### 사용중인 외부 라이브러리
-PhysX SDK, FMOD, FBX SDK
+ImGui, PhysX SDK, FMOD, FBX SDK

@@ -73,7 +73,7 @@ void Engine::Render()
 
 
 	GET_SINGLE(UIManager)->newImGuiFrame();
-	ImGui::DockSpaceOverViewport();
+	// ImGui::DockSpaceOverViewport();
 
 	// 물체는 여기서 그린다.
 	GET_SINGLE(SceneManager)->Render();
