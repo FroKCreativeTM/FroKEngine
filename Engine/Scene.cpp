@@ -83,8 +83,6 @@ void Scene::ClearRTV()
 	// SwapChain Group 초기화
 	int8 backIndex = GEngine->GetSwapChain()->GetBackBufferIndex();
 	GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)->ClearRenderTargetView(backIndex);
-	// ImGui
-	GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::IMGUI)->ClearImGuiRenderTargetView(backIndex);
 	// Shadow Group 초기화
 	GEngine->GetRTGroup(RENDER_TARGET_GROUP_TYPE::SHADOW)->ClearRenderTargetView();
 	// Deferred Group 초기화

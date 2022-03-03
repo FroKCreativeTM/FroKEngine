@@ -49,21 +49,6 @@ void Engine::Init(const WindowInfo& info)
 	GET_SINGLE(Timer)->Init();
 	GET_SINGLE(Resources)->Init();
 	// GET_SINGLE(UIManager)->Init(info.hwnd, _swapChain, _graphicsDescHeap);
-
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-
-	// Setup Platform/Renderer backends
-	ImGui_ImplWin32_Init(_window.hwnd);
-	ImGui_ImplDX12_Init(_device->GetDevice().Get(), 2,
-		DXGI_FORMAT_R8G8B8A8_UNORM, _graphicsDescHeap->GetDescriptorHeap().Get(),
-		_graphicsDescHeap->GetDescriptorHeap().Get()->GetCPUDescriptorHandleForHeapStart(),
-		_graphicsDescHeap->GetDescriptorHeap().Get()->GetGPUDescriptorHandleForHeapStart());
 }
 
 void Engine::Update()
@@ -103,27 +88,6 @@ void Engine::ResizeWindow(int32 width, int32 height)
 void Engine::RenderBegin()
 {
 	_graphicsCmdQueue->RenderBegin();
-
-	// Start the Dear ImGui frame
-	ImGui_ImplDX12_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-
-	static int counter = 0;
-
-	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-		counter++;
-	ImGui::SameLine();
-	ImGui::Text("counter = %d", counter);
-
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
-
-	ImGui::Render();
 }
 
 void Engine::RenderEnd()
@@ -174,28 +138,6 @@ void Engine::CreateRenderTargetGroups()
 
 		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)] = make_shared<RenderTargetGroup>();
 		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)]->Create(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN, rtVec, dsTexture);
-	}
-
-	// ImGui Group
-	{
-		vector<RenderTarget> rtVec(SWAP_CHAIN_BUFFER_COUNT);
-
-		for (uint32 i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-		{
-			wstring name = L"imGui" + std::to_wstring(i);
-
-			rtVec[i].target = GET_SINGLE(Resources)->CreateTexture(L"ImGui",
-				DXGI_FORMAT_R32_FLOAT, _window.width, _window.height,
-				CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
-
-			ComPtr<ID3D12Resource> resource;
-			_swapChain->GetSwapChain()->GetBuffer(i, IID_PPV_ARGS(&resource));
-			rtVec[i].target = GET_SINGLE(Resources)->CreateTextureFromResource(name, resource);
-		}
-
-		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::IMGUI)] = make_shared<RenderTargetGroup>();
-		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::IMGUI)]->Create(RENDER_TARGET_GROUP_TYPE::IMGUI, rtVec, dsTexture);
 	}
 
 	// Shadow Group

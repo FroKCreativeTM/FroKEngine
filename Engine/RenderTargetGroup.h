@@ -9,7 +9,6 @@ enum class RENDER_TARGET_GROUP_TYPE : uint8
 	SHADOW, // SHADOW
 	G_BUFFER, // POSITION, NORMAL, COLOR
 	LIGHTING, // DIFFUSE LIGHT, SPECULAR LIGHT	
-	IMGUI, // IMGUI
 	END,
 };
 
@@ -37,7 +36,6 @@ public:
 	void OMSetRenderTargets();
 
 	void ClearRenderTargetView(uint32 index);
-	void ClearImGuiRenderTargetView(uint32 index);
 	void ClearRenderTargetView();
 
 	shared_ptr<Texture> GetRTTexture(uint32 index) { return _rtVec[index].target; }
@@ -52,7 +50,6 @@ private:
 	uint32							_rtCount;
 	shared_ptr<Texture>				_dsTexture;
 	ComPtr<ID3D12DescriptorHeap>	_rtvHeap;
-	ComPtr<ID3D12DescriptorHeap>	_srvHeap;
 
 private:
 	uint32							_rtvHeapSize;
@@ -62,6 +59,5 @@ private:
 private:
 	D3D12_RESOURCE_BARRIER			_targetToResource[8];
 	D3D12_RESOURCE_BARRIER			_resourceToTarget[8];
-
 };
 

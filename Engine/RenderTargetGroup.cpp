@@ -76,16 +76,6 @@ void RenderTargetGroup::ClearRenderTargetView(uint32 index)
 	GRAPHICS_CMD_LIST->ClearDepthStencilView(_dsvHeapBegin, D3D12_CLEAR_FLAG_DEPTH, 1.f, 0, 0, nullptr);
 }
 
-void RenderTargetGroup::ClearImGuiRenderTargetView(uint32 index)
-{
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_rtvHeapBegin, index * _rtvHeapSize);
-	GRAPHICS_CMD_LIST->ClearRenderTargetView(rtvHandle, _rtVec[index].clearColor, 0, nullptr);
-	GRAPHICS_CMD_LIST->OMSetRenderTargets(1, &rtvHandle, FALSE, NULL);
-	GRAPHICS_CMD_LIST->SetDescriptorHeaps(1, &_dsTexture->GetSRV());
-
-	GRAPHICS_CMD_LIST->ClearDepthStencilView(_dsvHeapBegin, D3D12_CLEAR_FLAG_DEPTH, 1.f, 0, 0, nullptr);
-}
-
 void RenderTargetGroup::ClearRenderTargetView()
 {
 	WaitResourceToTarget();
