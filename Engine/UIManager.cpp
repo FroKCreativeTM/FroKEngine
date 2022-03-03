@@ -4,7 +4,8 @@
 #include "Device.h"
 #include "SwapChain.h"
 
-void UIManager::Init(HWND hwnd, shared_ptr<SwapChain> swapchain, shared_ptr<GraphicsDescriptorHeap> graphicsDescHeap)
+void UIManager::Init(HWND hwnd, shared_ptr<Device> device, 
+    shared_ptr<SwapChain> swapchain, shared_ptr<GraphicsDescriptorHeap> graphicsDescHeap)
 {
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -32,7 +33,7 @@ void UIManager::Init(HWND hwnd, shared_ptr<SwapChain> swapchain, shared_ptr<Grap
     ImGui::StyleColorsDark();
 
     ImGui_ImplWin32_Init(hwnd);
-    ImGui_ImplDX12_Init(DEVICE.Get(), swapchain->GetDescription().BufferCount,
+    ImGui_ImplDX12_Init(device->GetDevice().Get(), swapchain->GetDescription().BufferCount,
         DXGI_FORMAT_R8G8B8A8_UNORM, graphicsDescHeap->GetDescriptorHeap().Get(),
         graphicsDescHeap->GetDescriptorHeap().Get()->GetCPUDescriptorHandleForHeapStart(),
         graphicsDescHeap->GetDescriptorHeap().Get()->GetGPUDescriptorHandleForHeapStart());
