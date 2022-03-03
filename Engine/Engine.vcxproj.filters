@@ -180,7 +180,6 @@
     <ClCompile Include="TestObjectScript.cpp">
       <Filter>Object\Test</Filter>
     </ClCompile>
-    <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="..\Library\Include\ImGui\imgui_draw.cpp">
       <Filter>Utils\ImGui</Filter>
     </ClCompile>
@@ -198,6 +197,9 @@
     </ClCompile>
     <ClCompile Include="..\Library\Include\ImGui\imgui.cpp">
       <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -351,7 +353,6 @@
     <ClInclude Include="TestObjectScript.h">
       <Filter>Object\Test</Filter>
     </ClInclude>
-    <ClInclude Include="UIManager.h" />
     <ClInclude Include="..\Library\Include\ImGui\imgui_impl_dx12.h">
       <Filter>Utils\ImGui</Filter>
     </ClInclude>
@@ -375,6 +376,9 @@
     </ClInclude>
     <ClInclude Include="..\Library\Include\ImGui\imgui.h">
       <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

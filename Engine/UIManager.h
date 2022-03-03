@@ -13,6 +13,9 @@ static const ImColor blue(0.f, 0.f, 1.f, 1.f);
 
 #define MAX_NUM_IMGUI_IMAGES_PER_FRAME 128
 
+static float f = 0.0f;
+static int counter = 0;
+
 class UIManager
 {
 	DECLARE_SINGLE(UIManager)
@@ -28,5 +31,6 @@ private :
 	CD3DX12_GPU_DESCRIPTOR_HANDLE _startGPUDescriptor;
 	uint32 _descriptorHandleIncrementSize;
 	uint32 _numImagesThisFrame;
+
 };
 

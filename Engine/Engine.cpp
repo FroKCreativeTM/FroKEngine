@@ -71,7 +71,6 @@ void Engine::Render()
 {
 	RenderBegin();
 
-
 	GET_SINGLE(UIManager)->newImGuiFrame();
 	// ImGui::DockSpaceOverViewport();
 
