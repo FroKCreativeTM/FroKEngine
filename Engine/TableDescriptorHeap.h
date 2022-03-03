@@ -19,7 +19,7 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(CBV_REGISTER reg);
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(SRV_REGISTER reg);
 
-private:
+public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(uint8 reg);
 
 private:
