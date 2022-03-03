@@ -1,10 +1,14 @@
 ﻿#pragma once
 
+#pragma comment(lib, "Engine.lib")
+
+#include "EnginePch.h"
+
 #include <wrl.h>
 #include <wrl/client.h>
-#include <dxgi1_4.h>
-#include <d3d12.h>
-#include "Common\d3dx12.h"
+// #include <dxgi1_4.h>
+// #include <d3d12.h>
+// #include "Common\d3dx12.h"
 #include <pix.h>
 #include <DirectXColors.h>
 #include <DirectXMath.h>

@@ -75,7 +75,6 @@ void Scene::Render()
 	RenderLights();
 	RenderFinal();
 	RenderForward();
-
 }
 
 void Scene::ClearRTV()

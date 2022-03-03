@@ -32,15 +32,6 @@ using namespace DirectX;
 using namespace DirectX::PackedVector;
 using namespace Microsoft::WRL;
 
-#ifdef _DEBUG
-#define DX12_ENABLE_DEBUG_LAYER
-#endif
-
-#ifdef DX12_ENABLE_DEBUG_LAYER
-#include <dxgidebug.h>
-#pragma comment(lib, "dxguid.lib")
-#endif
-
 // 텍스처 관련
 #include <DirectXTex/DirectXTex.h>
 #include <DirectXTex/DirectXTex.inl>
@@ -52,11 +43,6 @@ using namespace Microsoft::WRL;
 #include "FMOD/fmod.hpp"
 using namespace FMOD;
 using namespace std;
-
-// ImGui 관련
-#include "imgui.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx12.h"
 
 // 각종 lib
 #pragma comment(lib, "d3d12")

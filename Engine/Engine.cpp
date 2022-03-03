@@ -12,6 +12,7 @@
 #include "CollisionManager.h"
 #include "InstancingManager.h"
 #include "Audio.h"
+#include "UIManager.h"
 
 void Engine::Init(const WindowInfo& info)
 {
@@ -48,6 +49,7 @@ void Engine::Init(const WindowInfo& info)
 	GET_SINGLE(Input)->Init(info.hwnd);
 	GET_SINGLE(Timer)->Init();
 	GET_SINGLE(Resources)->Init();
+	GET_SINGLE(UIManager)->Init(info);
 	// GET_SINGLE(UIManager)->Init(info.hwnd, _swapChain, _graphicsDescHeap);
 }
 
@@ -69,8 +71,13 @@ void Engine::Render()
 {
 	RenderBegin();
 
+
+	GET_SINGLE(UIManager)->newImGuiFrame();
+	ImGui::DockSpaceOverViewport();
+
 	// 물체는 여기서 그린다.
 	GET_SINGLE(SceneManager)->Render();
+	GET_SINGLE(UIManager)->renderImGui();
 
 	RenderEnd();
 }

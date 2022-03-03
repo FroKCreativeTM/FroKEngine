@@ -62,5 +62,38 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
       <Filter>자산</Filter>
     </Image>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{410f89b2-a67a-4c22-91a4-3390bfc0f0bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{e9434c60-760f-46d0-8520-942525f2bb53}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorMain.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="App.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorMain.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <Filter>Utils</Filter>
+    </AppxManifest>
   </ItemGroup>
 </Project>

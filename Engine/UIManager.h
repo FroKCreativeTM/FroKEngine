@@ -1,35 +1,32 @@
 #pragma once
 
-enum
-{
-	NUM_BACK_BUFFERS = 2,
-};
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx12.h"
+#include "fontawesome/IconsFontAwesome5.h"
 
-class Device;
-class SwapChain;
-class GraphicsDescriptorHeap;
+static const ImColor white(1.f, 1.f, 1.f, 1.f);
+static const ImColor yellow(1.f, 1.f, 0.f, 1.f);
+static const ImColor green(0.f, 1.f, 0.f, 1.f);
+static const ImColor red(1.f, 0.f, 0.f, 1.f);
+static const ImColor blue(0.f, 0.f, 1.f, 1.f);
 
-struct FrameContext
-{
-	ID3D12CommandAllocator* CommandAllocator;
-	UINT64                  FenceValue;
-};
+#define MAX_NUM_IMGUI_IMAGES_PER_FRAME 128
 
-// ImGui
 class UIManager
 {
 	DECLARE_SINGLE(UIManager)
 
-public:
-	void Init(HWND hwnd, shared_ptr<Device> device, shared_ptr<SwapChain> swapchain, shared_ptr<GraphicsDescriptorHeap> graphicsDescHeap);
-
-	void Update();
-	void Render();
+public : 
+	ImGuiContext* Init(const WindowInfo& info);
+	void newImGuiFrame();
+	void renderImGui();
 
 private : 
-	ComPtr<ID3D12DescriptorHeap> _pd3dRtvDescHeap = nullptr;
-	D3D12_CPU_DESCRIPTOR_HANDLE  _mainRenderTargetDescriptor[NUM_BACK_BUFFERS] = {};
-
-	UINT                         _frameIndex = 0;
+	ID3D12DescriptorHeap* _imguiDescriptorHeap;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE _startCPUDescriptor;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE _startGPUDescriptor;
+	uint32 _descriptorHandleIncrementSize;
+	uint32 _numImagesThisFrame;
 };
 
