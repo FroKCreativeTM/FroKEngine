@@ -201,6 +201,9 @@
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -382,6 +385,9 @@
     </ClInclude>
     <ClInclude Include="Macro.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

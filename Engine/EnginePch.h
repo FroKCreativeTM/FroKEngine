@@ -55,6 +55,7 @@ using namespace std;
 
 // 물리 엔진
 #include <PxPhysicsAPI.h>
+#include <common/PxTolerancesScale.h>
 
 #ifdef _DEBUG
 #pragma comment(lib, "Physx\\Debug\\LowLevel_static_64.lib")
