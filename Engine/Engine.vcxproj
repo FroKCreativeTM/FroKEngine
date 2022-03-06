@@ -80,13 +80,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Output\</OutDir>
-    <IncludePath>$(SolutionDir)Library/Include/;$(SolutionDir)Library/Include/FBX/;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)Output\Debug\</OutDir>
+    <IncludePath>$(SolutionDir)Library/Include/;$(SolutionDir)Library/Include/FBX/;$(SolutionDir)Library/Include/Physx/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Output\</OutDir>
-    <IncludePath>$(SolutionDir)Library/Include/;$(SolutionDir)Library/Include/FBX/;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)Output\Release\</OutDir>
+    <IncludePath>$(SolutionDir)Library/Include/;$(SolutionDir)Library/Include/FBX/;$(SolutionDir)Library/Include/Physx/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -199,6 +199,7 @@
     <ClInclude Include="InstancingBuffer.h" />
     <ClInclude Include="InstancingManager.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="Macro.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshData.h" />

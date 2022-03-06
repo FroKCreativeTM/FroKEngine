@@ -14,8 +14,33 @@
 #include "Audio.h"
 #include "ImGuiManager.h"
 
+Engine::Engine()
+{
+	// 컴파일 시간에 체크해서 이걸 동작시킬지 말지 결정한다.
+#ifdef _DEBUG   
+	// 콘솔창을 생성시켜주는 함수
+	if (AllocConsole())
+	{
+		FILE* nfp[3];
+		freopen_s(nfp + 0, "CONOUT$", "rb", stdin);
+		freopen_s(nfp + 1, "CONOUT$", "wb", stdout);
+		freopen_s(nfp + 2, "CONOUT$", "wb", stderr);
+		std::ios::sync_with_stdio();
+	}
+#endif
+}
+
 void Engine::Init(const WindowInfo& info)
 {
+//#if defined(DEBUG) || defined(_DEBUG) 
+//	// D3D12 디버깅 컨트롤러를 켠다.
+//	{
+//		ComPtr<ID3D12Debug> debugController;
+//		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+//		debugController->EnableDebugLayer();
+//	}
+//#endif
+
 	_window = info;
 
 	// 그려질 화면 크기를 설정한다.
@@ -112,7 +137,7 @@ void Engine::CreateConstantBuffer(CBV_REGISTER reg, uint32 bufferSize, uint32 co
 	uint8 typeInt = static_cast<uint8>(reg);
 	assert(_constantBuffers.size() == typeInt);
 
-	shared_ptr<ConstantBuffer> buffer = make_shared<ConstantBuffer>();
+	ConstantBuffer* buffer = new ConstantBuffer();
 	buffer->Init(reg, bufferSize, count);
 	_constantBuffers.push_back(buffer);
 }
@@ -138,7 +163,7 @@ void Engine::CreateRenderTargetGroups()
 			rtVec[i].target = GET_SINGLE(Resources)->CreateTextureFromResource(name, resource);
 		}
 
-		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)] = make_shared<RenderTargetGroup>();
+		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)] = new RenderTargetGroup();
 		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN)]->Create(RENDER_TARGET_GROUP_TYPE::SWAP_CHAIN, rtVec, dsTexture);
 	}
 
@@ -157,7 +182,7 @@ void Engine::CreateRenderTargetGroups()
 			CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 
-		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SHADOW)] = make_shared<RenderTargetGroup>();
+		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SHADOW)] = new RenderTargetGroup();
 		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::SHADOW)]->Create(RENDER_TARGET_GROUP_TYPE::SHADOW, rtVec, shadowDepthTexture);
 	}
 
@@ -180,7 +205,7 @@ void Engine::CreateRenderTargetGroups()
 			CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
 
-		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::G_BUFFER)] = make_shared<RenderTargetGroup>();
+		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::G_BUFFER)] = new RenderTargetGroup();
 		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::G_BUFFER)]->Create(RENDER_TARGET_GROUP_TYPE::G_BUFFER, rtVec, dsTexture);
 	}
 
@@ -198,7 +223,16 @@ void Engine::CreateRenderTargetGroups()
 			CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
 
-		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::LIGHTING)] = make_shared<RenderTargetGroup>();
+		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::LIGHTING)] = new RenderTargetGroup();
 		_rtGroups[static_cast<uint8>(RENDER_TARGET_GROUP_TYPE::LIGHTING)]->Create(RENDER_TARGET_GROUP_TYPE::LIGHTING, rtVec, dsTexture);
 	}
+}
+
+
+Engine::~Engine()
+{
+	// 콘솔창 해제
+#ifdef _DEBUG
+	FreeConsole();
+#endif // _DEBUG
 }

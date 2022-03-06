@@ -32,6 +32,9 @@ using namespace DirectX;
 using namespace DirectX::PackedVector;
 using namespace Microsoft::WRL;
 
+// 각종 매크로
+#include "Macro.h"
+
 // 텍스처 관련
 #include <DirectXTex/DirectXTex.h>
 #include <DirectXTex/DirectXTex.inl>
@@ -49,6 +52,58 @@ using namespace std;
 #include "ImGui/imgui_impl_win32.h"
 #include "ImGui/imgui_impl_dx12.h"
 #include "fontawesome/IconsFontAwesome5.h"
+
+// 물리 엔진
+#include <PxPhysicsAPI.h>
+
+#ifdef _DEBUG
+#pragma comment(lib, "Physx\\Debug\\LowLevel_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\LowLevelAABB_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\LowLevelDynamics_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysX_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXCharacterKinematic_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXCommon_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXCooking_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXExtensions_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXFoundation_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXPvdSDK_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXTask_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXVehicle_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SampleBase_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SampleFramework_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SamplePlatform_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SampleRenderer_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\Samples_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SamplesToolkit_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SceneQuery_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SimulationController_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SnippetRender_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\SnippetUtils_static_64.lib")
+#else
+#pragma comment(lib, "Physx\\Release\\LowLevel_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\LowLevelAABB_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\LowLevelDynamics_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysX_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXCharacterKinematic_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXCommon_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXCooking_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXExtensions_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXFoundation_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXPvdSDK_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXTask_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\PhysXVehicle_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SampleBase_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SampleFramework_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SamplePlatform_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SampleRenderer_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\Samples_64.lib")
+#pragma comment(lib, "Physx\\Release\\SamplesToolkit_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SceneQuery_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SimulationController_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SnippetRender_static_64.lib")
+#pragma comment(lib, "Physx\\Release\\SnippetUtils_static_64.lib")
+#endif
+
 
 // 각종 lib
 #pragma comment(lib, "d3d12")
@@ -162,49 +217,6 @@ struct Vertex
 	Vec4 indices;
 };
 
-#define SAFE_DELETE(p) if(p) { delete p; p = nullptr; }
-#define SAFE_DELETE_ARRAY(p) if(p) { delete p; p = nullptr; }
-#define SAFE_RELEASE(p) if(p) { p->Release(); p = nullptr; }
-
-// 클래스를 싱글톤으로 자동 생성한다.
-#define DECLARE_SINGLE(Type) \
-private : \
-	static Type*	m_pInst;\
-public: \
-	static Type* GetInst()\
-	{\
-		if(!m_pInst)\
-		{\
-			m_pInst = new Type;\
-		}\
-		return m_pInst;\
-	}\
-static void DestroyInst()\
-{\
-	SAFE_DELETE(m_pInst);\
-}\
-private : \
-	Type();\
-	~Type();
-
-// 싱글톤 객체를 NULL로 초기화 정의한다.
-#define DEFINITION_SINGLE(Type) Type* Type::m_pInst = NULL; 
-#define GET_SINGLE(Type) Type::GetInst()
-#define DESTROY_SINGLE(Type) Type::DestroyInst()
-
-#define DEVICE							GEngine->GetDevice()->GetDevice()
-#define GRAPHICS_CMD_LIST				GEngine->GetGraphicsCmdQueue()->GetGraphicsCmdList()
-#define COMPUTE_CMD_LIST				GEngine->GetComputeCmdQueue()->GetComputeCmdList()
-#define RESOURCE_CMD_LIST				GEngine->GetGraphicsCmdQueue()->GetResourceCmdList()
-#define GRAPHICS_ROOT_SIGNATURE			GEngine->GetRootSignature()->GetGraphicsRootSignature()
-#define COMPUTE_ROOT_SIGNATURE			GEngine->GetRootSignature()->GetComputeRootSignature()
-
-#define INPUT							GET_SINGLE(Input)
-#define DELTA_TIME						GET_SINGLE(Timer)->GetDeltaTime()
-
-#define SAFE_DELETE(p) if(p) { delete p; p = nullptr; }
-
-#define CONST_BUFFER(type)		GEngine->GetConstantBuffer(type)
 
 struct TransformParams
 {

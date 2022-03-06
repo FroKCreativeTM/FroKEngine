@@ -16,6 +16,12 @@
 class Engine
 {
 public : 
+	Engine();
+	~Engine();
+	Engine(const Engine& rhs) = delete;
+	Engine& operator=(const Engine& rhs) = delete;
+
+public : 
 	void Init(const WindowInfo& info);
 	void Update();
 
@@ -28,8 +34,8 @@ public :
 	GraphicsDescriptorHeap* GetGraphicsDescHeap() { return _graphicsDescHeap; }
 	ComputeDescriptorHeap* GetComputeDescHeap() { return _computeDescHeap; }
 
-	shared_ptr<ConstantBuffer> GetConstantBuffer(CONSTANT_BUFFER_TYPE type) { return _constantBuffers[static_cast<uint8>(type)]; }
-	shared_ptr<RenderTargetGroup> GetRTGroup(RENDER_TARGET_GROUP_TYPE type) { return _rtGroups[static_cast<uint8>(type)]; }
+	ConstantBuffer* GetConstantBuffer(CONSTANT_BUFFER_TYPE type) { return _constantBuffers[static_cast<uint8>(type)]; }
+	RenderTargetGroup* GetRTGroup(RENDER_TARGET_GROUP_TYPE type) { return _rtGroups[static_cast<uint8>(type)]; }
 
 	const WindowInfo& GetWindow() { return _window; }
 
@@ -60,6 +66,6 @@ private :
 
 	ID3D12DescriptorHeap* g_pd3dRtvDescHeap = NULL;
 
-	vector<shared_ptr<ConstantBuffer>> _constantBuffers;
-	array<shared_ptr<RenderTargetGroup>, RENDER_TARGET_GROUP_COUNT> _rtGroups;
+	vector<ConstantBuffer*> _constantBuffers;
+	array<RenderTargetGroup*, RENDER_TARGET_GROUP_COUNT> _rtGroups;
 };
