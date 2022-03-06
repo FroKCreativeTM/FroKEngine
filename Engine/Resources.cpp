@@ -3,6 +3,11 @@
 #include "Engine.h"
 #include "MeshData.h"
 
+DEFINITION_SINGLE(Resources)
+
+Resources::Resources() {}
+Resources::~Resources() {}
+
 void Resources::Init()
 {
 	CreateDefaultShader();

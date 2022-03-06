@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "Audio.h"
 
+DEFINITION_SINGLE(Audio)
+
+Audio::Audio() {}
+Audio::~Audio() {}
+
 bool Audio::Init()
 {
 	System_Create(&m_pSystem);

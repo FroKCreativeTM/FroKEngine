@@ -15,7 +15,7 @@ GraphicsCommandQueue::~GraphicsCommandQueue()
 	::CloseHandle(_fenceEvent);
 }
 
-void GraphicsCommandQueue::Init(ComPtr<ID3D12Device> device, shared_ptr<SwapChain> swapChain)
+void GraphicsCommandQueue::Init(ComPtr<ID3D12Device> device, SwapChain* swapChain)
 {
 	_swapChain = swapChain;
 

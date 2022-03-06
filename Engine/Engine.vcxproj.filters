@@ -198,7 +198,7 @@
     <ClCompile Include="..\Library\Include\ImGui\imgui.cpp">
       <Filter>Utils\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="UIManager.cpp">
+    <ClCompile Include="ImGuiManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
@@ -377,7 +377,7 @@
     <ClInclude Include="..\Library\Include\ImGui\imgui.h">
       <Filter>Utils\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="UIManager.h">
+    <ClInclude Include="ImGuiManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>

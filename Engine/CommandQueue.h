@@ -13,7 +13,7 @@ class GraphicsCommandQueue
 public :
 	~GraphicsCommandQueue();
 
-	void Init(ComPtr<ID3D12Device> device, shared_ptr<SwapChain> swapChain);
+	void Init(ComPtr<ID3D12Device> device, SwapChain* swapChain);
 	void WaitSync();
 
 	void RenderBegin();
@@ -47,8 +47,8 @@ private:
 	uint32								_fenceValue = 0;
 	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
 
-	shared_ptr<SwapChain>		_swapChain;
-	shared_ptr<DescriptorHeap>	_descHeap;
+	SwapChain*		_swapChain;
+	DescriptorHeap*	_descHeap;
 };
 
 
@@ -82,6 +82,6 @@ private:
 	uint32								_fenceValue = 0;
 	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
 
-	shared_ptr<SwapChain>		_swapChain;
-	shared_ptr<DescriptorHeap>	_descHeap;
+	SwapChain*		_swapChain;
+	DescriptorHeap*	_descHeap;
 };

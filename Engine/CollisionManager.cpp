@@ -12,6 +12,11 @@
 #include "SceneManager.h"
 #include "Scene.h"
 
+DEFINITION_SINGLE(CollisionManager)
+
+CollisionManager::CollisionManager() {}
+CollisionManager::~CollisionManager() {}
+
 void CollisionManager::AddObject(shared_ptr<GameObject> pObj)
 {
 	if (pObj->GetCollider())

@@ -12,7 +12,7 @@
 #include "CollisionManager.h"
 #include "InstancingManager.h"
 #include "Audio.h"
-#include "UIManager.h"
+#include "ImGuiManager.h"
 
 void Engine::Init(const WindowInfo& info)
 {
@@ -22,13 +22,13 @@ void Engine::Init(const WindowInfo& info)
 	_viewport = { 0, 0, static_cast<FLOAT>(info.width), static_cast<FLOAT>(info.height), 0.0f, 1.0f };
 	_scissorRect = CD3DX12_RECT(0, 0, info.width, info.height);
 
-	_device = make_shared<Device>();
-	_graphicsCmdQueue = make_shared<GraphicsCommandQueue>();
-	_computeCmdQueue = make_shared<ComputeCommandQueue>();
-	_swapChain = make_shared<SwapChain>();
-	_rootSignature = make_shared<RootSignature>();
-	_graphicsDescHeap = make_shared<GraphicsDescriptorHeap>();
-	_computeDescHeap = make_shared<ComputeDescriptorHeap>();
+	_device = new Device();
+	_graphicsCmdQueue = new GraphicsCommandQueue();
+	_computeCmdQueue = new ComputeCommandQueue();
+	_swapChain = new SwapChain();
+	_rootSignature = new RootSignature();
+	_graphicsDescHeap = new GraphicsDescriptorHeap();
+	_computeDescHeap = new ComputeDescriptorHeap();
 
 	_device->Init();
 	_graphicsCmdQueue->Init(_device->GetDevice(), _swapChain);
@@ -49,7 +49,7 @@ void Engine::Init(const WindowInfo& info)
 	GET_SINGLE(Input)->Init(info.hwnd);
 	GET_SINGLE(Timer)->Init();
 	GET_SINGLE(Resources)->Init();
-	GET_SINGLE(UIManager)->Init(info);
+	GET_SINGLE(ImGuiManager)->Init(info);
 	// GET_SINGLE(UIManager)->Init(info.hwnd, _swapChain, _graphicsDescHeap);
 }
 
@@ -71,12 +71,8 @@ void Engine::Render()
 {
 	RenderBegin();
 
-	GET_SINGLE(UIManager)->newImGuiFrame();
-	// ImGui::DockSpaceOverViewport();
-
 	// 물체는 여기서 그린다.
 	GET_SINGLE(SceneManager)->Render();
-	GET_SINGLE(UIManager)->renderImGui();
 
 	RenderEnd();
 }

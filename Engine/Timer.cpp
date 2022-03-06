@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "Timer.h"
 
+DEFINITION_SINGLE(Timer)
+
+Timer::Timer() {}
+Timer::~Timer() {}
+
 void Timer::Init()
 {
 	::QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&_frequency));

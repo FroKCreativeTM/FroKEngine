@@ -50,7 +50,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     GWindowInfo.height = 720;
     GWindowInfo.windowed = true;
 
-    unique_ptr<Game> game = make_unique<Game>();
+    Game* game = new Game();
     game->Init(GWindowInfo);
 
     // 기본 메시지 루프입니다:
@@ -73,6 +73,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         // TODO (게임 로직 추가)
         game->Update();
     }
+
+    ImGui_ImplDX12_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+
+    delete game;
 
     return (int) msg.wParam;
 }

@@ -23,6 +23,12 @@
 #include "CollisionManager.h"
 #include "SphereCollider.h"
 #include "BoxCollider.h"
+#include "ImGuiManager.h"
+
+DEFINITION_SINGLE(SceneManager)
+
+SceneManager::SceneManager() {}
+SceneManager::~SceneManager() {}
 
 void SceneManager::Update()
 {
@@ -36,9 +42,13 @@ void SceneManager::Update()
 
 void SceneManager::Render()
 {
+	GET_SINGLE(ImGuiManager)->RenderBegin();
+
 	// 현재 실행중인 씬이 렌더를 담당한다.
 	if (_activeScene)
 		_activeScene->Render();
+
+	GET_SINGLE(ImGuiManager)->RenderEnd();
 }
 
 void SceneManager::LoadScene(wstring sceneName)
@@ -129,7 +139,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		camera->SetName(L"Orthographic_Camera");
 		camera->AddComponent(make_shared<Transform>());
 		camera->AddComponent(make_shared<Camera>()); // Near=1, Far=1000, 800*600
-		camera->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 0.f));
+		camera->GetTransform()->SetLocalPosition(Vec3(0.f, 100.f, 0.f));
 		camera->GetCamera()->SetProjectionType(PROJECTION_TYPE::ORTHOGRAPHIC);
 		uint8 layerIndex = GET_SINGLE(SceneManager)->LayerNameToIndex(L"UI");
 		camera->GetCamera()->SetCullingMaskAll(); // 다 끄고
@@ -182,7 +192,8 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		}
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetRadius(0.5f);
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
-		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetUseGravity(false);
+		// physx -> nvidia
+		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetUseGravity(true);
 		obj->AddComponent(meshRenderer);
 		scene->AddGameObject(obj);
 	}
@@ -227,7 +238,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		obj->GetTransform()->SetLocalScale(Vec3(50.f, 250.f, 50.f));
 		obj->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 0.f));
 		obj->SetStatic(true);
-		obj->GetTerrain()->Init(64, 64);
+		obj->GetTerrain()->Init(32, 32);
 		obj->SetCheckFrustum(false);
 
 		dynamic_pointer_cast<BoxCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));

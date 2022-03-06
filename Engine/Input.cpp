@@ -2,6 +2,11 @@
 #include "Input.h"
 #include "Engine.h"
 
+DEFINITION_SINGLE(Input)
+
+Input::Input() {}
+Input::~Input() {}
+
 void Input::Init(HWND hwnd)
 {
 	_hwnd = hwnd;

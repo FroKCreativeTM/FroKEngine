@@ -20,13 +20,13 @@ public :
 	void Update();
 
 public :
-	shared_ptr<Device> GetDevice() { return _device; }
-	shared_ptr<GraphicsCommandQueue> GetGraphicsCmdQueue() { return _graphicsCmdQueue; }
-	shared_ptr<ComputeCommandQueue> GetComputeCmdQueue() { return _computeCmdQueue; }
-	shared_ptr<SwapChain> GetSwapChain() { return _swapChain; }
-	shared_ptr<RootSignature> GetRootSignature() { return _rootSignature; }
-	shared_ptr<GraphicsDescriptorHeap> GetGraphicsDescHeap() { return _graphicsDescHeap; }
-	shared_ptr<ComputeDescriptorHeap> GetComputeDescHeap() { return _computeDescHeap; }
+	Device* GetDevice() { return _device; }
+	GraphicsCommandQueue* GetGraphicsCmdQueue() { return _graphicsCmdQueue; }
+	ComputeCommandQueue* GetComputeCmdQueue() { return _computeCmdQueue; }
+	SwapChain* GetSwapChain() { return _swapChain; }
+	RootSignature* GetRootSignature() { return _rootSignature; }
+	GraphicsDescriptorHeap* GetGraphicsDescHeap() { return _graphicsDescHeap; }
+	ComputeDescriptorHeap* GetComputeDescHeap() { return _computeDescHeap; }
 
 	shared_ptr<ConstantBuffer> GetConstantBuffer(CONSTANT_BUFFER_TYPE type) { return _constantBuffers[static_cast<uint8>(type)]; }
 	shared_ptr<RenderTargetGroup> GetRTGroup(RENDER_TARGET_GROUP_TYPE type) { return _rtGroups[static_cast<uint8>(type)]; }
@@ -50,13 +50,13 @@ private :
 	D3D12_VIEWPORT _viewport = {};
 	D3D12_RECT _scissorRect = {};
 
-	shared_ptr<Device> _device;
-	shared_ptr<GraphicsCommandQueue> _graphicsCmdQueue;
-	shared_ptr<ComputeCommandQueue> _computeCmdQueue;
-	shared_ptr<SwapChain> _swapChain;
-	shared_ptr<RootSignature> _rootSignature;
-	shared_ptr<GraphicsDescriptorHeap> _graphicsDescHeap;
-	shared_ptr<ComputeDescriptorHeap> _computeDescHeap;
+	Device* _device;
+	GraphicsCommandQueue* _graphicsCmdQueue;
+	ComputeCommandQueue* _computeCmdQueue;
+	SwapChain* _swapChain;
+	RootSignature* _rootSignature;
+	GraphicsDescriptorHeap* _graphicsDescHeap;
+	ComputeDescriptorHeap* _computeDescHeap;
 
 	ID3D12DescriptorHeap* g_pd3dRtvDescHeap = NULL;
 

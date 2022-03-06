@@ -6,6 +6,11 @@
 #include "Transform.h"
 #include "Camera.h"
 
+DEFINITION_SINGLE(InstancingManager)
+
+InstancingManager::InstancingManager() {}
+InstancingManager::~InstancingManager() {}
+
 void InstancingManager::Render(vector<shared_ptr<GameObject>>& gameObjects)
 {
 	map<uint64, vector<shared_ptr<GameObject>>> cache;
