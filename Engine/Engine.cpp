@@ -13,6 +13,7 @@
 #include "InstancingManager.h"
 #include "Audio.h"
 #include "ImGuiManager.h"
+#include "Physics.h"
 
 Engine::Engine()
 {
@@ -75,6 +76,7 @@ void Engine::Init(const WindowInfo& info)
 	GET_SINGLE(Timer)->Init();
 	GET_SINGLE(Resources)->Init();
 	GET_SINGLE(ImGuiManager)->Init(info);
+	GET_SINGLE(Physics)->Init();
 	// GET_SINGLE(UIManager)->Init(info.hwnd, _swapChain, _graphicsDescHeap);
 }
 

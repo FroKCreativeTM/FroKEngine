@@ -55,31 +55,30 @@ using namespace std;
 
 // 물리 엔진
 #include <PxPhysicsAPI.h>
-#include <common/PxTolerancesScale.h>
 
 #ifdef _DEBUG
-#pragma comment(lib, "Physx\\Debug\\LowLevel_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\LowLevelAABB_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\LowLevelDynamics_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\LowLevel_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\LowLevelAABB_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\LowLevelDynamics_static_64.lib")
 #pragma comment(lib, "Physx\\Debug\\PhysX_64.lib")
-#pragma comment(lib, "Physx\\Debug\\PhysXCharacterKinematic_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\PhysXCharacterKinematic_static_64.lib")
 #pragma comment(lib, "Physx\\Debug\\PhysXCommon_64.lib")
-#pragma comment(lib, "Physx\\Debug\\PhysXCooking_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\PhysXCooking_64.lib")
 #pragma comment(lib, "Physx\\Debug\\PhysXExtensions_static_64.lib")
 #pragma comment(lib, "Physx\\Debug\\PhysXFoundation_64.lib")
-#pragma comment(lib, "Physx\\Debug\\PhysXPvdSDK_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\PhysXTask_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\PhysXVehicle_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SampleBase_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SampleFramework_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SamplePlatform_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SampleRenderer_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\Samples_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SamplesToolkit_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SceneQuery_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SimulationController_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SnippetRender_static_64.lib")
-#pragma comment(lib, "Physx\\Debug\\SnippetUtils_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\PhysXPvdSDK_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\PhysXTask_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\PhysXVehicle_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SampleBase_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SampleFramework_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SamplePlatform_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SampleRenderer_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\Samples_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SamplesToolkit_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SceneQuery_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SimulationController_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SnippetRender_static_64.lib")
+//#pragma comment(lib, "Physx\\Debug\\SnippetUtils_static_64.lib")
 #else
 #pragma comment(lib, "Physx\\Release\\LowLevel_static_64.lib")
 #pragma comment(lib, "Physx\\Release\\LowLevelAABB_static_64.lib")
@@ -119,16 +118,16 @@ using namespace std;
 #endif
 
 #ifdef _DEBUG
-#pragma comment(lib, "FBX\\debug\\libfbxsdk-md.lib")
-#pragma comment(lib, "FBX\\debug\\libxml2-md.lib")
-#pragma comment(lib, "FBX\\debug\\zlib-md.lib")
+#pragma comment(lib, "FBX\\debug\\libfbxsdk-mt.lib")
+#pragma comment(lib, "FBX\\debug\\libxml2-mt.lib")
+#pragma comment(lib, "FBX\\debug\\zlib-mt.lib")
 #else
 #pragma comment(lib, "FBX\\release\libfbxsdk-md.lib")
 #pragma comment(lib, "FBX\\release\libxml2-md.lib")
 #pragma comment(lib, "FBX\\release\\zlib-md.lib")
 #endif
 
-#pragma comment(lib, "FMOD/fmod64_vc")
+// #pragma comment(lib, "FMOD/fmod64_vc")
 
 // 각종 typedef
 // 기본 타입이 아니라 따로 별칭을 둔 것

@@ -3,7 +3,7 @@
 //
 // DirectX Texture Library
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
@@ -29,7 +29,7 @@
 #include <d3d11_1.h>
 #endif
 #endif
-#else
+#else // !WIN32
 #include <directx/dxgiformat.h>
 #include <wsl/winadapter.h>
 #endif
@@ -37,13 +37,17 @@
 #include <DirectXMath.h>
 
 #ifdef WIN32
+#ifdef NTDDI_WIN10_FE
+#include <ocidl.h>
+#else
 #include <OCIdl.h>
+#endif
 
 struct IWICImagingFactory;
 struct IWICMetadataQueryReader;
 #endif
 
-#define DIRECTX_TEX_VERSION 191
+#define DIRECTX_TEX_VERSION 195
 
 
 namespace DirectX
@@ -396,7 +400,11 @@ namespace DirectX
         void *__cdecl GetBufferPointer() const noexcept { return m_buffer; }
         size_t __cdecl GetBufferSize() const noexcept { return m_size; }
 
+        HRESULT __cdecl Resize(size_t size) noexcept;
+            // Reallocate for a new size
+
         HRESULT __cdecl Trim(size_t size) noexcept;
+            // Shorten size without reallocation
 
     private:
         void*   m_buffer;
@@ -590,7 +598,7 @@ namespace DirectX
         // Resize the image to width x height. Defaults to Fant filtering.
         // Note for a complex resize, the result will always have mipLevels == 1
 
-    const float TEX_THRESHOLD_DEFAULT = 0.5f;
+    constexpr float TEX_THRESHOLD_DEFAULT = 0.5f;
         // Default value for alpha threshold used when converting to 1-bit alpha
 
     HRESULT __cdecl Convert(
@@ -811,6 +819,7 @@ namespace DirectX
         WIC_CODEC_GIF,              // Graphics Interchange Format  (.gif)
         WIC_CODEC_WMP,              // Windows Media Photo / HD Photo / JPEG XR (.hdp, .jxr, .wdp)
         WIC_CODEC_ICO,              // Windows Icon (.ico)
+        WIC_CODEC_HEIF,             // High Efficiency Image File (.heif, .heic)
     };
 
     REFGUID __cdecl GetWICCodec(_In_ WICCodecs codec) noexcept;
@@ -818,6 +827,13 @@ namespace DirectX
     IWICImagingFactory* __cdecl GetWICFactory(bool& iswic2) noexcept;
     void __cdecl SetWICFactory(_In_opt_ IWICImagingFactory* pWIC) noexcept;
 #endif
+
+    //---------------------------------------------------------------------------------
+    // DDS helper functions
+    HRESULT __cdecl EncodeDDSHeader(
+        _In_ const TexMetadata& metadata, DDS_FLAGS flags,
+        _Out_writes_bytes_to_opt_(maxsize, required) void* pDestination, _In_ size_t maxsize,
+        _Out_ size_t& required) noexcept;
 
     //---------------------------------------------------------------------------------
     // Direct3D 11 functions

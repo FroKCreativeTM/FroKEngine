@@ -82,11 +82,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Output\Debug\</OutDir>
     <IncludePath>$(SolutionDir)Library/Include/;$(SolutionDir)Library/Include/FBX/;$(SolutionDir)Library/Include/Physx/;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\Release\</OutDir>
     <IncludePath>$(SolutionDir)Library/Include/;$(SolutionDir)Library/Include/FBX/;$(SolutionDir)Library/Include/Physx/;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -132,6 +134,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>26812;26495;26451;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
