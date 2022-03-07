@@ -39,6 +39,12 @@ using namespace Microsoft::WRL;
 #include <DirectXTex/DirectXTex.h>
 #include <DirectXTex/DirectXTex.inl>
 
+#ifdef _DEBUG
+#pragma comment(lib, "DirectXTex\\DirectXTex_debug.lib")
+#else
+#pragma comment(lib, "DirectXTex\\DirectXTex.lib")
+#endif
+
 // 메시 데이터 관련
 #include "FBX/fbxsdk.h"
 
@@ -111,11 +117,6 @@ using namespace std;
 #pragma comment(lib, "dxguid")
 #pragma comment(lib, "d3dcompiler")
 
-#ifdef _DEBUG
-#pragma comment(lib, "DirectXTex\\DirectXTex_debug.lib")
-#else
-#pragma comment(lib, "DirectXTex\\DirectXTex.lib")
-#endif
 
 #ifdef _DEBUG
 #pragma comment(lib, "FBX\\debug\\libfbxsdk-mt.lib")

@@ -172,6 +172,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\DirectXTex\DirectXTex\d3dx12.h" />
+    <ClInclude Include="..\Library\Include\DirectXTex\DirectXTex.h" />
     <ClInclude Include="..\Library\Include\ImGui\imconfig.h" />
     <ClInclude Include="..\Library\Include\ImGui\imgui.h" />
     <ClInclude Include="..\Library\Include\ImGui\imgui_impl_dx12.h" />
@@ -190,7 +192,6 @@
     <ClInclude Include="CommandQueue.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ConstantBuffer.h" />
-    <ClInclude Include="d3dx12.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EnginePch.h" />
@@ -317,6 +318,7 @@
     <ClCompile Include="ImGuiManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Library\Include\DirectXTex\DirectXTex.inl" />
     <None Include="SimpleMath.inl" />
   </ItemGroup>
   <ItemGroup>

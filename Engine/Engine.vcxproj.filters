@@ -31,6 +31,9 @@
     <Filter Include="Utils\ImGui">
       <UniqueIdentifier>{6d7efb88-bee5-4757-b674-b54fa1fcf128}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\DirectXTex">
+      <UniqueIdentifier>{d985cc7f-3ff0-4ab8-bb16-07cd250a9700}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -212,9 +215,6 @@
     <ClInclude Include="EnginePch.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="d3dx12.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="CommandQueue.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -389,10 +389,19 @@
     <ClInclude Include="Physics.h">
       <Filter>Manager</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\DirectXTex\DirectXTex\d3dx12.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\Include\DirectXTex\DirectXTex.h">
+      <Filter>Utils\DirectXTex</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
       <Filter>Utils</Filter>
+    </None>
+    <None Include="..\Library\Include\DirectXTex\DirectXTex.inl">
+      <Filter>Utils\DirectXTex</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
