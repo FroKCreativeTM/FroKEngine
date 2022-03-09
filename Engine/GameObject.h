@@ -52,6 +52,7 @@ public:
 	bool IsStatic() { return _static; }
 
 private : 
+
 	array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> _components;
 	vector<shared_ptr<MonoBehaviour>> _scripts;
 

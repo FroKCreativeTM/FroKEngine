@@ -6,10 +6,37 @@ using namespace physx;
 DEFINITION_SINGLE(Physics)
 
 Physics::Physics() {}
-Physics::~Physics() {}
+Physics::~Physics() 
+{
+	if (_pPhysics)
+	{
+		_pPhysics->release();
+	}
+	_pPhysics = nullptr;
+
+	if (_pFoundation)
+	{
+		_pFoundation->release();
+	}
+	_pFoundation = nullptr;
+	
+	if(_pDispatcher)
+	{
+		_pDispatcher->release();
+	}
+	_pDispatcher = nullptr;
+
+	if (_pScene)
+	{
+		_pScene->release();
+	}
+	_pScene = nullptr;
+}
 
 void Physics::Init()
 {
+	/* Physx 초기화 */
+
 	// Foundation을 만들어 줍니다.
 	_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, _allocator, _errorCallback);
 	
@@ -31,5 +58,21 @@ void Physics::Init()
 	if (!_pPhysics)
 		throw("PxCreatePhysics failed!");
 
+	PxSceneDesc sceneDesc(_pPhysics->getTolerancesScale());
+	sceneDesc.gravity = PxVec3(0.f, -9.81f, 0.f);
+	
+	_pDispatcher = PxDefaultCpuDispatcherCreate(2);
 
+	sceneDesc.cpuDispatcher = _pDispatcher;
+	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+
+	_pScene = _pPhysics->createScene(sceneDesc);
+
+	PxPvdSceneClient* pPvdClient = _pScene->getScenePvdClient();
+	if (pPvdClient)
+	{
+		pPvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+		pPvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+		pPvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+	}
 }
