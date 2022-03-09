@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Physics.h"
 
+using namespace physx;
+
 DEFINITION_SINGLE(Physics)
 
 Physics::Physics() {}
@@ -9,17 +11,25 @@ Physics::~Physics() {}
 void Physics::Init()
 {
 	// Foundation을 만들어 줍니다.
-	m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-	// PhysX를 만들어 줍니다.
-	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, physx::PxTolerancesScale(), true);
+	_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, _allocator, _errorCallback);
+	
+	if (!_pFoundation)
+		throw("PxCreateFoundation failed!");
 
-	// Scene을 Set 해줍니다.
-	physx::PxSceneDesc sceneDesc(m_pPhysics->getTolerancesScale());
-	sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f); // 중력 세팅
-	// Dispatcher를 Set 만들어 줍니다.
-	m_pDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
-	sceneDesc.cpuDispatcher = m_pDispatcher;
-	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-	// 위에서 설정한대로 Scene을 만들어 줍니다.
-	m_pScene = m_pPhysics->createScene(sceneDesc);
+	_pvd = PxCreatePvd(*_pFoundation);
+	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
+	_pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+
+	// PhysX를 만들어 줍니다.
+	bool recordMemoryAllocations = true;
+	_toleranceScale.length = 100;
+	_toleranceScale.speed = 981;
+
+	_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *_pFoundation,
+		_toleranceScale, recordMemoryAllocations, _pvd);
+
+	if (!_pPhysics)
+		throw("PxCreatePhysics failed!");
+
+
 }
