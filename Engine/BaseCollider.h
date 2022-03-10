@@ -86,12 +86,13 @@ public:
 	bool GetTriggerd() const { return _isTriggerd; }
 	void SetTriggered(bool b) { _isTriggerd = b; }
 
+	physx::PxShape* GetShape() { return _colliderShape; }
 	ColliderType GetColliderType() { return _colliderType; }
 
 protected :
 	bool _isTriggerd = true;
 
-private:
+protected:
 	ColliderType		_colliderType = {};
 	physx::PxShape*		_colliderShape = nullptr;
 };

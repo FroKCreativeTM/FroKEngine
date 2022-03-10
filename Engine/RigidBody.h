@@ -25,8 +25,14 @@ public:
     virtual void FinalUpdate() override;
 
 public :
+    physx::PxMaterial* GetMaterial() { return _material; }
+    physx::PxTransform  GetPhysicsTransform() { return _transform; }
 
 private : 
-    physx::PxRigidBody* _rigidBody = nullptr;
+    // 충돌체의 마찰력과 탄성력같은 충돌 재질을 만들어준다.
+    physx::PxMaterial*                  _material = nullptr;
+    // 충돌체의 위치와 회전 값을 설정할 수 있는 Transform이다.
+    physx::PxTransform                  _transform;
+    physx::PxRigidDynamic*                     _pActor;
 };
 

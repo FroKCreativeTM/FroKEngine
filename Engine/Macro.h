@@ -44,6 +44,9 @@ private : \
 
 #define CONST_BUFFER(type)		GEngine->GetConstantBuffer(type)
 
+#define PHYSICS							GET_SINGLE(Physics)->GetPhysics()
+#define PHYSICS_SCENE					GET_SINGLE(Physics)->GetScene()
+
 inline std::wstring AnsiToWString(const std::string& str)
 {
 	WCHAR buffer[512];
