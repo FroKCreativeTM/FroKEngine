@@ -207,6 +207,9 @@
     <ClCompile Include="Physics.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="HeightFieldCollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -394,6 +397,9 @@
     </ClInclude>
     <ClInclude Include="..\Library\Include\DirectXTex\DirectXTex.h">
       <Filter>Utils\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="HeightFieldCollider.h">
+      <Filter>Object\Component\Collider</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

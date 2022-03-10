@@ -6,11 +6,12 @@ enum class ColliderType
 	Box,
 	Sphere,
 	Frustum,
-	OrientedBox,
+	OBB,
 	Triangle,
 	Ray,
 	Plane,
 	Capsule,
+	HeightField,
 };
 
 class BaseCollider : public Component
@@ -91,5 +92,6 @@ protected :
 	bool _isTriggerd = true;
 
 private:
-	ColliderType _colliderType = {};
+	ColliderType		_colliderType = {};
+	physx::PxShape*		_colliderShape = nullptr;
 };

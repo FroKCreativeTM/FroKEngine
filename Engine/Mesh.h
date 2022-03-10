@@ -67,7 +67,12 @@ public :
 	shared_ptr<StructuredBuffer>	GetBoneFrameDataBuffer(int32 index = 0) { return _frameBuffer[index]; } // 전체 본 프레임 정보
 	shared_ptr<StructuredBuffer>	GetBoneOffsetBuffer() { return  _offsetBuffer; }
 
+
+
 private:
+	vector<Vertex>				_vecVertex;
+	vector<uint32>				_vecIndex;
+
 	ComPtr<ID3D12Resource>		_vertexBuffer;
 	D3D12_VERTEX_BUFFER_VIEW	_vertexBufferView = {};
 	uint32						_vertexCount = 0;

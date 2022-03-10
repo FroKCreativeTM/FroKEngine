@@ -18,6 +18,9 @@ Mesh::~Mesh()
 
 void Mesh::Create(vector<Vertex>& vertexBuffer, const vector<uint32>& indexBuffer)
 {
+	_vecVertex = vertexBuffer;
+	_vecIndex = indexBuffer;
+
 	CreateVertexBuffer(vertexBuffer);
 	CreateIndexBuffer(indexBuffer);
 }
