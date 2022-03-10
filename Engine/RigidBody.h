@@ -15,6 +15,8 @@ enum class COLLISION_DETECTION_TYPE : uint8
     Continuous_Speculative,
 };
 
+class BaseCollider;
+
 class RigidBody :
     public Component
 {
@@ -22,11 +24,13 @@ public:
     RigidBody();
     virtual ~RigidBody();
 
+    virtual void Init(BaseCollider * col);
+
     virtual void FinalUpdate() override;
 
 public :
     physx::PxMaterial* GetMaterial() { return _material; }
-    physx::PxTransform  GetPhysicsTransform() { return _transform; }
+    //physx::PxTransform*  GetPhysicsTransform() { return _transform; }
 
     bool GetGravity() { _pActor->getActorFlags().isSet(physx::PxActorFlag::eDISABLE_GRAVITY); }
     void SetGravity(bool b) { _pActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, b); }
@@ -36,6 +40,7 @@ private :
     physx::PxMaterial*                          _material = nullptr;
     // 충돌체의 위치와 회전 값을 설정할 수 있는 Transform이다.
     physx::PxTransform                          _transform;
+    physx::PxShape*                             _pShape;
     physx::PxRigidDynamic*                      _pActor;
 };
 
