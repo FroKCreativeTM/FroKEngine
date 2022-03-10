@@ -4,7 +4,6 @@
 HeightFieldCollider::HeightFieldCollider() : 
 	BaseCollider(ColliderType::HeightField)
 {
-	geometry = geom.heightField();
 }
 
 HeightFieldCollider::~HeightFieldCollider()
