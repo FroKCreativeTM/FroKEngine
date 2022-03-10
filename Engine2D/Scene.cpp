@@ -75,6 +75,30 @@ void Scene::Render()
 	RenderLights();
 	RenderFinal();
 	RenderForward();
+
+	{
+		for (size_t i = 0; i < _gameObjects.size(); i++)
+		{
+			if (_gameObjects[i]->GetName() == L"")
+				continue;
+
+			const wchar_t* input = _gameObjects[i]->GetName().c_str();
+
+			// Count required buffer size (plus one for null-terminator).
+			size_t size = (wcslen(input) + 1) * sizeof(wchar_t);
+			char* buffer = new char[size];
+
+			size_t convertedSize;
+			wcstombs_s(&convertedSize, buffer, size, input, size);
+
+			/* Use the string stored in "buffer" variable */
+			ImGui::Text(buffer);
+
+			// Free allocated memory:
+			delete buffer;
+		}
+	}
+
 }
 
 void Scene::ClearRTV()

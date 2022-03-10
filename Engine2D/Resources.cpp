@@ -305,6 +305,73 @@ shared_ptr<Mesh> Resources::LoadTerrainMesh(int32 sizeX, int32 sizeZ)
 	return mesh;
 }
 
+shared_ptr<Mesh> Resources::LoadGrid(float width, float depth, uint32 m, uint32 n)
+{
+	std::vector<Vertex> Vertices;
+	std::vector<uint32> Indices32;
+
+	uint32 vertexCount = m * n;
+	uint32 faceCount = (m - 1) * (n - 1) * 2;
+
+	//
+	// Create the vertices.
+	//
+
+	float halfWidth = 0.5f * width;
+	float halfDepth = 0.5f * depth;
+
+	float dx = width / (n - 1);
+	float dy = depth / (m - 1);
+
+	float du = 1.0f / (n - 1);
+	float dv = 1.0f / (m - 1);
+
+	Vertices.resize(vertexCount);
+	for (uint32 i = 0; i < m; ++i)
+	{
+		float y = halfDepth - i * dy;
+		for (uint32 j = 0; j < n; ++j)
+		{
+			float x = -halfWidth + j * dx;
+
+			Vertices[i * n + j].pos = XMFLOAT3(x, y, 0.0f);
+			Vertices[i * n + j].normal = XMFLOAT3(0.0f, 0.0f, 1.0f);
+			Vertices[i * n + j].tangent = XMFLOAT3(1.0f, 0.0f, 0.0f);
+			Vertices[i * n + j].uv = Vec2(j * du, i * dv);
+		}
+	}
+
+	//
+	// Create the indices.
+	//
+
+	Indices32.resize(faceCount * 3); // 3 indices per face
+
+	// Iterate over each quad and compute indices.
+	uint32 k = 0;
+	for (uint32 i = 0; i < m - 1; ++i)
+	{
+		for (uint32 j = 0; j < n - 1; ++j)
+		{
+			Indices32[k] = i * n + j;
+			Indices32[k + 1] = i * n + j + 1;
+			Indices32[k + 2] = (i + 1) * n + j;
+
+			Indices32[k + 3] = (i + 1) * n + j;
+			Indices32[k + 4] = i * n + j + 1;
+			Indices32[k + 5] = (i + 1) * n + j + 1;
+
+			k += 6; // next quad
+		}
+	}
+
+	shared_ptr<Mesh> mesh = make_shared<Mesh>();
+	mesh->Create(Vertices, Indices32);
+	Add(L"Grid", mesh);
+
+	return mesh;
+}
+
 shared_ptr<Texture> Resources::CreateTexture(const wstring& name, DXGI_FORMAT format, uint32 width, uint32 height, const D3D12_HEAP_PROPERTIES& heapProperty, D3D12_HEAP_FLAGS heapFlags, D3D12_RESOURCE_FLAGS resFlags, Vec4 clearColor)
 {
 	shared_ptr<Texture> texture = make_shared<Texture>();
@@ -575,6 +642,22 @@ void Resources::CreateDefaultShader()
 		Add<Shader>(L"Terrain", shader);
 	}
 
+	// Terrain
+	{
+		ShaderInfo info =
+		{
+			SHADER_TYPE::DEFERRED,
+			RASTERIZER_TYPE::CULL_BACK,
+			DEPTH_STENCIL_TYPE::LESS,
+			BLEND_TYPE::DEFAULT,
+			D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST
+		};
+
+		shared_ptr<Shader> shader = make_shared<Shader>();
+		shader->CreateGraphicsShader(L"..\\Resources\\Shader\\gridline.fx", info);
+		Add<Shader>(L"Grid", shader);
+	}
+
 	// ComputeAnimation
 	{
 		shared_ptr<Shader> shader = make_shared<Shader>();
@@ -688,6 +771,15 @@ void Resources::CreateDefaultMaterial()
 		material->SetShader(shader);
 		material->SetTexture(0, texture);
 		Add<Material>(L"Terrain", material);
+	}
+
+	// Terrain
+	{
+		shared_ptr<Shader> shader = GET_SINGLE(Resources)->Get<Shader>(L"Grid");
+		shared_ptr<Material> material = make_shared<Material>();
+		material->SetShader(shader);
+
+		Add<Material>(L"Grid", material);
 	}
 
 	// ComputeAnimation

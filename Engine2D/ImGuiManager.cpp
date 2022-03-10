@@ -2,6 +2,19 @@
 #include "ImGuiManager.h"
 #include "Engine.h"
 #include "CommandQueue.h"
+#include "SceneManager.h"
+#include "Scene.h"
+#include "Camera.h"
+
+// 테스트용(옮길 예정입니다.)
+#include "GameObject.h"
+#include "Transform.h"
+#include "Mesh.h"
+#include "Material.h"
+#include "MeshRenderer.h"
+#include "Resources.h"
+#include "RigidBody.h"
+#include "SphereCollider.h"
 
 DEFINITION_SINGLE(ImGuiManager)
 
@@ -136,10 +149,25 @@ void ImGuiManager::RenderBegin()
 
 		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
 		ImGui::SameLine();
 		ImGui::Text("counter = %d", counter);
+		ImGui::Text("camera position -> x : %f y : %f", GET_SINGLE(SceneManager)->GetActiveScene()->
+			GetMainCamera()->GetTransform()->GetWorldPosition().x, GET_SINGLE(SceneManager)->GetActiveScene()->
+			GetMainCamera()->GetTransform()->GetWorldPosition().y);
+		static int objCount = 0;
+		ImGui::Text("objCount = %d", objCount);
+		if (ImGui::Button("New GameObject"))
+		{
+#pragma region Object
+			{
+				shared_ptr<GameObject> obj = make_shared<GameObject>();
+				obj->SetName(L"Object" + to_wstring(objCount++));
+				obj->AddComponent(make_shared<Transform>());
+				GET_SINGLE(SceneManager)->GetActiveScene()->AddGameObject(obj);
+			}
+#pragma endregion
+
+		}
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();

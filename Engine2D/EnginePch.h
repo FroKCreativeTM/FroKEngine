@@ -13,6 +13,11 @@
 #include <array>
 #include <list>
 #include <map>
+
+#include <locale.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 using namespace std;
 
 // C++17에서 생긴 file system이다.

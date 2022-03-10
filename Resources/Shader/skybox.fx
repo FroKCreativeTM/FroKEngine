@@ -6,7 +6,7 @@
 struct VS_IN
 {
     float3 localPos          : POSITION;
-    float2 uv           : TEXCOORD;
+    float2 uv               : TEXCOORD;
 };
 
 struct VS_OUT

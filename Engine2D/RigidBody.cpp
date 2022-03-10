@@ -18,5 +18,10 @@ RigidBody::~RigidBody()
 
 void RigidBody::FinalUpdate()
 {
-
+	if (_useGravity)
+	{
+		Vec3 pos = GetTransform()->GetLocalPosition();
+		pos.y -= GRAVITY * DELTA_TIME;
+		GetTransform()->SetLocalPosition(pos);
+	}
 }

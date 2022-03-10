@@ -32,5 +32,11 @@ void TestCameraScript::LateUpdate()
 	if (INPUT->GetButton(KEY_TYPE::D))
 		pos.x += GetTransform()->GetWorldPosition().x * DELTA_TIME;
 
+	if (INPUT->GetButtonDown(KEY_TYPE::LBUTTON))
+	{
+		const POINT& pos = INPUT->GetMousePos();
+		GET_SINGLE(CollisionManager)->Pick(pos.x, pos.y);
+	}
+
 	GetTransform()->SetLocalPosition(pos);
 }

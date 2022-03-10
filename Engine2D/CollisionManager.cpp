@@ -106,6 +106,7 @@ shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY
 		{
 			minDistance = distance;
 			picked = gameObject;
+			wcout << picked->GetName() << " HIT" << endl;
 		}
 	}
 
