@@ -104,6 +104,17 @@ void Engine::Render()
 	RenderEnd();
 }
 
+void Engine::OnResize(const WindowInfo& info)
+{
+	_window = info;
+	// 그려질 화면 크기를 설정한다.
+	_viewport = { 0, 0, static_cast<FLOAT>(info.width), static_cast<FLOAT>(info.height), 0.0f, 1.0f };
+	_scissorRect = CD3DX12_RECT(0, 0, info.width, info.height);
+
+	_swapChain->OnResize(_window, _device->GetDevice(), _device->GetDXGI(), _graphicsCmdQueue->GetCmdQueue());
+	ResizeWindow(info.width, info.height);
+}
+
 void Engine::ResizeWindow(int32 width, int32 height)
 {
 	_window.width = width;

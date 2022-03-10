@@ -8,6 +8,20 @@ void SwapChain::Init(const WindowInfo& info, ComPtr<ID3D12Device> device,
 	CreateSwapChain(info, dxgi, cmdQueue);
 }
 
+void SwapChain::OnResize(const WindowInfo& info, ComPtr<ID3D12Device> device,
+	ComPtr<IDXGIFactory> dxgi, ComPtr<ID3D12CommandQueue> cmdQueue)
+{
+	// 이전에 만든 정보 날린다
+	_swapChain.Reset();
+
+	_swapChain->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT,
+		info.width, info.height,
+		_desc.BufferDesc.Format,
+		_desc.Flags);
+
+	_backBufferIndex = 0;
+}
+
 void SwapChain::Present()
 {
 	// 프레임을 표현한다.

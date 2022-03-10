@@ -72,7 +72,7 @@ using namespace std;
 //#pragma comment(lib, "Physx\\Debug\\PhysXCooking_64.lib")
 #pragma comment(lib, "Physx\\Debug\\PhysXExtensions_static_64.lib")
 #pragma comment(lib, "Physx\\Debug\\PhysXFoundation_64.lib")
-//#pragma comment(lib, "Physx\\Debug\\PhysXPvdSDK_static_64.lib")
+#pragma comment(lib, "Physx\\Debug\\PhysXPvdSDK_static_64.lib")
 //#pragma comment(lib, "Physx\\Debug\\PhysXTask_static_64.lib")
 //#pragma comment(lib, "Physx\\Debug\\PhysXVehicle_static_64.lib")
 //#pragma comment(lib, "Physx\\Debug\\SampleBase_static_64.lib")
