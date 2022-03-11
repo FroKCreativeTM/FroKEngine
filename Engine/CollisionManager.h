@@ -15,6 +15,7 @@ public :
 	// 여기서 전부 검출하면...될려나?
 	void AddObject(shared_ptr<GameObject> pObj);
 	void Update();
+	void Render();		// 디버그시
 
 	// 두 오브젝트의 충돌 처리를 담당한다.
 	bool Collision(GameObject pSrc, GameObject pDst);

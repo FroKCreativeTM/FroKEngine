@@ -12,6 +12,7 @@
 #include <array>
 #include <list>
 #include <map>
+#include <iostream>
 using namespace std;
 
 // C++17에서 생긴 file system이다.
@@ -110,6 +111,14 @@ using namespace std;
 // #pragma comment(lib, "Physx\\Release\\SnippetUtils_static_64.lib")
 #endif
 
+#include "DirectXTK/Inc/PrimitiveBatch.h"
+#include "DirectXTK/Inc/VertexTypes.h"
+#include "DirectXTK/Inc/Effects.h"
+#include "DirectXTK/Src/EffectCommon.h"
+
+#ifdef _DEBUG
+#pragma comment(lib, "DirectXTK/Debug/DirectXTK12.lib")
+#endif
 
 // 각종 lib
 #pragma comment(lib, "d3d12")

@@ -47,12 +47,37 @@ void CollisionManager::Update()
 
 		for (; innerIter != innerIterEnd; ++innerIter)
 		{
-			Collision(*(iter)->get(), *(innerIter)->get());
+			if (Collision(*(iter)->get(), *(innerIter)->get()))
+			{
+				std::wcout << "Collsion1 : " << iter->get()->GetName() << endl;
+				std::wcout << "Collsion2 : " << innerIter->get()->GetName() << endl;
+				std::cout << "Collsion Detected" << std::endl;
+			}
 		}
 	}
 
 	// 오브젝트간 충돌 처리를 한다.
 	m_CollisionList.clear();
+}
+
+void CollisionManager::Render()
+{
+#ifdef _DEBUG
+	// 두 개의 충돌체가 있어야 충돌한다.
+	if (m_CollisionList.size() < 2)
+	{
+		m_CollisionList.clear();
+		return;
+	}
+
+	for (auto& iter : m_CollisionList)
+	{
+		
+	}
+
+	// 오브젝트간 충돌 처리를 한다.
+	m_CollisionList.clear();
+#endif
 }
 
 bool CollisionManager::Collision(GameObject pSrc, GameObject pDst)

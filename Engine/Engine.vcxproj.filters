@@ -34,6 +34,9 @@
     <Filter Include="Utils\DirectXTex">
       <UniqueIdentifier>{d985cc7f-3ff0-4ab8-bb16-07cd250a9700}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\DebugDraw">
+      <UniqueIdentifier>{995aa514-c210-4d54-9e84-8487c4674180}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -209,6 +212,9 @@
     </ClCompile>
     <ClCompile Include="HeightFieldCollider.cpp">
       <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugDraw.cpp">
+      <Filter>Utils\DebugDraw</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -400,6 +406,9 @@
     </ClInclude>
     <ClInclude Include="HeightFieldCollider.h">
       <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugDraw.h">
+      <Filter>Utils\DebugDraw</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

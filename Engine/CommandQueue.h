@@ -48,7 +48,7 @@ private:
 	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
 
 	SwapChain*		_swapChain;
-	DescriptorHeap*	_descHeap;
+	DirectX::DescriptorHeap*	_descHeap;
 };
 
 
@@ -83,5 +83,5 @@ private:
 	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
 
 	SwapChain*		_swapChain;
-	DescriptorHeap*	_descHeap;
+	DirectX::DescriptorHeap*	_descHeap;
 };

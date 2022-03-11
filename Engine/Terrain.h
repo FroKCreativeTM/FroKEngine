@@ -10,6 +10,8 @@ public:
 
 	void Init(int32 sizeX, int32 sizeZ);
 
+	float GetHeight(int32 x, int32 z) const;
+
 	virtual void FinalUpdate() override;
 
 private:

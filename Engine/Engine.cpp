@@ -70,6 +70,20 @@ void Engine::Init(const WindowInfo& info)
 	
 	CreateRenderTargetGroups();
 
+	m_batch = std::make_unique<PrimitiveBatch<VertexType>>(_device->GetDevice());
+
+	RenderTargetState rtState(_swapChain->GetDescription().,
+		m_deviceResources->GetDepthBufferFormat());
+
+	EffectPipelineStateDescription pd(
+		&VertexType::InputLayout,
+		CommonStates::Opaque,
+		CommonStates::DepthDefault,
+		CommonStates::CullNone,
+		rtState);
+
+	m_effect = std::make_unique<BasicEffect>(device, EffectFlags::VertexColor, pd);
+
 	ResizeWindow(info.width, info.height);
 
 	GET_SINGLE(Input)->Init(info.hwnd);
