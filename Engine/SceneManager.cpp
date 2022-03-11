@@ -230,45 +230,71 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 #pragma endregion
 
 #pragma region Terrain
+	//{
+	//	shared_ptr<GameObject> obj = make_shared<GameObject>();
+	//	obj->AddComponent(make_shared<Transform>());
+	//	obj->AddComponent(make_shared<BoxCollider>());
+	//	obj->AddComponent(make_shared<Terrain>());
+	//	obj->AddComponent(make_shared<MeshRenderer>());
+
+	//	obj->GetTransform()->SetLocalScale(Vec3(50.f, 250.f, 50.f));
+	//	obj->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 0.f));
+	//	obj->SetStatic(true);
+	//	obj->GetTerrain()->Init(32, 32);
+	//	obj->SetCheckFrustum(false);
+
+	//	dynamic_pointer_cast<BoxCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
+
+	//	scene->AddGameObject(obj);
+	//}
+#pragma endregion
+
+#pragma region Plane
 	{
 		shared_ptr<GameObject> obj = make_shared<GameObject>();
+		obj->SetName(L"Map");
 		obj->AddComponent(make_shared<Transform>());
 		obj->AddComponent(make_shared<BoxCollider>());
-		obj->AddComponent(make_shared<Terrain>());
-		obj->AddComponent(make_shared<MeshRenderer>());
-
-		obj->GetTransform()->SetLocalScale(Vec3(50.f, 250.f, 50.f));
-		obj->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 0.f));
+		obj->GetTransform()->SetLocalScale(Vec3(1000.f, 1.f, 1000.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(0.f, -100.f, 500.f));
 		obj->SetStatic(true);
-		obj->GetTerrain()->Init(32, 32);
-		obj->SetCheckFrustum(false);
-
-		dynamic_pointer_cast<BoxCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
-
+		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
+		{
+			shared_ptr<Mesh> mesh = GET_SINGLE(Resources)->LoadCubeMesh();
+			meshRenderer->SetMesh(mesh);
+		}
+		{
+			shared_ptr<Material> material = GET_SINGLE(Resources)->Get<Material>(L"GameObject")->Clone();
+			material->SetInt(0, 0);
+			meshRenderer->SetMaterial(material);
+		}
+		obj->AddComponent(meshRenderer);
 		scene->AddGameObject(obj);
 	}
 #pragma endregion
 
-#pragma region Plane
-	//{
-	//	shared_ptr<GameObject> obj = make_shared<GameObject>();
-	//	obj->AddComponent(make_shared<Transform>());
-	//	obj->GetTransform()->SetLocalScale(Vec3(1000.f, 1.f, 1000.f));
-	//	obj->GetTransform()->SetLocalPosition(Vec3(0.f, -100.f, 500.f));
-	//	obj->SetStatic(true);
-	//	shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
-	//	{
-	//		shared_ptr<Mesh> mesh = GET_SINGLE(Resources)->LoadCubeMesh();
-	//		meshRenderer->SetMesh(mesh);
-	//	}
-	//	{
-	//		shared_ptr<Material> material = GET_SINGLE(Resources)->Get<Material>(L"GameObject")->Clone();
-	//		material->SetInt(0, 0);
-	//		meshRenderer->SetMaterial(material);
-	//	}
-	//	obj->AddComponent(meshRenderer);
-	//	scene->AddGameObject(obj);
-	//}
+#pragma region Box
+	{
+		shared_ptr<GameObject> obj = make_shared<GameObject>();
+		obj->SetName(L"Box");
+		obj->AddComponent(make_shared<Transform>());
+		obj->AddComponent(make_shared<BoxCollider>());
+		obj->GetTransform()->SetLocalScale(Vec3(30.f, 30.f, 30.f));
+		obj->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 500.f));
+		obj->SetStatic(true);
+		shared_ptr<MeshRenderer> meshRenderer = make_shared<MeshRenderer>();
+		{
+			shared_ptr<Mesh> mesh = GET_SINGLE(Resources)->LoadCubeMesh();
+			meshRenderer->SetMesh(mesh);
+		}
+		{
+			shared_ptr<Material> material = GET_SINGLE(Resources)->Get<Material>(L"GameObject")->Clone();
+			material->SetInt(0, 0);
+			meshRenderer->SetMaterial(material);
+		}
+		obj->AddComponent(meshRenderer);
+		scene->AddGameObject(obj);
+	}
 #pragma endregion
 
 #pragma region UI_Test
