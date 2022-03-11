@@ -8,6 +8,7 @@ public:
 	virtual ~BoxCollider();
 
 	virtual bool Collision(BaseCollider* pDst) override;
+	virtual bool Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance) override;
 	virtual void FinalUpdate() override;
 
 #ifdef _DEBUG

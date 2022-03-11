@@ -38,6 +38,11 @@ bool BoxCollider::Collision(BaseCollider* pDst)
 	return false;
 }
 
+bool BoxCollider::Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
+{
+	return CollisionBoxToRay(GetBoundingBox(), rayOrigin, rayDir, distance);
+}
+
 void BoxCollider::FinalUpdate()
 {
 	_boundingBox.Center = GetGameObject()->GetTransform()->GetWorldPosition();
