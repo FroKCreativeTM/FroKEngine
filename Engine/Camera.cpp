@@ -55,6 +55,9 @@ void Camera::SortGameObject()
 		if (IsCulled(gameObject->GetLayerIndex()))
 			continue;
 
+		if (!gameObject->GetLife())
+			continue;
+
 		if (gameObject->GetCheckFrustum())
 		{
 			if (_frustum.ContainsSphere(

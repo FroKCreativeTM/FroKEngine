@@ -35,3 +35,7 @@ void FrustumCollider::FinalUpdate()
 {
 
 }
+
+void FrustumCollider::Render()
+{
+}

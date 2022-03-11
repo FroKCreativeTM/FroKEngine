@@ -5,6 +5,9 @@
 #include "Input.h"
 #include "Timer.h"
 
+#include "Resources.h"
+#include "MeshRenderer.h"
+
 TestObjectScript::TestObjectScript()
 {
 }
@@ -34,6 +37,20 @@ void TestObjectScript::LateUpdate()
 
 	if (INPUT->GetButton(KEY_TYPE::L))
 		pos.z += GetTransform()->GetWorldPosition().z * _speed * DELTA_TIME;
+
+	if (INPUT->GetButtonDown(KEY_TYPE::KEY_1))
+	{
+		auto meshRenderer = GetGameObject()->GetMeshRenderer();
+		shared_ptr<Material> material = GET_SINGLE(Resources)->Get<Material>(L"GameObject WireFrame");
+		meshRenderer->SetMaterial(material->Clone());
+	}
+
+	if (INPUT->GetButtonUp(KEY_TYPE::KEY_1))
+	{
+		auto meshRenderer = GetGameObject()->GetMeshRenderer();
+		shared_ptr<Material> material = GET_SINGLE(Resources)->Get<Material>(L"GameObject");
+		meshRenderer->SetMaterial(material->Clone());
+	}
 
 	GetTransform()->SetLocalPosition(pos);
 }

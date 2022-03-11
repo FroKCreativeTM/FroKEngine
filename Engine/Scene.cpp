@@ -17,7 +17,8 @@ void Scene::Awake()
 	// 굳이 카운트를 증가시키진 않는다.
 	for (const shared_ptr<GameObject>& gameObject : _gameObjects)
 	{
-		gameObject->Awake();
+		if (gameObject->GetLife())
+			gameObject->Awake();
 	}
 }
 
@@ -25,7 +26,8 @@ void Scene::Start()
 {
 	for (const shared_ptr<GameObject>& gameObject : _gameObjects)
 	{
-		gameObject->Start();
+		if (gameObject->GetLife())
+			gameObject->Start();
 	}
 }
 
@@ -33,7 +35,9 @@ void Scene::Update()
 {
 	for (const shared_ptr<GameObject>& gameObject : _gameObjects)
 	{
-		gameObject->Update();
+
+		if (gameObject->GetLife())
+			gameObject->Update();
 
 		if (gameObject->GetCollider() != nullptr && gameObject->GetLife())
 		{
@@ -46,7 +50,8 @@ void Scene::LateUpdate()
 {
 	for (const shared_ptr<GameObject>& gameObject : _gameObjects)
 	{
-		gameObject->LateUpdate();
+		if (gameObject->GetLife())
+			gameObject->LateUpdate();
 	}
 }
 
@@ -54,7 +59,8 @@ void Scene::FinalUpdate()
 {
 	for (const shared_ptr<GameObject>& gameObject : _gameObjects)
 	{
-		gameObject->FinalUpdate();
+		if (gameObject->GetLife())
+			gameObject->FinalUpdate();
 	}
 }
 

@@ -78,7 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Engine\;$(SolutionDir)Library\Include\;$(SolutionDir)Library/Include/FBX/;$(SolutionDir)Library/Include/ImGui/;$(SolutionDir)Library/Include/Physx/;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Engine\;$(SolutionDir)Library\Include\;$(SolutionDir)Library/Include/FBX/;$(SolutionDir)Library/Include/ImGui/;$(SolutionDir)Library/Include/Physx/;$(SolutionDir)Library/Include/DirectXTK/Inc/;$(IncludePath)</IncludePath>
     <ReferencePath>$(SolutionDir)Output\;$(ReferencePath)</ReferencePath>
     <LibraryPath>$(SolutionDir)Output\;$(SolutionDir)Library\Lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Output\Debug\</OutDir>

@@ -17,6 +17,10 @@ BoxCollider::~BoxCollider()
 {
 }
 
+void BoxCollider::Render()
+{
+}
+
 bool BoxCollider::Collision(BaseCollider* pDst)
 {
 	switch (pDst->GetColliderType())

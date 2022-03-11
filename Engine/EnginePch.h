@@ -113,8 +113,6 @@ using namespace std;
 
 #include "DirectXTK/Inc/PrimitiveBatch.h"
 #include "DirectXTK/Inc/VertexTypes.h"
-#include "DirectXTK/Inc/Effects.h"
-#include "DirectXTK/Src/EffectCommon.h"
 
 #ifdef _DEBUG
 #pragma comment(lib, "DirectXTK/Debug/DirectXTK12.lib")

@@ -162,3 +162,8 @@ void ImGuiManager::RenderEnd()
 
 	_numImagesThisFrame = 0;
 }
+
+bool ImGuiManager::ImGuiButton(std::string buttonStr)
+{
+	return ImGui::Button(buttonStr.c_str());
+}

@@ -37,10 +37,19 @@ bool SphereCollider::Collision(BaseCollider* pDst)
 	return false;
 }
 
+bool SphereCollider::Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
+{
+	return CollisionSphereToRay(GetBoundingSphere(), rayOrigin, rayDir, distance);
+}
+
 void SphereCollider::FinalUpdate()
 {
 	_boundingSphere.Center = GetGameObject()->GetTransform()->GetWorldPosition();
 
 	Vec3 scale = GetGameObject()->GetTransform()->GetLocalScale();
 	_boundingSphere.Radius = _radius * max(max(scale.x, scale.y), scale.z);
+}
+
+void SphereCollider::Render()
+{
 }

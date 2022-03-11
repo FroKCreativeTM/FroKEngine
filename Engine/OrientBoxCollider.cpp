@@ -5,6 +5,8 @@
 #include "FrustumCollider.h"
 #include "SphereCollider.h"
 
+#include "DebugDraw.h"
+
 OrientBoxCollider::OrientBoxCollider() : 
     BaseCollider(ColliderType::OBB)
 {
@@ -33,4 +35,9 @@ bool OrientBoxCollider::Collision(BaseCollider* pDst)
 
 void OrientBoxCollider::FinalUpdate()
 {
+}
+
+void OrientBoxCollider::Render()
+{
+	// DX::Draw()
 }

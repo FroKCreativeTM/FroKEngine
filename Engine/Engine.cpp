@@ -14,6 +14,7 @@
 #include "Audio.h"
 #include "ImGuiManager.h"
 #include "Physics.h"
+#include "GameManager.h"
 
 Engine::Engine()
 {
@@ -69,21 +70,7 @@ void Engine::Init(const WindowInfo& info)
 	CreateConstantBuffer(CBV_REGISTER::b2, sizeof(MaterialParams), 256);
 	
 	CreateRenderTargetGroups();
-
-	m_batch = std::make_unique<PrimitiveBatch<VertexType>>(_device->GetDevice());
-
-	RenderTargetState rtState(_swapChain->GetDescription().,
-		m_deviceResources->GetDepthBufferFormat());
-
-	EffectPipelineStateDescription pd(
-		&VertexType::InputLayout,
-		CommonStates::Opaque,
-		CommonStates::DepthDefault,
-		CommonStates::CullNone,
-		rtState);
-
-	m_effect = std::make_unique<BasicEffect>(device, EffectFlags::VertexColor, pd);
-
+	
 	ResizeWindow(info.width, info.height);
 
 	GET_SINGLE(Input)->Init(info.hwnd);
@@ -97,6 +84,7 @@ void Engine::Init(const WindowInfo& info)
 void Engine::Update()
 {
 	GET_SINGLE(Input)->Update();
+	GET_SINGLE(GameManager)->Update();
 	GET_SINGLE(Timer)->Update();
 	GET_SINGLE(SceneManager)->Update();
 	GET_SINGLE(InstancingManager)->ClearBuffer();

@@ -22,6 +22,12 @@ public:
 
 	// virtual void FinalUpdate() override;
 	virtual bool Collision(BaseCollider* pDst);
+	virtual bool Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance);
+
+#ifdef _DEBUG
+	// 디버깅용 콜리전을 그린다.
+	virtual void Render();
+#endif
 
 public:
 	// 크게 Box, Sphere, Frustum, OrientBox, Triangle, Ray, Plane, Capsule(일단 구현할 수 있는 거부터 차례대로 구현)
@@ -82,6 +88,7 @@ public:
 	// *************************************************************
 	bool CollisionPlaneToPlane(const Vec4& src, const Vec4& dst);
 
+
 public:
 	bool GetTriggerd() const { return _isTriggerd; }
 	void SetTriggered(bool b) { _isTriggerd = b; }
@@ -93,4 +100,6 @@ protected :
 
 protected:
 	ColliderType		_colliderType = {};
+	Vec4				_initLineColor; // 기본색
+	Vec4				_collidedColor; // 충돌식 변경색
 };

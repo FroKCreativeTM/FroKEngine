@@ -6,7 +6,7 @@
 #include "BaseCollider.h"
 #include "BoxCollider.h"
 #include "SphereCollider.h"
-#include "CapsuleCollider.h"
+#include "PlaneCollider.h"
 
 #include "Camera.h"
 #include "SceneManager.h"
@@ -106,6 +106,8 @@ shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY
 	float minDistance = FLT_MAX;
 	shared_ptr<GameObject> picked;
 
+	cout << "pick" << endl;
+
 	for (auto& gameObject : gameObjects)
 	{
 		if (gameObject->GetCollider() == nullptr)
@@ -123,14 +125,15 @@ shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY
 		// WorldSpace에서 연산
 		float distance = 0.f;
 
-		// 충돌 실패
-		// if (gameObject->GetCollider()->CollisionSphereToRay(dynamic_pointer_cast<SphereCollider>(gameObject->GetCollider())->, rayOrigin, rayDir, OUT distance) == false)
-		// 	continue;
+		if (gameObject->GetCollider()->Collision(rayOrigin, rayDir, OUT distance) == false)
+			continue;
 
 		if (distance < minDistance)
 		{
 			minDistance = distance;
 			picked = gameObject;
+
+			wcout << gameObject->GetName() << L"Hit" << endl;
 		}
 	}
 

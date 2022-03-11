@@ -171,9 +171,6 @@
     <ClCompile Include="Audio.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="CapsuleCollider.cpp">
-      <Filter>Object\Component\Collider</Filter>
-    </ClCompile>
     <ClCompile Include="OrientBoxCollider.cpp">
       <Filter>Object\Component\Collider</Filter>
     </ClCompile>
@@ -215,6 +212,15 @@
     </ClCompile>
     <ClCompile Include="DebugDraw.cpp">
       <Filter>Utils\DebugDraw</Filter>
+    </ClCompile>
+    <ClCompile Include="GameManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="TestUIMono.cpp">
+      <Filter>Object\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="PlaneCollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -350,9 +356,6 @@
     <ClInclude Include="Audio.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="CapsuleCollider.h">
-      <Filter>Object\Component\Collider</Filter>
-    </ClInclude>
     <ClInclude Include="OrientBoxCollider.h">
       <Filter>Object\Component\Collider</Filter>
     </ClInclude>
@@ -410,6 +413,15 @@
     <ClInclude Include="DebugDraw.h">
       <Filter>Utils\DebugDraw</Filter>
     </ClInclude>
+    <ClInclude Include="GameManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="TestUIMono.h">
+      <Filter>Object\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="PlaneCollider.h">
+      <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
@@ -457,6 +469,9 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Resources\Shader\math.fx">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Resources\Shader\collision.fx">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

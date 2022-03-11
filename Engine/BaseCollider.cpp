@@ -1,10 +1,14 @@
 #include "pch.h"
 #include "BaseCollider.h"
 
+#include "Engine.h"
+#include "CommandQueue.h"
+
 BaseCollider::BaseCollider(ColliderType colliderType)
 	: Component(COMPONENT_TYPE::COLLIDER), _colliderType(colliderType)
 {
-
+	_initLineColor = Vec4(0.f, 1.f, 0.f, 1.f); //기본색
+	_collidedColor = Vec4(1.f, 0.f, 0.f, 1.f); //충돌색
 }
 
 BaseCollider::~BaseCollider()
@@ -15,6 +19,16 @@ BaseCollider::~BaseCollider()
 bool BaseCollider::Collision(BaseCollider* pDst)
 {
 	return false;
+}
+
+bool BaseCollider::Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
+{
+	return false;
+}
+
+void BaseCollider::Render()
+{
+	
 }
 
 bool BaseCollider::CollisionBoxToBox(const BoundingBox& src, const BoundingBox& dst)

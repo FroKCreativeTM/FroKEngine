@@ -10,6 +10,13 @@ public:
 	virtual bool Collision(BaseCollider* pDst) override;
 	virtual void FinalUpdate() override;
 
+#ifdef _DEBUG
+	// 디버깅용 콜리전을 그린다.
+	virtual void Render() override;
+#endif
+
+public : 
+
 	void SetCenter(Vec3 center) { _center = center; }
 
 	BoundingBox GetBoundingBox() { return _boundingBox; }

@@ -1,7 +1,6 @@
 #pragma once
 
 class SwapChain;
-class DescriptorHeap;
 class GraphicsDescriptorHeap;
 
 // ********************************
@@ -48,7 +47,6 @@ private:
 	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
 
 	SwapChain*		_swapChain;
-	DirectX::DescriptorHeap*	_descHeap;
 };
 
 
@@ -83,5 +81,4 @@ private:
 	HANDLE								_fenceEvent = INVALID_HANDLE_VALUE;
 
 	SwapChain*		_swapChain;
-	DirectX::DescriptorHeap*	_descHeap;
 };

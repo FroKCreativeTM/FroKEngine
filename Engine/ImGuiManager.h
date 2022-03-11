@@ -25,6 +25,8 @@ public :
 	void RenderBegin();
 	void RenderEnd();
 
+	bool ImGuiButton(std::string buttonStr);
+
 private : 
 	ID3D12DescriptorHeap* _imguiDescriptorHeap;
 	CD3DX12_CPU_DESCRIPTOR_HANDLE _startCPUDescriptor;

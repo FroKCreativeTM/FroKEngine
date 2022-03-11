@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#define _2D
+// #define _2D
 
 #ifdef _2D
 #ifdef _DEBUG

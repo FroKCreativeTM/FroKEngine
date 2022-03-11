@@ -13,6 +13,7 @@
 
 #include "Material.h"
 
+
 class Engine
 {
 public : 
@@ -70,12 +71,4 @@ private :
 
 	vector<ConstantBuffer*> _constantBuffers;
 	array<RenderTargetGroup*, RENDER_TARGET_GROUP_COUNT> _rtGroups;
-
-#ifdef _DEBUG
-	using VertexType = DirectX::VertexPositionColor;
-
-	std::unique_ptr<DirectX::BasicEffect> m_effect;
-	std::unique_ptr<DirectX::BasicEffect> m_effect;
-	std::unique_ptr<DirectX::PrimitiveBatch<VertexType>> m_batch;
-#endif
 };
