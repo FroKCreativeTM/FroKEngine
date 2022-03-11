@@ -5,25 +5,33 @@
 #include "Physics.h"
 #include "RigidBody.h"
 
-using namespace physx;
+#include "SphereCollider.h"
+#include "FrustumCollider.h"
+#include "OrientBoxCollider.h"
 
 BoxCollider::BoxCollider() : BaseCollider(ColliderType::Box)
 {
-	// Vec3 box = GetGameObject()->GetTransform()->GetLocalScale();
-	// 
-	// _colliderShape = PHYSICS->createShape(PxBoxGeometry(box.x, box.y, box.z),
-	// 	*GetGameObject()->GetRigidBody()->GetMaterial(), true);
-	// 
-	// _colliderShape->setFlag(PxShapeFlag::eVISUALIZATION, true);
-	// _colliderShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);	// Ray, Sweep 등의 충돌을 검출할 때 사용
-	// 
-	// // 이 아래 두 플래그는 중복되서 켜져 있으면 안 된다.
-	// _colliderShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
-	// _colliderShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
 }
 
 BoxCollider::~BoxCollider()
 {
+}
+
+bool BoxCollider::Collision(BaseCollider* pDst)
+{
+	switch (pDst->GetColliderType())
+	{
+	case ColliderType::Sphere:
+		return CollisionBoxToSphere(GetBoundingBox(), ((SphereCollider*)pDst)->GetBoundingSphere());
+	case ColliderType::Box:
+		return CollisionBoxToBox(GetBoundingBox(), ((BoxCollider*)pDst)->GetBoundingBox());
+	case ColliderType::OBB:
+		return CollisionBoxToOrientedBox(GetBoundingBox(), ((OrientBoxCollider*)pDst)->GetBoundingOBB());
+	case ColliderType::Frustum:
+		return CollisionBoxToFrustum(GetBoundingBox(), ((FrustumCollider*)pDst)->GetBoundingFrustum());
+	}
+
+	return false;
 }
 
 void BoxCollider::FinalUpdate()

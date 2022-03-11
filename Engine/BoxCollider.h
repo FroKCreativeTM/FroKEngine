@@ -7,6 +7,7 @@ public:
 	BoxCollider();
 	virtual ~BoxCollider();
 
+	virtual bool Collision(BaseCollider* pDst) override;
 	virtual void FinalUpdate() override;
 
 	void SetCenter(Vec3 center) { _center = center; }
@@ -19,6 +20,5 @@ private:
 	Vec3		_size = Vec3(1.f, 1.f, 1.f);
 
 	BoundingBox _boundingBox;
-	physx::PxShape*				_boxShape;
 };
 

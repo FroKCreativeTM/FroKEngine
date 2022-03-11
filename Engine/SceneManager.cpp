@@ -193,7 +193,6 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetRadius(0.5f);
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
 		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->Init(obj->GetCollider().get());
-		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetGravity(false);
 		obj->AddComponent(meshRenderer);
 		scene->AddGameObject(obj);
 	}
@@ -222,7 +221,6 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetRadius(0.5f);
 		dynamic_pointer_cast<SphereCollider>(obj->GetCollider())->SetCenter(Vec3(0.f, 0.f, 0.f));
 		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->Init(obj->GetCollider().get());
-		dynamic_pointer_cast<RigidBody>(obj->GetRigidBody())->SetGravity(false);
 		obj->AddComponent(meshRenderer);
 		scene->AddGameObject(obj);
 	}

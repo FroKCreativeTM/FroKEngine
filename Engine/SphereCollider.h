@@ -23,6 +23,5 @@ private:
 	Vec3		_center = Vec3(0, 0, 0);
 
 	BoundingSphere _boundingSphere;
-	physx::PxSphereGeometry _sphere;
 };
 
