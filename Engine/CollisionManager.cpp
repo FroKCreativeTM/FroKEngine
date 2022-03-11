@@ -47,12 +47,7 @@ void CollisionManager::Update()
 
 		for (; innerIter != innerIterEnd; ++innerIter)
 		{
-			if (Collision(*(iter)->get(), *(innerIter)->get()))
-			{
-				std::wcout << "Collsion1 : " << iter->get()->GetName() << endl;
-				std::wcout << "Collsion2 : " << innerIter->get()->GetName() << endl;
-				std::cout << "Collsion Detected" << std::endl;
-			}
+			Collision(*(iter)->get(), *(innerIter)->get());
 		}
 	}
 

@@ -17,8 +17,8 @@ public:
 #endif
 
 public : 
-
 	void SetCenter(Vec3 center) { _center = center; }
+	void SetSize(Vec3 size) { _size = size; }
 
 	BoundingBox GetBoundingBox() { return _boundingBox; }
 

@@ -8,6 +8,8 @@
 #include "MeshRenderer.h"
 #include "Animator.h"
 
+#include "BoxCollider.h"
+
 MeshData::MeshData() : Object(OBJECT_TYPE::MESH_DATA)
 {
 }

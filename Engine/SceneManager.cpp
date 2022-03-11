@@ -254,7 +254,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		shared_ptr<GameObject> obj = make_shared<GameObject>();
 		obj->SetName(L"Map");
 		obj->AddComponent(make_shared<Transform>());
-		obj->AddComponent(make_shared<BoxCollider>());
+		// obj->AddComponent(make_shared<BoxCollider>());
 		obj->GetTransform()->SetLocalScale(Vec3(1000.f, 1.f, 1000.f));
 		obj->GetTransform()->SetLocalPosition(Vec3(0.f, -100.f, 500.f));
 		obj->SetStatic(true);
@@ -278,7 +278,7 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 		shared_ptr<GameObject> obj = make_shared<GameObject>();
 		obj->SetName(L"Box");
 		obj->AddComponent(make_shared<Transform>());
-		obj->AddComponent(make_shared<BoxCollider>());
+		// obj->AddComponent(make_shared<BoxCollider>());
 		obj->GetTransform()->SetLocalScale(Vec3(30.f, 30.f, 30.f));
 		obj->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 500.f));
 		obj->SetStatic(true);
@@ -400,21 +400,22 @@ shared_ptr<Scene> SceneManager::LoadTestScene()
 #pragma endregion
 
 #pragma region FBX
-	//{
-	//	shared_ptr<MeshData> meshData = GET_SINGLE(Resources)->LoadFBX(L"..\\Resources\\FBX\\Dragon.fbx");
+	{
+		shared_ptr<MeshData> meshData = GET_SINGLE(Resources)->LoadFBX(L"..\\Resources\\FBX\\egyptian_B.fbx");
+		vector<shared_ptr<GameObject>> gameObjects = meshData->Instantiate();
 
-	//	vector<shared_ptr<GameObject>> gameObjects = meshData->Instantiate();
-
-	//	for (auto& gameObject : gameObjects)
-	//	{
-	//		gameObject->SetName(L"Dragon");
-	//		gameObject->SetCheckFrustum(false);
-	//		gameObject->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 300.f));
-	//		gameObject->GetTransform()->SetLocalScale(Vec3(1.f, 1.f, 1.f));
-	//		scene->AddGameObject(gameObject);
-	//		gameObject->AddComponent(make_shared<TestDragon>());
-	//	}
-	//}
+		for (auto& gameObject : gameObjects)
+		{
+			gameObject->SetName(L"egyptian");
+			gameObject->AddComponent(make_shared<BoxCollider>());
+			gameObject->SetCheckFrustum(false);
+			gameObject->GetTransform()->SetLocalPosition(Vec3(0.f, 0.f, 300.f));
+			gameObject->GetTransform()->SetLocalRotation(Vec3(-90.f, 0.f, 0.f));
+			gameObject->GetTransform()->SetLocalScale(Vec3(10.f, 10.f, 10.f));
+			gameObject->AddComponent(make_shared<TestDragon>());
+			scene->AddGameObject(gameObject);
+		}
+	}
 #pragma endregion
 
 	return scene;
