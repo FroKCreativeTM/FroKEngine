@@ -204,9 +204,6 @@
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="Physics.cpp">
-      <Filter>Manager</Filter>
-    </ClCompile>
     <ClCompile Include="HeightFieldCollider.cpp">
       <Filter>Object\Component\Collider</Filter>
     </ClCompile>
@@ -221,6 +218,12 @@
     </ClCompile>
     <ClCompile Include="PlaneCollider.cpp">
       <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="UICollider.cpp">
+      <Filter>Object\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="TestPlayer.cpp">
+      <Filter>Object\Test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -398,9 +401,6 @@
     <ClInclude Include="Macro.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Physics.h">
-      <Filter>Manager</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\DirectXTex\DirectXTex\d3dx12.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -421,6 +421,12 @@
     </ClInclude>
     <ClInclude Include="PlaneCollider.h">
       <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="UICollider.h">
+      <Filter>Object\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="TestPlayer.h">
+      <Filter>Object\Test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

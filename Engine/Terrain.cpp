@@ -47,11 +47,6 @@ void Terrain::Init(int32 sizeX, int32 sizeZ)
 	}
 }
 
-float Terrain::GetHeight(int32 x, int32 z) const
-{
-	return 0.0f;
-}
-
 void Terrain::FinalUpdate()
 {
 	shared_ptr<Camera> mainCamera = GET_SINGLE(SceneManager)->GetActiveScene()->GetMainCamera();

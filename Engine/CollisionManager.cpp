@@ -2,6 +2,8 @@
 #include "CollisionManager.h"
 #include "Engine.h"
 #include "GameObject.h"
+#include "Transform.h"
+#include "Camera.h"
 
 #include "BaseCollider.h"
 #include "BoxCollider.h"
@@ -101,11 +103,12 @@ shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY
 	float minDistance = FLT_MAX;
 	shared_ptr<GameObject> picked;
 
-	cout << "pick" << endl;
-
 	for (auto& gameObject : gameObjects)
 	{
 		if (gameObject->GetCollider() == nullptr)
+			continue;
+
+		if (GET_SINGLE(SceneManager)->IndexToLayerName(gameObject->GetLayerIndex()) == L"UI")
 			continue;
 
 		// ViewSpace에서의 Ray 정의
@@ -116,6 +119,7 @@ shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY
 		rayOrigin = XMVector3TransformCoord(rayOrigin, viewMatrixInv);
 		rayDir = XMVector3TransformNormal(rayDir, viewMatrixInv);
 		rayDir.Normalize();
+
 
 		// WorldSpace에서 연산
 		float distance = 0.f;
@@ -133,4 +137,45 @@ shared_ptr<class GameObject> CollisionManager::Pick(int32 screenX, int32 screenY
 	}
 
 	return picked;
+}
+
+shared_ptr<class GameObject> CollisionManager::PickUI(int32 screenX, int32 screenY)
+{
+	shared_ptr<Camera> camera = GET_SINGLE(SceneManager)->GetActiveScene()->GetMainCamera();
+
+	float width = static_cast<float>(GEngine->GetWindow().width);
+	float height = static_cast<float>(GEngine->GetWindow().height);
+
+	Matrix projectionMatrix = camera->GetProjectionMatrix();
+
+	// ViewSpace에서 Picking 진행
+	float viewX = (+2.0f * screenX / width - 1.0f) / projectionMatrix(0, 0);
+	float viewY = (-2.0f * screenY / height + 1.0f) / projectionMatrix(1, 1);
+
+	Matrix viewMatrix = camera->GetViewMatrix();
+	Matrix viewMatrixInv = viewMatrix.Invert();
+
+	auto& gameObjects = GET_SINGLE(SceneManager)->GetActiveScene()->GetGameObjects();
+
+	float minDistance = FLT_MAX;
+	shared_ptr<GameObject> picked;
+
+	for (auto& gameObject : gameObjects)
+	{
+		if (gameObject->GetCollider() == nullptr)
+			continue;
+
+		if (GET_SINGLE(SceneManager)->IndexToLayerName(gameObject->GetLayerIndex()) != L"UI")
+			continue;
+
+		Matrix matTranslation = Matrix::CreateTranslation(gameObject->GetTransform()->GetLocalPosition());
+		auto result = matTranslation* Camera::S_MatView * Camera::S_MatProjection;
+
+		if (gameObject->GetCollider()->Collision(screenX, screenY) == false)
+			continue;
+		else
+			return gameObject;
+	}
+
+	return nullptr;
 }

@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "OrientBoxCollider.h"
 
+#include "GameObject.h"
+#include "Transform.h"
+
 #include "BoxCollider.h"
 #include "FrustumCollider.h"
 #include "SphereCollider.h"
-
-#include "DebugDraw.h"
 
 OrientBoxCollider::OrientBoxCollider() : 
     BaseCollider(ColliderType::OBB)
@@ -35,6 +36,10 @@ bool OrientBoxCollider::Collision(BaseCollider* pDst)
 
 void OrientBoxCollider::FinalUpdate()
 {
+	_boundingOOB.Center = GetGameObject()->GetTransform()->GetWorldPosition();
+
+	Vec3 scale = GetGameObject()->GetTransform()->GetLocalScale();
+	_boundingOOB.Extents = scale;
 }
 
 void OrientBoxCollider::Render()

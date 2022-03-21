@@ -12,6 +12,7 @@ enum class ColliderType
 	Plane,
 	Capsule,
 	HeightField,
+	UI,
 };
 
 class BaseCollider : public Component
@@ -23,6 +24,7 @@ public:
 	// virtual void FinalUpdate() override;
 	virtual bool Collision(BaseCollider* pDst);
 	virtual bool Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance);
+	virtual bool Collision(int32 x, int32 y);
 
 #ifdef _DEBUG
 	// 디버깅용 콜리전을 그린다.

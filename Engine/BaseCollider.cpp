@@ -26,6 +26,11 @@ bool BaseCollider::Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
 	return false;
 }
 
+bool BaseCollider::Collision(int32 x, int32 y)
+{
+	return false;
+}
+
 void BaseCollider::Render()
 {
 	

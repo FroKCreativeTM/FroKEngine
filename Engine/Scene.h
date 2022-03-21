@@ -34,9 +34,14 @@ public:
 
 	const vector<shared_ptr<GameObject>>& GetGameObjects() { return _gameObjects; }
 
+	wstring GetSceneName() const { return _sceneName; }
+	void SetSceneName(const wstring& str) { _sceneName = str; }
+
 private:
 	vector<shared_ptr<GameObject>> _gameObjects;
 	vector<shared_ptr<class Camera>>	_cameras;
 	vector<shared_ptr<class Light>>		_lights;
+
+	wstring _sceneName;
 };
 

@@ -18,6 +18,9 @@
     <Filter Include="소스 파일\Game\Scene">
       <UniqueIdentifier>{1a9395ce-5c55-499d-bbee-f5b84ba91d67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\GameObject">
+      <UniqueIdentifier>{f83361b7-3740-4e9e-98d3-af5ba9f6f084}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">

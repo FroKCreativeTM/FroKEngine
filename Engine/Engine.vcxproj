@@ -215,7 +215,6 @@
     <ClInclude Include="OrientBoxCollider.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Physics.h" />
     <ClInclude Include="PlaneCollider.h" />
     <ClInclude Include="RenderTargetGroup.h" />
     <ClInclude Include="Resources.h" />
@@ -233,11 +232,13 @@
     <ClInclude Include="TestCameraScript.h" />
     <ClInclude Include="TestDragon.h" />
     <ClInclude Include="TestObjectScript.h" />
+    <ClInclude Include="TestPlayer.h" />
     <ClInclude Include="TestUIMono.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="ImGuiManager.h" />
+    <ClInclude Include="UICollider.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Library\Include\ImGui\imgui.cpp">
@@ -303,7 +304,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="PlaneCollider.cpp" />
     <ClCompile Include="RenderTargetGroup.cpp" />
     <ClCompile Include="Resources.cpp" />
@@ -321,11 +321,13 @@
     <ClCompile Include="TestCameraScript.cpp" />
     <ClCompile Include="TestDragon.cpp" />
     <ClCompile Include="TestObjectScript.cpp" />
+    <ClCompile Include="TestPlayer.cpp" />
     <ClCompile Include="TestUIMono.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
+    <ClCompile Include="UICollider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Library\Include\DirectXTex\DirectXTex.inl" />

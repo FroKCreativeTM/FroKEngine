@@ -2,7 +2,6 @@
 #include "BoxCollider.h"
 #include "GameObject.h"
 #include "Transform.h"
-#include "Physics.h"
 #include "RigidBody.h"
 
 #include "SphereCollider.h"
@@ -45,7 +44,7 @@ bool BoxCollider::Collision(Vec4 rayOrigin, Vec4 rayDir, OUT float& distance)
 
 void BoxCollider::FinalUpdate()
 {
-	_boundingBox.Center = GetGameObject()->GetTransform()->GetWorldPosition();
+	_boundingBox.Center = GetGameObject()->GetTransform()->GetLocalPosition();
 
 	Vec3 scale = GetGameObject()->GetTransform()->GetLocalScale();
 

@@ -1,8 +1,12 @@
 #pragma once
 
-class Scene;
+#include "Scene.h"
 
-class TestScene
+class TestScene : 
+	public Scene
 {
+public : 
+	TestScene();
+	~TestScene();
 };
 
